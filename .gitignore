@@ -21,8 +21,11 @@
 # Framework methodology (CLAUDE.md contains Sherlock/Holmes/Hudson IP)
 /CLAUDE.md
 
-# Framework agents, rules, skills, hooks, templates — ALL framework IP
-/.claude/
+# Framework agents, rules, skills, hooks, templates — ALL framework IP.
+# No trailing slash so this matches BOTH a directory and a symlink
+# pointing at the main-repo .claude/ (worktrees without the session-script
+# bootstrap need a symlink to resolve hook paths).
+/.claude
 
 # Framework devcontainer
 /.devcontainer/

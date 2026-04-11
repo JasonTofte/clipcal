@@ -4,7 +4,7 @@
 
 ClipCal is an AI-powered flyer → calendar web app with an ADHD-supportive design layer. Built for a hackathon (Apr 10 – Apr 13, 2026).
 
-**Status:** Hackathon build · Pre-MVP
+**Status:** Hackathon build · Session 1 complete (scaffold + Claude vision extraction proven end-to-end)
 
 ## What it does
 
@@ -24,20 +24,29 @@ See [`docs/brief.md`](docs/brief.md) for the full product brief and [`mockups/in
 
 ## Stack
 
-- **Frontend:** Next.js 15 App Router + TypeScript + Tailwind + shadcn/ui
-- **AI:** Claude (Haiku 4.5 primary, Sonnet 4.5 fallback) via Vercel AI SDK `generateObject` + `useChat`
-- **Calendar out:** `ics` npm package + Google/Outlook render-URL deeplinks
-- **Calendar in:** Google Calendar `freebusy.query` (read-only scope)
+- **Frontend:** Next.js 16 (App Router, Turbopack) + TypeScript + Tailwind 4 + shadcn/ui
+- **AI:** Claude (Haiku 4.5 primary, Sonnet 4.5 fallback) via Vercel AI SDK v6 (`@ai-sdk/anthropic`) — `generateObject` with Zod 4 schema for typed structured output
+- **Calendar out:** `ics` npm package + Google/Outlook render-URL deeplinks *(Session 3)*
+- **Calendar in:** Google Calendar `freebusy.query` (read-only scope) *(Session 3)*
 - **Persistence:** `localStorage` only · no auth · no DB
+- **Testing:** Vitest for unit tests (schema); manual real-flyer gate for extraction feasibility
 - **Deploy:** Vercel
 
 ## Repo layout
 
 ```
 clipcal/
-├── docs/              # Product brief (.md + .docx)
+├── app/               # Next.js 16 App Router
+│   ├── api/extract/   # POST image → Claude Haiku 4.5 → ExtractionSchema JSON
+│   ├── layout.tsx     # Tailwind root
+│   └── page.tsx       # Session 1: minimal file input + JSON display
+├── components/ui/     # shadcn primitives (button, card, input, textarea, badge)
+├── lib/
+│   ├── schema.ts      # Zod EventSchema + ExtractionSchema
+│   └── schema.test.ts # Vitest — 9 tests, all green
+├── docs/              # Product brief + full build plan
 ├── mockups/           # Static HTML mockups (3 directions + index)
-├── src/               # Next.js app (coming)
+├── public/            # Static assets
 └── README.md
 ```
 
