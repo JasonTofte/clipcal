@@ -3,16 +3,25 @@
 import type { ReactNode } from 'react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
+import type { RelevanceScore } from '@/lib/relevance';
+import { formatScoreBadge, scoreTone } from '@/lib/relevance';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
   event: Event;
   conflict: ConflictResult | null;
+  relevance: RelevanceScore | null;
   onChange: (updated: Event) => void;
   onDownloadIcs: () => void;
   onOpenGoogle: () => void;
   onOpenOutlook: () => void;
+};
+
+const RELEVANCE_STYLES: Record<'high' | 'medium' | 'low', string> = {
+  high: 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400',
+  medium: 'bg-sky-500/10 text-sky-700 ring-sky-500/30 dark:text-sky-400',
+  low: 'bg-zinc-500/10 text-zinc-600 ring-zinc-500/30 dark:text-zinc-400',
 };
 
 const CONFIDENCE_STYLES: Record<Event['confidence'], string> = {
@@ -39,6 +48,7 @@ const inputCls =
 export function EventCard({
   event,
   conflict,
+  relevance,
   onChange,
   onDownloadIcs,
   onOpenGoogle,
@@ -49,7 +59,12 @@ export function EventCard({
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
-      {conflict && <ConflictBadge conflict={conflict} />}
+      {(conflict || relevance) && (
+        <div className="flex flex-wrap gap-1.5">
+          {conflict && <ConflictBadge conflict={conflict} />}
+          {relevance && <RelevanceBadge relevance={relevance} />}
+        </div>
+      )}
 
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-1 items-center gap-2">
@@ -135,6 +150,23 @@ export function EventCard({
           Outlook
         </Button>
       </div>
+    </div>
+  );
+}
+
+function RelevanceBadge({ relevance }: { relevance: RelevanceScore }) {
+  const tone = scoreTone(relevance.score);
+  return (
+    <div
+      className={cn(
+        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset',
+        RELEVANCE_STYLES[tone],
+      )}
+      title={relevance.reason}
+    >
+      <span className="font-semibold">{formatScoreBadge(relevance.score)}</span>
+      <span className="opacity-80">match</span>
+      <span className="hidden sm:inline opacity-60">· {relevance.reason}</span>
     </div>
   );
 }
