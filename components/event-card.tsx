@@ -2,11 +2,17 @@
 
 import type { ReactNode } from 'react';
 import type { Event } from '@/lib/schema';
+import type { ConflictResult } from '@/lib/conflict';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
   event: Event;
+  conflict: ConflictResult | null;
   onChange: (updated: Event) => void;
+  onDownloadIcs: () => void;
+  onOpenGoogle: () => void;
+  onOpenOutlook: () => void;
 };
 
 const CONFIDENCE_STYLES: Record<Event['confidence'], string> = {
@@ -30,12 +36,21 @@ const CATEGORY_EMOJI: Record<Event['category'], string> = {
 const inputCls =
   'w-full bg-transparent outline-none rounded-sm focus:ring-2 focus:ring-ring/40 focus:bg-muted/30 hover:bg-muted/20 transition-colors px-1 -mx-1';
 
-export function EventCard({ event, onChange }: EventCardProps) {
+export function EventCard({
+  event,
+  conflict,
+  onChange,
+  onDownloadIcs,
+  onOpenGoogle,
+  onOpenOutlook,
+}: EventCardProps) {
   const patch = <K extends keyof Event>(key: K, value: Event[K]) =>
     onChange({ ...event, [key]: value });
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
+      {conflict && <ConflictBadge conflict={conflict} />}
+
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-1 items-center gap-2">
           <span className="text-xl" aria-hidden>
@@ -95,7 +110,7 @@ export function EventCard({ event, onChange }: EventCardProps) {
         />
       </LabeledField>
 
-      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+      <div className="flex flex-wrap items-center gap-1.5">
         <span className="inline-flex h-5 items-center rounded-full border border-border px-2 text-xs font-medium capitalize">
           {event.category}
         </span>
@@ -108,6 +123,37 @@ export function EventCard({ event, onChange }: EventCardProps) {
           {event.timezone}
         </span>
       </div>
+
+      <div className="-mx-1 flex flex-wrap gap-2 border-t border-border/60 pt-3">
+        <Button size="sm" variant="default" onClick={onDownloadIcs}>
+          📅 Add to Calendar
+        </Button>
+        <Button size="sm" variant="outline" onClick={onOpenGoogle}>
+          Google
+        </Button>
+        <Button size="sm" variant="outline" onClick={onOpenOutlook}>
+          Outlook
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ConflictBadge({ conflict }: { conflict: ConflictResult }) {
+  if (conflict.status === 'free') {
+    return (
+      <div className="flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-500/30 dark:text-emerald-400">
+        <span aria-hidden>✓</span>
+        <span>you&rsquo;re free</span>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-1.5 rounded-md bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-500/30 dark:text-rose-400">
+      <span aria-hidden>⚠</span>
+      <span>
+        overlaps <span className="font-semibold">{conflict.conflictTitle}</span>
+      </span>
     </div>
   );
 }
