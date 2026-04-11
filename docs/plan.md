@@ -73,13 +73,22 @@
 7. **TEST ON A REAL FLYER** — download any UMN event flyer from Instagram / Google Images. POST it. Inspect the JSON. **This is the gate.**
 8. **Commit only if it works.** Branch: `feature/scaffold`. Commit message: "scaffold: next.js + claude vision extraction working on test flyer".
 
-### Definition of Done (Session 1)
+### Definition of Done (Session 1) — ✅ COMPLETE
 
-- [ ] Next.js runs on `npm run dev` with no errors
-- [ ] One real flyer uploaded through the UI returns a valid `ExtractionSchema` JSON
-- [ ] JSON has sensible title, ISO-formatted `start`, correct `hasFreeFood`
-- [ ] `ANTHROPIC_API_KEY` in `.env.local` (gitignored — double-check)
-- [ ] Committed to `feature/scaffold`, NOT merged to main yet
+- [x] Next.js runs on `npm run dev` with no errors *(Next 16.2.3 + Turbopack ready in 275ms; `npm run build` clean, TypeScript passes in ~1s)*
+- [x] One real flyer returns a valid `ExtractionSchema` JSON *(2 real flyers POSTed to `/api/extract` via curl; both HTTP 200 with valid schema; browser UI also verifiable on the running dev server)*
+- [x] JSON has sensible title, ISO-formatted `start`, correct `hasFreeFood` *(flyer 1: "Ryan Meetup" → social/low confidence; flyer 2: "Grand Opening - We Are Hiring" → career/medium confidence; both `hasFreeFood: false` matching the flyers)*
+- [x] `ANTHROPIC_API_KEY` in `.env.local` (gitignored) *(verified via `git check-ignore -v .env.local` matching `.gitignore:67`)*
+- [x] Committed to `feature/scaffold`, NOT merged to main yet
+
+**Stack upgrade flagged during build:** `create-next-app@latest` pulled Next.js **16.2.3** (not 15) + **Tailwind 4** (not 3) + **Zod 4** + **AI SDK v6**. All post-training-cutoff. Verified the `generateObject` + `ImagePart` API shape by reading `node_modules/ai/dist/index.d.ts` directly before writing the route — zero rework on first run.
+
+**Session 1 latency baseline:** Claude Haiku 4.5 vision: 3.5–7.9 s per flyer depending on output token count. Session 2 loading-state copy should target ~5 s with a 15 s hard timeout as the ceiling.
+
+**Known Session 2 cleanup items (not blockers):**
+1. Model occasionally emits stray `\n` prefix on `start` field → add `z.string().transform(s => s.trim())` to schema
+2. 400 error body in `/api/extract` echoes `imageEntry.type` unsanitized (low risk, cosmetic — `.slice(0, 64)` or omit)
+3. AC-2 schema test asserts `.toThrow()` without checking error path points at `category` (tighten to `toThrowError(/category/)`)
 
 ### Kill-switch decisions
 

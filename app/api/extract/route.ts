@@ -1,0 +1,94 @@
+import { anthropic } from '@ai-sdk/anthropic';
+import { generateObject } from 'ai';
+import { ExtractionSchema } from '@/lib/schema';
+
+const MODEL_ID = 'claude-haiku-4-5-20251001';
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_MEDIA_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+]);
+
+const SYSTEM_PROMPT = `You are extracting structured event information from a flyer image.
+
+Today is 2026-04-10, timezone America/Chicago.
+
+For every event shown on the flyer, extract:
+- title: the primary event name
+- start: ISO 8601 with timezone offset (e.g. 2026-04-15T18:00:00-05:00). If the year is omitted, assume 2026. If only a weekday and time are given, use the next occurrence of that weekday.
+- end: ISO 8601 or null if not stated
+- location: as printed on the flyer, or null
+- description: a 1-2 sentence summary, or null
+- category: pick the best fit from workshop, networking, social, cs, career, culture, sports, hackathon, other
+- hasFreeFood: true only if the flyer explicitly mentions free food, snacks, pizza, refreshments, or similar
+- timezone: the IANA timezone (default "America/Chicago" for UMN flyers unless the flyer states otherwise)
+- confidence: "high" if everything is clearly legible, "medium" if some fields required inference, "low" if the flyer is ambiguous
+
+If multiple events appear on the flyer, return ALL of them. Never skip an event.
+Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
+
+export async function POST(req: Request): Promise<Response> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return Response.json({ error: 'missing api key' }, { status: 500 });
+  }
+
+  let formData: FormData;
+  try {
+    formData = await req.formData();
+  } catch {
+    return Response.json({ error: 'invalid form data' }, { status: 400 });
+  }
+
+  const imageEntry = formData.get('image');
+  if (!(imageEntry instanceof File)) {
+    return Response.json({ error: 'no image provided' }, { status: 400 });
+  }
+
+  if (!ALLOWED_MEDIA_TYPES.has(imageEntry.type)) {
+    return Response.json(
+      { error: `invalid image type: ${imageEntry.type || 'unknown'}` },
+      { status: 400 },
+    );
+  }
+
+  if (imageEntry.size === 0) {
+    return Response.json({ error: 'empty image' }, { status: 400 });
+  }
+
+  if (imageEntry.size > MAX_IMAGE_BYTES) {
+    return Response.json({ error: 'image too large' }, { status: 400 });
+  }
+
+  const bytes = new Uint8Array(await imageEntry.arrayBuffer());
+
+  try {
+    const result = await generateObject({
+      model: anthropic(MODEL_ID),
+      schema: ExtractionSchema,
+      system: SYSTEM_PROMPT,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              image: bytes,
+              mediaType: imageEntry.type,
+            },
+            {
+              type: 'text',
+              text: 'Extract every event from this flyer into the ExtractionSchema format. Return only the structured object.',
+            },
+          ],
+        },
+      ],
+    });
+
+    return Response.json(result.object);
+  } catch (error) {
+    console.error('[extract] generateObject failed', error);
+    return Response.json({ error: 'extraction failed' }, { status: 500 });
+  }
+}
