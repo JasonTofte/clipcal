@@ -294,6 +294,83 @@ If `git status` shows changes you want to keep, commit them before closing. Unco
 
 ---
 
+# Working together without collisions
+
+The section above covers the *mechanical* moves — branch, commit, push, PR. This section covers the *social* layer on top: how two or three people share a codebase for 72 hours without stepping on each other's work. Read it before you start your first real piece of work.
+
+## The non-negotiable rules
+
+1. **Never commit directly to `main`.** Ever. Not even a typo fix. PRs only. Branch protection enforces this on the server, but treat it as a team rule regardless.
+2. **Never force-push `main` or a branch someone else has checked out.** Force-pushing your own unreviewed branch is fine. Force-pushing a shared branch rewrites history under someone else's feet and can destroy their work. If you genuinely need to rewrite a shared branch, announce it in chat first.
+3. **Never rebase or squash commits authored by another teammate.** Merge their work in — don't rewrite it.
+4. **Always branch from a fresh `main`.** Run `git checkout main && git pull` before `git checkout -b <branch>`. Branching from a stale `main` is the single biggest cause of "I lost my teammate's work" — you didn't actually lose it; you branched before their changes arrived and overwrote them at merge time.
+5. **Stage files by name**, never `git add .` or `git add -A`. See *Making changes and committing* above for the full rationale — it applies here too.
+
+## Claim your work before you start it
+
+Post in chat before you touch a file. Example:
+
+> "Taking a pass at `lib/schema.ts` and `app/api/extract/route.ts` for the next hour."
+
+This is the single cheapest collision prevention available. One chat message costs nothing and saves the 30+ minutes of merge-conflict untangling that happens when two people touch the same file from different angles. If you see a teammate has claimed a file you wanted, pick a different one or ping them to coordinate.
+
+For a 2–3 person team, aim for **vertical ownership** by feature area — one person on extraction, one on calendar, one on the interviewer. Rotate only when you hit a blocker. Vertical splits have almost no file overlap; horizontal splits ("you do the types, I do the UI") invariably collide in the middle.
+
+## Draft PRs from your first push
+
+Push on your very first commit and open a **draft PR** immediately. Do not wait until "it's ready." Draft PRs:
+
+- Make your work visible to the team so no one duplicates it
+- Let Jason see the direction early and redirect you before you have gone a thousand lines the wrong way
+- Cost nothing — GitHub does not mark them as ready for review and no one has to approve them
+
+```powershell
+git push -u origin feature/your-branch
+gh pr create --draft --title "WIP: what you're building" --body "Rough direction, still cooking"
+```
+
+When the branch is actually ready for review:
+
+```powershell
+gh pr ready
+```
+
+Then ping Jason in chat.
+
+## Keep branches small and short-lived
+
+A branch that lives for 3 hours has almost no conflict surface. A branch that lives for 2 days will fight with every other PR touching the same area. **Aim for branches that merge within a few hours of being opened.** If you find yourself staring at a 500-line diff across 10 files, that is a signal to stop, split it, and merge the easy parts first.
+
+Rule of thumb: if you cannot summarize your branch's changes in one sentence, the branch is too big.
+
+## Pull `main` into your branch before marking a PR ready
+
+```powershell
+git checkout main
+git pull
+git checkout your-branch
+git merge main
+```
+
+This resolves conflicts **on your branch**, where you have context and can fix them calmly — not during the final PR merge, where Jason sees them and you both scramble. Do this right before `gh pr ready`.
+
+**Merge vs rebase:** this project uses **merge**, not rebase. If you know what rebase is, do not use it on shared branches. If you do not know what rebase is, you do not need to — `git merge main` is the only integration command you will ever need here.
+
+## Review latency budget
+
+A PR that sits unreviewed for more than about 30 minutes during active hackathon hours is a problem. Either Jason reviews it, or he explicitly says "looks fine, merge it." Silence kills velocity — if your PR has been idle for an hour and the team is active, poke Jason in chat. That is expected, not rude.
+
+## When conflicts happen anyway
+
+They will. The right response:
+
+1. **Do not `git push --force` as a "fix."** That rewrites history and can clobber commits you do not know about.
+2. **Do not delete your branch and start over.** Your commits are recoverable and starting over is wasted work.
+3. **Resolve the conflict in the files directly.** Look for `<<<<<<<`, `=======`, `>>>>>>>` markers in the affected files, edit them to the final desired state, save, then `git add <file> && git commit`.
+4. **If a conflict is in a file you do not understand**, stop and ask Jason. Guessing during conflict resolution is how real work gets silently overwritten.
+
+---
+
 # Project tour
 
 ## Tech stack
