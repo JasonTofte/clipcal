@@ -4,11 +4,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Dropzone } from '@/components/dropzone';
 import { EventCard } from '@/components/event-card';
+import { WeekDensity } from '@/components/week-density';
 import { Button } from '@/components/ui/button';
 import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
+import { appendBatch, markBatchCommitted } from '@/lib/event-store';
 import { triggerIcsDownload } from '@/lib/ics';
+import { computeLeaveBy } from '@/lib/leave-by';
+import { generateNoticings } from '@/lib/noticings';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { RelevanceBatchSchema, type RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
@@ -18,6 +22,7 @@ type UxState =
   | { status: 'loading'; message: string }
   | {
       status: 'success';
+      batchId: string;
       events: Event[];
       sourceNotes: string | null;
       relevance: RelevanceScore[] | null;
@@ -91,8 +96,10 @@ export default function Home() {
       }
 
       const extraction = json as Extraction;
+      const saved = appendBatch(extraction.events, extraction.sourceNotes);
       setState({
         status: 'success',
+        batchId: saved.id,
         events: extraction.events,
         sourceNotes: extraction.sourceNotes,
         relevance: null,
@@ -160,10 +167,35 @@ export default function Home() {
   // calendar source wired up yet (live OAuth is a Session 3 stretch), so we
   // return null → EventCard hides the badge.
   const events = state.status === 'success' ? state.events : [];
+  const activeCalendar = demoMode ? DEMO_CALENDAR : [];
   const conflicts = useMemo(
     () => (demoMode ? events.map((e) => checkConflict(e, DEMO_CALENDAR)) : events.map(() => null)),
     [events, demoMode],
   );
+  const noticingsPerEvent = useMemo(
+    () =>
+      events.map((event) =>
+        generateNoticings(event, { demoCalendar: activeCalendar }),
+      ),
+    [events, demoMode],
+  );
+  const leaveByPerEvent = useMemo(
+    () => events.map((event) => computeLeaveBy(event)),
+    [events],
+  );
+
+  const handleDownloadIcs = (event: Event) => {
+    triggerIcsDownload([event]);
+    if (state.status === 'success') {
+      markBatchCommitted(state.batchId);
+    }
+  };
+
+  const handleDownloadAll = () => {
+    if (state.status !== 'success') return;
+    triggerIcsDownload(state.events);
+    markBatchCommitted(state.batchId);
+  };
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
@@ -174,12 +206,20 @@ export default function Home() {
             Your campus copilot. Snap a flyer, know if you should go.
           </p>
         </div>
-        <Link
-          href="/interview"
-          className="shrink-0 text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
-        >
-          {profile ? 'edit profile' : 'set up profile'}
-        </Link>
+        <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-muted-foreground">
+          <Link
+            href="/interview"
+            className="underline decoration-dotted underline-offset-4 hover:text-foreground"
+          >
+            {profile ? 'edit profile' : 'set up profile'}
+          </Link>
+          <Link
+            href="/feed"
+            className="underline decoration-dotted underline-offset-4 hover:text-foreground"
+          >
+            feed
+          </Link>
+        </div>
       </header>
 
       <div className="flex-1">
@@ -200,16 +240,13 @@ export default function Home() {
 
         {state.status === 'success' && (
           <div className="flex flex-col gap-4">
+            {demoMode && <WeekDensity busySlots={DEMO_CALENDAR} />}
             {state.events.length > 1 && (
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">
                   {state.events.length} events found on this flyer
                 </p>
-                <Button
-                  size="sm"
-                  variant="default"
-                  onClick={() => triggerIcsDownload(state.events)}
-                >
+                <Button size="sm" variant="default" onClick={handleDownloadAll}>
                   + Add all
                 </Button>
               </div>
@@ -220,8 +257,10 @@ export default function Home() {
                 event={event}
                 conflict={conflicts[idx]}
                 relevance={state.relevance?.[idx] ?? null}
+                noticings={noticingsPerEvent[idx]}
+                leaveBy={leaveByPerEvent[idx]}
                 onChange={(updated) => updateEvent(idx, updated)}
-                onDownloadIcs={() => triggerIcsDownload([event])}
+                onDownloadIcs={() => handleDownloadIcs(event)}
                 onOpenGoogle={() => openInNewTab(googleCalendarUrl(event))}
                 onOpenOutlook={() => openInNewTab(outlookCalendarUrl(event))}
               />
