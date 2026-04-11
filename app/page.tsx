@@ -32,6 +32,27 @@ type UxState =
 const LOADING_MESSAGE = 'Claude is reading your flyer…';
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
 
+// Stable sample event used for the idle-state teaser. Hardcoded (not computed
+// from new Date()) so SSR prerender and client hydration produce identical
+// output. Values are chosen so noticings + conflict + leave-by + relevance all
+// fire with visually interesting results against DEMO_CALENDAR.
+const TEASER_EVENT: Event = {
+  title: 'Data Viz Workshop',
+  start: '2026-04-18T19:00:00-05:00', // Sat 7:00 PM Central
+  end: '2026-04-18T20:30:00-05:00',
+  location: 'Walter Library 101',
+  description: 'Intro to D3.js and observable notebooks. Beginner friendly — come play.',
+  category: 'workshop',
+  hasFreeFood: true,
+  timezone: 'America/Chicago',
+  confidence: 'high',
+};
+
+const TEASER_RELEVANCE: RelevanceScore = {
+  score: 82,
+  reason: 'matches your data + workshops interests',
+};
+
 function openInNewTab(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
@@ -222,8 +243,42 @@ export default function Home() {
         </div>
       </header>
 
+      {demoMode && (
+        <div className="mb-4">
+          <WeekDensity busySlots={DEMO_CALENDAR} />
+        </div>
+      )}
+
       <div className="flex-1">
-        {state.status === 'idle' && <Dropzone onFiles={handleFiles} />}
+        {state.status === 'idle' && (
+          <div className="flex flex-col gap-6">
+            <Dropzone onFiles={handleFiles} />
+            {demoMode && (
+              <section className="space-y-3">
+                <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <span>What you&rsquo;ll see</span>
+                  <div className="h-px flex-1 bg-border/60" />
+                  <span className="font-mono text-[10px] text-muted-foreground/60">sample</span>
+                </div>
+                <EventCard
+                  event={TEASER_EVENT}
+                  conflict={checkConflict(TEASER_EVENT, DEMO_CALENDAR)}
+                  relevance={TEASER_RELEVANCE}
+                  noticings={generateNoticings(TEASER_EVENT, { demoCalendar: DEMO_CALENDAR })}
+                  leaveBy={computeLeaveBy(TEASER_EVENT)}
+                  readOnly
+                  onChange={() => undefined}
+                  onDownloadIcs={() => undefined}
+                  onOpenGoogle={() => undefined}
+                  onOpenOutlook={() => undefined}
+                />
+                <p className="text-center text-[11px] text-muted-foreground/70">
+                  Upload any flyer above to get your own.
+                </p>
+              </section>
+            )}
+          </div>
+        )}
 
         {state.status === 'loading' && <LoadingPanel message={state.message} />}
 
@@ -240,7 +295,6 @@ export default function Home() {
 
         {state.status === 'success' && (
           <div className="flex flex-col gap-4">
-            {demoMode && <WeekDensity busySlots={DEMO_CALENDAR} />}
             {state.events.length > 1 && (
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">

@@ -16,6 +16,7 @@ type EventCardProps = {
   relevance: RelevanceScore | null;
   noticings: Noticing[];
   leaveBy: LeaveByInfo | null;
+  readOnly?: boolean;
   onChange: (updated: Event) => void;
   onDownloadIcs: () => void;
   onOpenGoogle: () => void;
@@ -61,6 +62,7 @@ export function EventCard({
   relevance,
   noticings,
   leaveBy,
+  readOnly = false,
   onChange,
   onDownloadIcs,
   onOpenGoogle,
@@ -85,8 +87,9 @@ export function EventCard({
           </span>
           <input
             value={event.title}
+            readOnly={readOnly}
             onChange={(e) => patch('title', e.target.value)}
-            className={cn(inputCls, 'font-heading text-base font-medium')}
+            className={cn(inputCls, 'font-heading text-base font-medium', readOnly && 'pointer-events-none')}
             aria-label="Event title"
           />
         </div>
@@ -104,16 +107,18 @@ export function EventCard({
         <LabeledField label="start">
           <input
             value={event.start}
+            readOnly={readOnly}
             onChange={(e) => patch('start', e.target.value)}
-            className={cn(inputCls, 'font-mono text-xs')}
+            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
           />
         </LabeledField>
         <LabeledField label="end">
           <input
             value={event.end ?? ''}
+            readOnly={readOnly}
             placeholder="—"
             onChange={(e) => patch('end', e.target.value || null)}
-            className={cn(inputCls, 'font-mono text-xs')}
+            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
           />
         </LabeledField>
       </div>
@@ -121,19 +126,21 @@ export function EventCard({
       <LabeledField label="location">
         <input
           value={event.location ?? ''}
+          readOnly={readOnly}
           placeholder="—"
           onChange={(e) => patch('location', e.target.value || null)}
-          className={cn(inputCls, 'text-sm')}
+          className={cn(inputCls, 'text-sm', readOnly && 'pointer-events-none')}
         />
       </LabeledField>
 
       <LabeledField label="description">
         <textarea
           value={event.description ?? ''}
+          readOnly={readOnly}
           placeholder="—"
           onChange={(e) => patch('description', e.target.value || null)}
           rows={2}
-          className={cn(inputCls, 'resize-y text-sm')}
+          className={cn(inputCls, 'resize-y text-sm', readOnly && 'pointer-events-none')}
         />
       </LabeledField>
 
@@ -151,14 +158,33 @@ export function EventCard({
         </span>
       </div>
 
+      {noticings.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 border-t border-border/40 pt-3">
+          {noticings.map((n, i) => (
+            <NoticingChip key={i} noticing={n} />
+          ))}
+        </div>
+      )}
+
+      {leaveBy && (
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span aria-hidden>🕒</span>
+          <span>
+            leave by{' '}
+            <span className="font-semibold text-foreground">{leaveBy.displayText}</span>
+            {' '}· {leaveBy.walkMinutes}-min walk
+          </span>
+        </div>
+      )}
+
       <div className="-mx-1 flex flex-wrap gap-2 border-t border-border/60 pt-3">
-        <Button size="sm" variant="default" onClick={onDownloadIcs}>
+        <Button size="sm" variant="default" disabled={readOnly} onClick={onDownloadIcs}>
           📅 Add to Calendar
         </Button>
-        <Button size="sm" variant="outline" onClick={onOpenGoogle}>
+        <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenGoogle}>
           Google
         </Button>
-        <Button size="sm" variant="outline" onClick={onOpenOutlook}>
+        <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenOutlook}>
           Outlook
         </Button>
       </div>
