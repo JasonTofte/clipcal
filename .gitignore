@@ -1,0 +1,90 @@
+# ============================================================================
+# ClipCal — .gitignore
+# ============================================================================
+# This repo is PUBLIC. The dev-framework is proprietary. Every framework file
+# must be excluded here BEFORE git init / first commit.
+#
+# Rule: if it's part of cdjgroup/dev-framework, it must NOT be committed.
+# Project code (Next.js app, docs, mockups, README, product IP) IS committed.
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# FRAMEWORK IP — never commit
+# ----------------------------------------------------------------------------
+
+# Framework identity
+/FRAMEWORK_VERSION
+/.framework-sync.yaml
+/.fw-sync-backups/
+/.fw-sync-cache/
+
+# Framework methodology (CLAUDE.md contains Sherlock/Holmes/Hudson IP)
+/CLAUDE.md
+
+# Framework agents, rules, skills, hooks, templates — ALL framework IP
+/.claude/
+
+# Framework devcontainer
+/.devcontainer/
+
+# Framework config directory — all files here are dev-framework IP.
+# If/when we add clipcal-specific config, put it in /src/config or use
+# .env files. DO NOT commit anything under /config until audited.
+/config/
+
+# Framework scripts directory — all files here are dev-framework IP
+# (shell scripts, Python framework modules, tests, templates).
+# If/when we add clipcal-specific scripts, put them under /src/scripts
+# or a new /tools directory. DO NOT commit anything under /scripts.
+/scripts/
+
+# Claude Code session/state artifacts
+.claude/state/
+.claude/expected-branch.txt
+.claude/worktrees/
+.claude/settings.local.json
+.qa-reports/
+.context/
+
+# ----------------------------------------------------------------------------
+# Standard Node / Next.js
+# ----------------------------------------------------------------------------
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# Env files
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+!.vscode/settings.json.example
+
+# Test
+coverage/
+.nyc_output/
+
+# Temp
+*.tmp
+.cache/

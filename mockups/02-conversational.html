@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 2 · Conversational</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .bg-warm { background: radial-gradient(ellipse at top, #fff5eb 0%, #fef3f8 40%, #f5f0ff 100%); }
+    @keyframes pulse-dot { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+    .dot { animation: pulse-dot 1.4s infinite; }
+    .dot:nth-child(2) { animation-delay: .2s; }
+    .dot:nth-child(3) { animation-delay: .4s; }
+  </style>
+</head>
+<body class="bg-warm text-slate-900 min-h-screen">
+
+  <header class="border-b border-white/40 backdrop-blur bg-white/30 sticky top-0 z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm">✨</div>
+        <span class="font-bold text-lg">campus copilot</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5 text-xs text-slate-500">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>stays on your device · informs, never decides</span>
+        </div>
+        <button class="text-xs text-slate-500 hover:text-slate-900 underline">skip to form →</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/60 border border-white text-xs text-slate-600 mb-4">
+        <span>✨</span> 90-second intro · 2 of 5 questions
+      </div>
+      <h1 class="text-2xl sm:text-4xl font-bold tracking-tight mb-2">Let's figure out what you actually care about.</h1>
+      <p class="text-slate-500 max-w-xl mx-auto">A quick chat so we can surface the right info when you're deciding. We'll never auto-decline events — we just help your brain see the trade-offs. Skip anytime.</p>
+      <div class="mt-5 max-w-sm mx-auto">
+        <div class="h-1.5 bg-white/70 rounded-full overflow-hidden">
+          <div class="h-full bg-gradient-to-r from-rose-400 to-purple-500 rounded-full transition-all" style="width: 40%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-[1fr_320px] gap-5">
+
+      <div class="bg-white/70 backdrop-blur rounded-3xl border border-white shadow-xl shadow-purple-200/40 p-5 sm:p-6 min-h-[480px] flex flex-col">
+
+        <div class="flex-1 space-y-4 overflow-y-auto">
+
+          <div class="flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm shrink-0">✨</div>
+            <div class="bg-slate-50 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm text-slate-800">Hey! I'm going to ask you a few quick things so I can rank flyers for you later. First one — <strong>what are you studying?</strong></p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 justify-end">
+            <div class="bg-gradient-to-br from-rose-400 to-purple-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm">CS major, junior. Also minoring in design.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm shrink-0">✨</div>
+            <div class="bg-slate-50 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm text-slate-800">Love that combo. Okay — <strong>what's something you wish you had more time for on campus?</strong> Could be anything: clubs, workshops, just hanging out.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 justify-end">
+            <div class="bg-gradient-to-br from-rose-400 to-purple-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm">honestly networking stuff — I need an internship but I hate awkward career fairs. Also free food events lol</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm shrink-0">✨</div>
+            <div class="bg-slate-50 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm text-slate-800">Good to know. When I show you a flyer later, do you want me to <strong>surface the trade-offs</strong> — like "ends 11pm, you have an 8am class" — so <em>you</em> can decide? Or just rank by match?</p>
+              <p class="text-[11px] text-slate-500 mt-1.5 italic">No judgment either way. I'll never auto-decline events for you.</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5 justify-end">
+            <div class="bg-gradient-to-br from-rose-400 to-purple-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm">surface the info, let me decide. I have ADHD and I overcommit — I need the trade-offs visible, not a robot saying no for me 🧠</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm shrink-0">✨</div>
+            <div class="bg-slate-50 rounded-2xl rounded-tl-sm px-4 py-2.5 max-w-md">
+              <p class="text-sm text-slate-800">Got it — I'll be a <strong>noticer</strong>, not a warden. Travel time, "leave by" clock, what's already in your week. You make the call every time. 💛</p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-2xl bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-sm shrink-0">✨</div>
+            <div class="bg-slate-50 rounded-2xl rounded-tl-sm px-4 py-2.5 flex items-center gap-1.5">
+              <div class="w-1.5 h-1.5 rounded-full bg-slate-400 dot"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-slate-400 dot"></div>
+              <div class="w-1.5 h-1.5 rounded-full bg-slate-400 dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-200/60">
+          <div class="flex items-center gap-2 bg-slate-50 rounded-full pl-4 pr-2 py-2">
+            <input type="text" placeholder="type your answer…" class="flex-1 bg-transparent text-sm focus:outline-none" />
+            <button class="w-8 h-8 rounded-full bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+            </button>
+          </div>
+          <div class="mt-2 flex gap-1.5 flex-wrap">
+            <button class="text-[11px] px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-slate-400">intramural sports</button>
+            <button class="text-[11px] px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-slate-400">hackathons</button>
+            <button class="text-[11px] px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-slate-400">art shows</button>
+            <button class="text-[11px] px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-600 hover:border-slate-400">↵ skip</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="bg-white/60 backdrop-blur rounded-3xl border border-white p-5 shadow-lg shadow-purple-200/30">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase">your profile</span>
+          <span class="text-[10px] text-slate-400">building live…</span>
+        </div>
+
+        <div class="space-y-4 text-sm">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">studying</div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">Computer Science</span>
+              <span class="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">Design minor</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">year</div>
+            <span class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-xs font-medium">Junior</span>
+          </div>
+
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">interests</div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">🤝 networking</span>
+              <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-medium">🍕 free food</span>
+              <span class="px-2 py-0.5 rounded-full bg-sky-100 text-sky-700 text-xs font-medium">💼 internships</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">vibe</div>
+            <p class="text-xs text-slate-600 italic">"prefers low-pressure networking over formal career fairs"</p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-indigo-50 border border-indigo-100">
+            <div class="text-[10px] uppercase tracking-wider text-indigo-500 mb-1.5 font-semibold">🧠 how you like info</div>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="px-2 py-0.5 rounded-full bg-white text-indigo-700 text-xs font-medium border border-indigo-200">show trade-offs</span>
+              <span class="px-2 py-0.5 rounded-full bg-white text-indigo-700 text-xs font-medium border border-indigo-200">no auto-decline</span>
+              <span class="px-2 py-0.5 rounded-full bg-white text-indigo-700 text-xs font-medium border border-indigo-200">leave-by clock</span>
+            </div>
+            <p class="text-[10px] text-indigo-500/80 mt-1.5 italic">ClipCal will surface info, not decisions.</p>
+          </div>
+
+          <div class="pt-3 border-t border-slate-200/60">
+            <button class="text-[11px] text-slate-500 hover:text-slate-800 underline">view raw json →</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="mt-10 max-w-2xl mx-auto bg-white/50 backdrop-blur rounded-2xl border border-white p-5 text-center shadow">
+      <p class="text-xs font-semibold tracking-wider text-slate-500 uppercase mb-2">next up</p>
+      <p class="text-sm text-slate-700">Drop a flyer and I'll surface the info your brain wants — match, travel time, "leave by" clock, what's already in your week. <strong>You make the call.</strong> 🧠</p>
+    </div>
+  </main>
+
+  <footer class="max-w-5xl mx-auto px-6 py-6 text-[11px] text-slate-500 flex items-center justify-between mt-10">
+    <span>mockup 2 of 3 · conversational (finch/noom vibes)</span>
+    <a href="index.html" class="hover:text-slate-900 underline">← back to all mockups</a>
+  </footer>
+</body>
+</html>

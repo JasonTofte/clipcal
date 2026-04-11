@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 1 · Utility-First</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+    [contenteditable]:focus { outline: none; }
+  </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 min-h-screen">
+
+  <header class="border-b border-neutral-800 sticky top-0 bg-neutral-950/80 backdrop-blur z-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-md bg-emerald-400 flex items-center justify-center">
+          <svg class="w-4 h-4 text-neutral-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+        <span class="mono font-semibold">clipcal</span>
+        <span class="hidden sm:inline text-xs text-neutral-500 mono ml-2">v0.1 · hackathon build</span>
+      </div>
+      <nav class="flex items-center gap-3 sm:gap-6 text-sm text-neutral-400">
+        <a href="#" class="hover:text-neutral-100 hidden sm:inline">feed</a>
+        <a href="#" class="hover:text-neutral-100 hidden sm:inline">interests</a>
+        <span class="mono text-[10px] border border-neutral-700 px-2 py-1 rounded">⌘V</span>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
+    <div class="mb-10">
+      <h1 class="text-3xl sm:text-5xl font-semibold tracking-tight mb-3 leading-[1.1]">
+        Snap a flyer.<br>
+        <span class="text-neutral-500">Know if you should go.</span>
+      </h1>
+      <p class="text-neutral-400 max-w-xl">Paste, drop, or shoot it. We parse the event, surface what your brain wants to know, and leave the decision to you.</p>
+    </div>
+
+    <div class="mb-6 border border-neutral-800 rounded-xl bg-neutral-900/30 p-4 sm:p-5">
+      <div class="flex items-start justify-between mb-3">
+        <div>
+          <div class="mono text-[10px] uppercase tracking-widest text-indigo-400">your week · externalized</div>
+          <p class="text-xs text-neutral-400 mt-0.5">Not a score. Just what's already there. <span class="text-neutral-600">You decide what fits.</span></p>
+        </div>
+        <span class="mono text-[10px] text-neutral-600 shrink-0">apr 13 – 19</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5 sm:gap-2">
+        <div class="text-center"><div class="text-[9px] mono text-neutral-500 mb-1">M 13</div><div class="h-14 rounded bg-neutral-900 border border-neutral-800 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-neutral-600" style="height: 55%"></div></div><div class="text-[9px] text-neutral-600 mt-1">3 blocks</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-red-400 mb-1">T 14</div><div class="h-14 rounded bg-neutral-900 border border-red-500/40 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-red-500/60" style="height: 85%"></div></div><div class="text-[9px] text-red-400 mt-1">packed</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-neutral-500 mb-1">W 15</div><div class="h-14 rounded bg-neutral-900 border border-neutral-800 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-neutral-600" style="height: 35%"></div></div><div class="text-[9px] text-neutral-600 mt-1">2 blocks</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-neutral-500 mb-1">Th 16</div><div class="h-14 rounded bg-neutral-900 border border-neutral-800 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-neutral-600" style="height: 45%"></div></div><div class="text-[9px] text-neutral-600 mt-1">2 blocks</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-neutral-500 mb-1">F 17</div><div class="h-14 rounded bg-neutral-900 border border-neutral-800 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-neutral-600" style="height: 20%"></div></div><div class="text-[9px] text-neutral-600 mt-1">1 block</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-emerald-400 mb-1">S 18</div><div class="h-14 rounded bg-neutral-900 border border-emerald-400/60 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-emerald-500/30" style="height: 25%"></div><div class="absolute top-1 inset-x-1 h-1.5 rounded-full bg-emerald-400"></div></div><div class="text-[9px] text-emerald-400 mt-1">new</div></div>
+        <div class="text-center"><div class="text-[9px] mono text-neutral-500 mb-1">Su 19</div><div class="h-14 rounded bg-neutral-900 border border-neutral-800 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-neutral-600" style="height: 15%"></div></div><div class="text-[9px] text-neutral-600 mt-1">1 block</div></div>
+      </div>
+      <div class="mt-3 pt-3 border-t border-neutral-800 flex items-start gap-2 text-[11px] text-neutral-400">
+        <span class="text-indigo-400">💡</span>
+        <span>First open Saturday this week. Tue is back-to-back — noted for any Tue flyers. <span class="text-neutral-600 italic">No judgment, just info.</span></span>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-4 sm:gap-6">
+
+      <div class="border-2 border-dashed border-neutral-700 rounded-xl p-8 bg-neutral-900/30 hover:border-emerald-400/50 transition min-h-[360px] flex flex-col items-center justify-center text-center">
+        <svg class="w-12 h-12 text-neutral-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.25"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        <p class="mono text-sm text-neutral-300 mb-1">drop flyer here</p>
+        <p class="mono text-[11px] text-neutral-500">or paste · tap to upload · 📷 camera</p>
+        <div class="mt-6 flex flex-wrap justify-center gap-2">
+          <button class="mono text-xs px-3 py-1.5 rounded border border-neutral-700 hover:border-emerald-400/50 hover:text-emerald-300">browse files</button>
+          <button class="mono text-xs px-3 py-1.5 rounded border border-neutral-700 hover:border-emerald-400/50 hover:text-emerald-300">open camera</button>
+          <button class="mono text-xs px-3 py-1.5 rounded border border-neutral-700 hover:border-emerald-400/50 hover:text-emerald-300">demo flyer</button>
+        </div>
+        <p class="mono text-[10px] text-neutral-600 mt-6">supports batch upload · up to 20 images</p>
+      </div>
+
+      <div class="border border-neutral-800 rounded-xl bg-neutral-900/50 overflow-hidden">
+        <div class="p-5 border-b border-neutral-800 flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="mono text-[10px] tracking-widest text-emerald-400 uppercase mb-1.5">parsed · 92% confidence</div>
+            <h2 class="text-xl font-semibold leading-tight">Free Pizza + Linux Install Party</h2>
+          </div>
+          <span class="text-[10px] mono px-2 py-1 rounded bg-emerald-400/10 text-emerald-300 border border-emerald-400/20 whitespace-nowrap shrink-0">✓ you're free</span>
+        </div>
+
+        <dl class="p-5 grid grid-cols-[90px_1fr] gap-y-3.5 text-sm">
+          <dt class="mono text-neutral-500 text-[10px] uppercase tracking-wider pt-0.5">when</dt>
+          <dd contenteditable="true" class="hover:text-emerald-300 cursor-text">Sat Apr 18 · 5:00 – 7:30 PM</dd>
+
+          <dt class="mono text-neutral-500 text-[10px] uppercase tracking-wider pt-0.5">where</dt>
+          <dd contenteditable="true" class="hover:text-emerald-300 cursor-text">Walter Library 402</dd>
+
+          <dt class="mono text-neutral-500 text-[10px] uppercase tracking-wider pt-0.5">host</dt>
+          <dd contenteditable="true" class="hover:text-emerald-300 cursor-text">UMN Linux Users Group</dd>
+
+          <dt class="mono text-neutral-500 text-[10px] uppercase tracking-wider pt-0.5">tags</dt>
+          <dd class="flex flex-wrap gap-1.5">
+            <span class="text-[10px] mono px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300">workshop</span>
+            <span class="text-[10px] mono px-2 py-0.5 rounded-full bg-neutral-800 text-neutral-300">cs</span>
+            <span class="text-[10px] mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">🍕 free food</span>
+          </dd>
+        </dl>
+
+        <div class="px-5 pb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="mono text-[10px] uppercase tracking-wider text-neutral-500">your match</span>
+            <span class="mono text-sm text-emerald-300">95 / 100</span>
+          </div>
+          <div class="h-1 bg-neutral-800 rounded-full overflow-hidden">
+            <div class="h-full bg-emerald-400 rounded-full" style="width: 95%"></div>
+          </div>
+          <p class="text-[11px] text-neutral-400 mt-2">Matches your <span class="text-emerald-300">CS</span>, <span class="text-emerald-300">workshops</span>, and <span class="text-emerald-300">free food</span> interests.</p>
+        </div>
+
+        <div class="px-5 pb-4 pt-4 border-t border-neutral-800/60">
+          <div class="flex items-center justify-between mb-2">
+            <span class="mono text-[10px] uppercase tracking-wider text-indigo-400">worth noticing</span>
+            <span class="text-[9px] text-neutral-500 italic">info · you decide</span>
+          </div>
+          <div class="flex flex-wrap gap-1.5 mb-3">
+            <span class="text-[11px] px-2 py-1 rounded-md bg-neutral-800 text-neutral-300 border border-neutral-700/50">🚶 12-min walk from your dorm</span>
+            <span class="text-[11px] px-2 py-1 rounded-md bg-emerald-900/20 text-emerald-300 border border-emerald-800/40">✨ first open Saturday this week</span>
+            <span class="text-[11px] px-2 py-1 rounded-md bg-neutral-800 text-neutral-300 border border-neutral-700/50">😴 no early class Sunday</span>
+            <span class="text-[11px] px-2 py-1 rounded-md bg-neutral-800 text-neutral-300 border border-neutral-700/50">🪑 back-to-back with 3 PM study group</span>
+          </div>
+          <div class="flex items-center gap-3 p-3 rounded-lg bg-neutral-950 border border-neutral-800">
+            <div class="mono text-[9px] uppercase tracking-wider text-neutral-500">leave by</div>
+            <div class="mono text-lg text-emerald-300 font-semibold tracking-tight">4:48 PM</div>
+            <div class="text-[10px] text-neutral-500 ml-auto text-right leading-tight">walk 12 min<br>+ 0 buffer</div>
+          </div>
+        </div>
+
+        <div class="p-5 border-t border-neutral-800 flex gap-2">
+          <button class="flex-1 bg-emerald-400 hover:bg-emerald-300 text-neutral-950 text-sm font-semibold py-2.5 rounded-lg transition">Add to Calendar</button>
+          <button class="px-3 py-2.5 text-xs mono border border-neutral-700 rounded-lg hover:border-neutral-500">.ics</button>
+          <button class="px-3 py-2.5 text-xs mono border border-neutral-700 rounded-lg hover:border-neutral-500">google</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-14">
+      <div class="flex items-end justify-between mb-4">
+        <div>
+          <div class="mono text-[10px] uppercase tracking-widest text-neutral-500 mb-1">this week</div>
+          <h3 class="text-lg font-semibold">12 events parsed · 8 conflict-free</h3>
+        </div>
+        <button class="mono text-xs text-neutral-400 hover:text-neutral-100">sort: match ↓</button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-5">
+        <button class="text-xs px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-900 font-medium">all · 12</button>
+        <button class="text-xs px-3 py-1.5 rounded-full border border-neutral-800 text-neutral-300 hover:border-neutral-600">🍕 free food · 4</button>
+        <button class="text-xs px-3 py-1.5 rounded-full border border-neutral-800 text-neutral-300 hover:border-neutral-600">networking · 3</button>
+        <button class="text-xs px-3 py-1.5 rounded-full border border-neutral-800 text-neutral-300 hover:border-neutral-600">cs · 5</button>
+        <button class="text-xs px-3 py-1.5 rounded-full border border-neutral-800 text-neutral-300 hover:border-neutral-600">no conflicts · 8</button>
+      </div>
+
+      <div class="space-y-2">
+        <div class="border border-neutral-800 rounded-lg p-4 flex items-center gap-4 hover:border-neutral-700 transition">
+          <div class="mono text-xs text-neutral-500 w-12 shrink-0">Sat<br><span class="text-neutral-100 text-base">18</span></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">Free Pizza + Linux Install Party</div>
+            <div class="text-xs text-neutral-500 truncate">Walter Library 402 · 5 PM · 🍕 free food</div>
+          </div>
+          <span class="mono text-xs text-emerald-300 shrink-0">95</span>
+        </div>
+
+        <div class="border border-neutral-800 rounded-lg p-4 flex items-center gap-4 hover:border-neutral-700 transition">
+          <div class="mono text-xs text-neutral-500 w-12 shrink-0">Sun<br><span class="text-neutral-100 text-base">12</span></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">Gopher Hack 2026</div>
+            <div class="text-xs text-neutral-500 truncate">Keller Hall · 8 AM – 8 PM · hackathon</div>
+          </div>
+          <span class="mono text-xs text-emerald-300 shrink-0">92</span>
+        </div>
+
+        <div class="border border-neutral-800 rounded-lg p-4 flex items-center gap-4 hover:border-neutral-700 transition">
+          <div class="mono text-xs text-neutral-500 w-12 shrink-0">Tue<br><span class="text-neutral-100 text-base">14</span></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">CS Career Fair Prep Night</div>
+            <div class="text-xs text-red-400/70 truncate">Coffman Union · 6 PM · ⚠ conflicts with CSCI 5801</div>
+          </div>
+          <span class="mono text-xs text-neutral-400 shrink-0">88</span>
+        </div>
+
+        <div class="border border-neutral-800 rounded-lg p-4 flex items-center gap-4 hover:border-neutral-700 transition">
+          <div class="mono text-xs text-neutral-500 w-12 shrink-0">Thu<br><span class="text-neutral-100 text-base">16</span></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate">Startup Pitch Night</div>
+            <div class="text-xs text-neutral-500 truncate">Holmes Center · 7 PM · networking</div>
+          </div>
+          <span class="mono text-xs text-neutral-400 shrink-0">76</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-6 py-6 text-[11px] text-neutral-600 mono border-t border-neutral-900 mt-14 flex items-center justify-between">
+    <span>mockup 1 of 3 · utility-first (vercel/linear vibes)</span>
+    <a href="index.html" class="hover:text-neutral-300">← back to all mockups</a>
+  </footer>
+</body>
+</html>

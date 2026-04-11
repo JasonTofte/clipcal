@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · 3 Mockups · React & Pick</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .thumb { aspect-ratio: 4/3; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+  <div class="max-w-5xl mx-auto px-5 py-12 sm:py-16">
+
+    <header class="mb-10 sm:mb-14">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs text-slate-600 mb-4">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        Hackathon · ends Mon Apr 13, 5:45 PM
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-bold tracking-tight mb-3">ClipCal — 3 directions.</h1>
+      <p class="text-slate-600 max-w-2xl text-lg">Three distinct visual & UX directions for the AI flyer → calendar app. Open each, click around, and tell me which lane to commit to. We'll likely borrow pieces from more than one.</p>
+    </header>
+
+    <div class="grid md:grid-cols-3 gap-5 mb-12">
+
+      <a href="01-utility.html" class="group block bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
+        <div class="thumb bg-neutral-950 relative overflow-hidden">
+          <div class="absolute inset-0 p-4 flex flex-col">
+            <div class="flex items-center gap-1.5 mb-3">
+              <div class="w-4 h-4 rounded bg-emerald-400"></div>
+              <span class="text-[9px] font-mono text-white">clipcal</span>
+            </div>
+            <div class="text-white text-sm font-semibold leading-tight mb-2">Snap a flyer.<br><span class="text-neutral-500">Know if you should go.</span></div>
+            <div class="mt-auto grid grid-cols-2 gap-2">
+              <div class="border border-dashed border-neutral-700 rounded p-2 text-center">
+                <div class="text-[8px] font-mono text-neutral-500">drop here</div>
+              </div>
+              <div class="border border-neutral-800 rounded p-2 bg-neutral-900">
+                <div class="text-[7px] font-mono text-emerald-400 uppercase">parsed · 92%</div>
+                <div class="text-[8px] text-white font-semibold mt-0.5">Free Pizza Night</div>
+                <div class="mt-1 h-0.5 bg-neutral-800 rounded"><div class="h-full w-[95%] bg-emerald-400 rounded"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500">01</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Vercel / Linear</span>
+          </div>
+          <h3 class="font-bold text-lg mb-1">Utility-First</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">Dark, monospace, no-BS. Drop zone on the left, extracted event card on the right. For the power user who just wants it fast.</p>
+          <div class="flex flex-wrap gap-1">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">+ fastest to build</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">− less emotional hook</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="02-conversational.html" class="group block bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
+        <div class="thumb relative overflow-hidden" style="background: radial-gradient(ellipse at top, #fff5eb 0%, #fef3f8 40%, #f5f0ff 100%);">
+          <div class="absolute inset-0 p-4 flex flex-col">
+            <div class="flex items-center gap-1.5 mb-3">
+              <div class="w-4 h-4 rounded-md bg-gradient-to-br from-rose-400 to-purple-500 flex items-center justify-center text-white text-[8px]">✨</div>
+              <span class="text-[9px] font-bold text-slate-900">campus copilot</span>
+            </div>
+            <div class="space-y-1.5 mt-1">
+              <div class="flex gap-1">
+                <div class="w-3 h-3 rounded bg-gradient-to-br from-rose-400 to-purple-500 shrink-0"></div>
+                <div class="bg-white/80 rounded-md rounded-tl-none px-1.5 py-0.5 text-[7px] text-slate-700">What are you studying?</div>
+              </div>
+              <div class="flex justify-end">
+                <div class="bg-gradient-to-br from-rose-400 to-purple-500 text-white rounded-md rounded-tr-none px-1.5 py-0.5 text-[7px]">CS, junior</div>
+              </div>
+              <div class="flex gap-1">
+                <div class="w-3 h-3 rounded bg-gradient-to-br from-rose-400 to-purple-500 shrink-0"></div>
+                <div class="bg-white/80 rounded-md rounded-tl-none px-1.5 py-0.5 text-[7px] text-slate-700">What do you wish you had time for?</div>
+              </div>
+            </div>
+            <div class="mt-auto bg-white/60 rounded-lg p-1.5">
+              <div class="text-[7px] font-bold text-slate-500 uppercase tracking-wider">your profile</div>
+              <div class="flex flex-wrap gap-0.5 mt-1">
+                <span class="text-[6px] px-1 rounded-full bg-purple-100 text-purple-700">CS</span>
+                <span class="text-[6px] px-1 rounded-full bg-emerald-100 text-emerald-700">🤝 networking</span>
+                <span class="text-[6px] px-1 rounded-full bg-amber-100 text-amber-700">🍕 free food</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500">02</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Finch / Noom</span>
+          </div>
+          <h3 class="font-bold text-lg mb-1">Conversational</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">Warm, friendly. Chat interviewer on the left, live profile panel on the right filling in as you type. Onboarding IS the product moment.</p>
+          <div class="flex flex-wrap gap-1">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">+ best demo moment</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">− delays the hero shot</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="03-feed.html" class="group block bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all">
+        <div class="thumb bg-stone-50 relative overflow-hidden">
+          <div class="absolute inset-0 p-4 flex flex-col">
+            <div class="flex items-center gap-1.5 mb-2">
+              <div class="w-4 h-4 rounded bg-stone-900 flex items-center justify-center text-[7px]">🐿️</div>
+              <span class="text-[9px] font-bold text-stone-900">Gopherly</span>
+            </div>
+            <div class="flex gap-1 mb-2 overflow-hidden">
+              <span class="text-[7px] px-1 rounded-full bg-stone-900 text-white">All 12</span>
+              <span class="text-[7px] px-1 rounded-full bg-amber-100 text-amber-800">🍕 4</span>
+              <span class="text-[7px] px-1 rounded-full bg-white border border-stone-200">CS</span>
+            </div>
+            <div class="flex gap-1.5 mb-2 overflow-hidden">
+              <div class="w-10 h-12 rounded shadow-sm relative" style="background: linear-gradient(135deg, #fb923c 0%, #ef4444 100%);">
+                <div class="absolute top-0.5 right-0.5 text-[5px] bg-white/90 text-emerald-700 font-bold px-0.5 rounded">92</div>
+              </div>
+              <div class="w-10 h-12 rounded shadow-sm relative" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                <div class="absolute top-0.5 right-0.5 text-[5px] bg-white/90 text-emerald-700 font-bold px-0.5 rounded">95</div>
+              </div>
+              <div class="w-10 h-12 rounded shadow-sm relative" style="background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%);">
+                <div class="absolute top-0.5 right-0.5 text-[5px] bg-white/90 text-amber-700 font-bold px-0.5 rounded">76</div>
+              </div>
+            </div>
+            <div class="bg-white rounded-lg p-1.5 border border-stone-200 shadow-sm">
+              <div class="text-[7px] font-bold text-stone-900">Free Pizza + Linux</div>
+              <div class="text-[6px] text-stone-500">Walter · Apr 18 · 5PM</div>
+              <div class="flex gap-0.5 mt-0.5">
+                <span class="text-[5px] px-0.5 rounded bg-emerald-100 text-emerald-700">✓ free</span>
+                <span class="text-[5px] px-0.5 rounded bg-amber-100 text-amber-700">🍕</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-slate-500">03</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">Instagram / Pinterest</span>
+          </div>
+          <h3 class="font-bold text-lg mb-1">Feed-Centric</h3>
+          <p class="text-xs text-slate-600 leading-relaxed mb-3">Mobile-first feed of ranked event cards. "You screenshotted these" section on top. Floating upload button. Feels like a campus discovery app.</p>
+          <div class="flex flex-wrap gap-1">
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700">+ most "product"-like</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">− most UI to build</span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 mb-8">
+      <h2 class="text-lg font-bold mb-4">📝 Reactions & voting</h2>
+      <p class="text-sm text-slate-600 mb-5">Click into each mockup above. Then answer these in the group chat:</p>
+      <ol class="space-y-3 text-sm text-slate-700">
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">1</span><span><strong>Gut pick:</strong> which direction do you react to first? (no analysis yet — just the one you'd hit "add to calendar" on)</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">2</span><span><strong>Frankenstein:</strong> what's the single element from another mockup you'd steal? (e.g., "#1's conflict badge + #2's chat + #3's feed")</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">3</span><span><strong>Pitch test:</strong> which one has the clearest 30-second demo for the judges?</span></li>
+        <li class="flex gap-3"><span class="shrink-0 w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold">4</span><span><strong>Name:</strong> ClipCal, Campus Copilot, Gopherly, or something else?</span></li>
+      </ol>
+    </section>
+
+    <section class="bg-white border-2 border-indigo-200 rounded-2xl p-6 sm:p-8 mb-8">
+      <div class="flex items-start gap-3 mb-4">
+        <div class="w-11 h-11 rounded-2xl bg-indigo-100 flex items-center justify-center text-2xl shrink-0">🧠</div>
+        <div>
+          <h2 class="text-lg font-bold">ADHD-supportive by design</h2>
+          <p class="text-xs text-slate-500">New · visible in all 3 mockups · grounded in cognitive offloading research</p>
+        </div>
+      </div>
+      <p class="text-sm text-slate-700 mb-5 leading-relaxed">Every mockup embodies one principle: <strong>inform, don't decide.</strong> We surface the information your brain wants to see — trade-offs, density, travel time, what's already in your week — and leave the judgment to you. No auto-decline. No streak shame. No "we recommend."</p>
+      <div class="grid sm:grid-cols-3 gap-3 text-xs mb-4">
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="text-base mb-1.5">📊</div>
+          <div class="font-bold text-slate-900 mb-1">Week at a glance</div>
+          <p class="text-slate-600 leading-relaxed">A 7-day density strip shows what's already on your calendar. Your visual cortex does the math — no score, no judgment.</p>
+          <p class="text-[10px] text-indigo-600 mt-1.5 font-medium">Externalizes working memory</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="text-base mb-1.5">💡</div>
+          <div class="font-bold text-slate-900 mb-1">Worth noticing chips</div>
+          <p class="text-slate-600 leading-relaxed">Neutral chips like "12-min walk", "first open Sat", "CSCI 5801 is recorded". No chip ever says "don't go."</p>
+          <p class="text-[10px] text-indigo-600 mt-1.5 font-medium">Decision scaffolding, not direction</p>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="text-base mb-1.5">🕒</div>
+          <div class="font-bold text-slate-900 mb-1">Leave by clock</div>
+          <p class="text-slate-600 leading-relaxed">Concrete "leave by 4:48 PM" directly targets time blindness. One tap to add. No nagging, no reminders.</p>
+          <p class="text-[10px] text-indigo-600 mt-1.5 font-medium">Targets the task-initiation wall</p>
+        </div>
+      </div>
+      <div class="border-t border-slate-200 pt-4 text-[11px] text-slate-500 space-y-1">
+        <p><strong class="text-slate-700">Anti-patterns we refuse to ship:</strong> auto-declining events, streak shame, red-badge nagging, "we recommend," infantilizing copy, gamified guilt.</p>
+        <p class="italic">Grounded in Risko & Gilbert 2016 (cognitive offloading), the Ottawa Decision Support Framework, Google PAIR's explainability guidance, and pattern analysis of Goblin Tools, Tiimo, and Sunsama.</p>
+      </div>
+    </section>
+
+    <section class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 sm:p-8">
+      <h2 class="text-lg font-bold mb-3">🎯 Core features visible across all three</h2>
+      <div class="grid sm:grid-cols-2 gap-3 text-sm">
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>Drop / paste / camera upload (mobile-responsive)</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>AI extraction with confidence score</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>Conflict badge vs. Google Calendar</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>Relevance score from interest profile</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>Free-food tag (viral campus appeal)</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>.ics download + Google deeplink</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>"Forgotten events" retroactive feed</span></div>
+        <div class="flex gap-2"><span class="text-emerald-400">✓</span><span>AI chat interviewer for interest profiling</span></div>
+        <div class="flex gap-2"><span class="text-indigo-300">🧠</span><span>Week density strip (externalize working memory)</span></div>
+        <div class="flex gap-2"><span class="text-indigo-300">🧠</span><span>"Worth noticing" chips (info, never warnings)</span></div>
+        <div class="flex gap-2"><span class="text-indigo-300">🧠</span><span>"Leave by" clock (targets time blindness)</span></div>
+        <div class="flex gap-2"><span class="text-indigo-300">🧠</span><span>Inform-don't-decide language throughout</span></div>
+      </div>
+      <p class="text-xs text-slate-400 mt-4">Every mockup is fully responsive — resize your browser or open on your phone.</p>
+    </section>
+
+    <footer class="mt-10 text-xs text-slate-500 text-center">
+      Static HTML mockups · click through the cards above · last updated 2026-04-10
+    </footer>
+  </div>
+</body>
+</html>
