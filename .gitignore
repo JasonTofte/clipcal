@@ -91,3 +91,4 @@ coverage/
 # Temp
 *.tmp
 .cache/
+.vercel
