@@ -1,6 +1,7 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import { ExtractionSchema } from '@/lib/schema';
+import { extractLimiter, extractClientIp } from '@/lib/rate-limit';
 
 const MODEL_ID = 'claude-haiku-4-5-20251001';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -32,6 +33,18 @@ Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unu
 export async function POST(req: Request): Promise<Response> {
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json({ error: 'missing api key' }, { status: 500 });
+  }
+
+  const clientIp = extractClientIp(req.headers);
+  const limit = extractLimiter.check(clientIp);
+  if (!limit.allowed) {
+    return Response.json(
+      { error: 'rate limited, try again in a moment' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(limit.retryAfterSec) },
+      },
+    );
   }
 
   let formData: FormData;
