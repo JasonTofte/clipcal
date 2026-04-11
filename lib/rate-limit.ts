@@ -61,9 +61,24 @@ export function createRateLimiter(config: Partial<RateLimitConfig> = {}) {
   return { check, _config: cfg };
 }
 
-// Singleton for the /api/extract route. Cold starts reset state, which is
-// acceptable — per-instance limits still bound blast radius.
+// Singletons per-endpoint. Cold starts reset state, which is acceptable —
+// per-instance limits still bound blast radius on a hobby Vercel plan.
 export const extractLimiter = createRateLimiter();
+
+// Chat is multi-turn by nature — a 90 second interview may send 5-10
+// messages, so per-key is generous. Global allows ~3 concurrent sessions.
+export const chatLimiter = createRateLimiter({
+  perKeyLimit: 20,
+  globalLimit: 60,
+  windowMs: 60_000,
+});
+
+// Relevance is called once per flyer extraction, on demand.
+export const relevanceLimiter = createRateLimiter({
+  perKeyLimit: 10,
+  globalLimit: 30,
+  windowMs: 60_000,
+});
 
 export function extractClientIp(headers: Headers): string {
   const forwarded = headers.get('x-forwarded-for');

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Dropzone } from '@/components/dropzone';
 import { EventCard } from '@/components/event-card';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,19 @@ import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { triggerIcsDownload } from '@/lib/ics';
+import { loadProfileFromStorage, type Profile } from '@/lib/profile';
+import { RelevanceBatchSchema, type RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
 
 type UxState =
   | { status: 'idle' }
   | { status: 'loading'; message: string }
-  | { status: 'success'; events: Event[]; sourceNotes: string | null }
+  | {
+      status: 'success';
+      events: Event[];
+      sourceNotes: string | null;
+      relevance: RelevanceScore[] | null;
+    }
   | { status: 'error'; message: string };
 
 const LOADING_MESSAGE = 'Claude is reading your flyer…';
@@ -23,14 +31,35 @@ function openInNewTab(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
 }
 
+async function fetchRelevance(
+  events: Event[],
+  profile: Profile,
+): Promise<RelevanceScore[] | null> {
+  try {
+    const response = await fetch('/api/relevance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events, profile }),
+    });
+    if (!response.ok) return null;
+    const json: unknown = await response.json();
+    const parsed = RelevanceBatchSchema.safeParse(json);
+    return parsed.success ? parsed.data.scores : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const [state, setState] = useState<UxState>({ status: 'idle' });
   const [demoMode, setDemoMode] = useState<boolean>(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
-  // Load demo-mode preference once on mount.
+  // Load demo-mode preference and profile once on mount.
   useEffect(() => {
     const stored = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
     if (stored !== null) setDemoMode(stored === 'true');
+    setProfile(loadProfileFromStorage());
   }, []);
 
   useEffect(() => {
@@ -66,7 +95,22 @@ export default function Home() {
         status: 'success',
         events: extraction.events,
         sourceNotes: extraction.sourceNotes,
+        relevance: null,
       });
+
+      // Kick off relevance scoring if we have a profile. Silent no-op
+      // otherwise. Errors are absorbed — relevance is an enhancement, not
+      // a hard dependency of the success state.
+      const currentProfile = loadProfileFromStorage();
+      if (currentProfile) {
+        void fetchRelevance(extraction.events, currentProfile).then((scores) => {
+          if (!scores) return;
+          setState((prev) => {
+            if (prev.status !== 'success') return prev;
+            return { ...prev, relevance: scores };
+          });
+        });
+      }
     } catch (err) {
       setState({
         status: 'error',
@@ -123,11 +167,19 @@ export default function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
-      <header className="mb-8">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">ClipCal</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your campus copilot. Snap a flyer, know if you should go.
-        </p>
+      <header className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl font-semibold tracking-tight">ClipCal</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your campus copilot. Snap a flyer, know if you should go.
+          </p>
+        </div>
+        <Link
+          href="/interview"
+          className="shrink-0 text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+        >
+          {profile ? 'edit profile' : 'set up profile'}
+        </Link>
       </header>
 
       <div className="flex-1">
@@ -167,6 +219,7 @@ export default function Home() {
                 key={idx}
                 event={event}
                 conflict={conflicts[idx]}
+                relevance={state.relevance?.[idx] ?? null}
                 onChange={(updated) => updateEvent(idx, updated)}
                 onDownloadIcs={() => triggerIcsDownload([event])}
                 onOpenGoogle={() => openInNewTab(googleCalendarUrl(event))}
