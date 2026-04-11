@@ -3,6 +3,8 @@
 import type { ReactNode } from 'react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
+import type { LeaveByInfo } from '@/lib/leave-by';
+import type { Noticing, NoticingTone } from '@/lib/noticings';
 import type { RelevanceScore } from '@/lib/relevance';
 import { formatScoreBadge, scoreTone } from '@/lib/relevance';
 import { Button } from '@/components/ui/button';
@@ -12,10 +14,18 @@ type EventCardProps = {
   event: Event;
   conflict: ConflictResult | null;
   relevance: RelevanceScore | null;
+  noticings: Noticing[];
+  leaveBy: LeaveByInfo | null;
   onChange: (updated: Event) => void;
   onDownloadIcs: () => void;
   onOpenGoogle: () => void;
   onOpenOutlook: () => void;
+};
+
+const NOTICING_STYLES: Record<NoticingTone, string> = {
+  info: 'bg-muted/60 text-foreground/80 ring-border',
+  'heads-up': 'bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:text-amber-400',
+  delight: 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400',
 };
 
 const RELEVANCE_STYLES: Record<'high' | 'medium' | 'low', string> = {
@@ -49,6 +59,8 @@ export function EventCard({
   event,
   conflict,
   relevance,
+  noticings,
+  leaveBy,
   onChange,
   onDownloadIcs,
   onOpenGoogle,
@@ -151,6 +163,20 @@ export function EventCard({
         </Button>
       </div>
     </div>
+  );
+}
+
+function NoticingChip({ noticing }: { noticing: Noticing }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset',
+        NOTICING_STYLES[noticing.tone],
+      )}
+    >
+      <span aria-hidden>{noticing.icon}</span>
+      <span>{noticing.text}</span>
+    </span>
   );
 }
 
