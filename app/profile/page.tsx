@@ -79,10 +79,10 @@ export default function InterviewPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
       <header className="mb-6">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">Set up your profile</h1>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">Pick your interests</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tell ClipCal what you&rsquo;re into. It uses this to highlight events that fit you — never
-          auto-declines anything.
+          Tap what you&rsquo;re into. ClipCal uses this to highlight events that fit you — never
+          auto-declines anything. Prefer a chat? Toggle to interview mode below.
         </p>
       </header>
 

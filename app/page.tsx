@@ -332,10 +332,10 @@ export default function Home() {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-muted-foreground">
           <Link
-            href="/interview"
+            href="/profile"
             className="underline decoration-dotted underline-offset-4 hover:text-foreground"
           >
-            {profile ? 'edit profile' : 'set up profile'}
+            {profile ? 'edit interests' : 'pick your interests'}
           </Link>
           <Link
             href="/feed"
