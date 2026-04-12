@@ -4,9 +4,12 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
+import { InterestPicker } from '@/components/interest-picker';
 import { Button } from '@/components/ui/button';
 import { ProfileSchema, saveProfileToStorage } from '@/lib/profile';
 import { cn } from '@/lib/utils';
+
+type ProfileMode = 'pick' | 'chat';
 
 const MIN_USER_MESSAGES_BEFORE_DONE = 3;
 
@@ -18,6 +21,7 @@ type ExtractState =
 
 export default function InterviewPage() {
   const router = useRouter();
+  const [mode, setMode] = useState<ProfileMode>('pick');
   const transport = useMemo(
     () => new DefaultChatTransport({ api: '/api/chat' }),
     [],
@@ -77,73 +81,106 @@ export default function InterviewPage() {
       <header className="mb-6">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Set up your profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          A few short questions. ClipCal uses this to highlight events that actually fit you — it
-          never auto-declines anything.
+          Tell ClipCal what you&rsquo;re into. It uses this to highlight events that fit you — never
+          auto-declines anything.
         </p>
       </header>
 
-      <div className="flex-1 space-y-4">
-        {messages.length === 0 && (
-          <EmptyPrompt onStart={() => sendMessage({ text: 'hi, ready to start' })} />
-        )}
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-        {status === 'submitted' && (
-          <div className="text-xs text-muted-foreground italic">thinking…</div>
-        )}
-        {error && (
-          <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
-            Chat error: {error.message}
-          </div>
-        )}
+      <div className="mb-5 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setMode('pick')}
+          className={cn(
+            'rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+            mode === 'pick'
+              ? 'bg-primary text-primary-foreground ring-primary'
+              : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
+          )}
+        >
+          Quick pick
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('chat')}
+          className={cn(
+            'rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
+            mode === 'chat'
+              ? 'bg-primary text-primary-foreground ring-primary'
+              : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
+          )}
+        >
+          Chat interview
+        </button>
       </div>
 
-      {extractState.status === 'saved' ? (
-        <div className="mt-6 rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-700 ring-1 ring-emerald-500/30 dark:text-emerald-400">
-          Got it. Taking you back to the upload page.
-        </div>
-      ) : extractState.status === 'error' ? (
-        <div className="mt-6 space-y-2">
-          <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive ring-1 ring-destructive/20">
-            Couldn&rsquo;t save your profile: {extractState.message}
-          </div>
-          <Button variant="outline" onClick={handleFinish}>
-            Try again
-          </Button>
-        </div>
+      {mode === 'pick' ? (
+        <InterestPicker />
       ) : (
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-2">
-          <div className="flex gap-2">
-            <input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="type a reply…"
-              disabled={busy}
-              className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50"
-              aria-label="Your reply"
-            />
-            <Button type="submit" disabled={busy || !input.trim()}>
-              Send
-            </Button>
+        <>
+          <div className="flex-1 space-y-4">
+            {messages.length === 0 && (
+              <EmptyPrompt onStart={() => sendMessage({ text: 'hi, ready to start' })} />
+            )}
+            {messages.map((message) => (
+              <MessageBubble key={message.id} message={message} />
+            ))}
+            {status === 'submitted' && (
+              <div className="text-xs text-muted-foreground italic">thinking…</div>
+            )}
+            {error && (
+              <div className="rounded-xl bg-destructive/10 p-3 text-sm text-destructive ring-1 ring-destructive/20">
+                Chat error: {error.message}
+              </div>
+            )}
           </div>
-          {canFinish && (
-            <div className="flex items-center justify-between pt-1">
-              <p className="text-xs text-muted-foreground">
-                Enough signal to save. You can keep chatting or finish now.
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={extractState.status === 'extracting'}
-                onClick={handleFinish}
-              >
-                {extractState.status === 'extracting' ? 'Saving…' : 'Finish & save'}
+
+          {extractState.status === 'saved' ? (
+            <div className="mt-6 rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-700 ring-1 ring-emerald-500/30 dark:text-emerald-400">
+              Got it. Taking you back to the upload page.
+            </div>
+          ) : extractState.status === 'error' ? (
+            <div className="mt-6 space-y-2">
+              <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive ring-1 ring-destructive/20">
+                Couldn&rsquo;t save your profile: {extractState.message}
+              </div>
+              <Button variant="outline" onClick={handleFinish}>
+                Try again
               </Button>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-2">
+              <div className="flex gap-2">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="type a reply…"
+                  disabled={busy}
+                  className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring/40 disabled:opacity-50"
+                  aria-label="Your reply"
+                />
+                <Button type="submit" disabled={busy || !input.trim()}>
+                  Send
+                </Button>
+              </div>
+              {canFinish && (
+                <div className="flex items-center justify-between pt-1">
+                  <p className="text-xs text-muted-foreground">
+                    Enough signal to save. You can keep chatting or finish now.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={extractState.status === 'extracting'}
+                    onClick={handleFinish}
+                  >
+                    {extractState.status === 'extracting' ? 'Saving…' : 'Finish & save'}
+                  </Button>
+                </div>
+              )}
+            </form>
           )}
-        </form>
+        </>
       )}
     </main>
   );

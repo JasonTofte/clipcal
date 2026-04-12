@@ -4,7 +4,7 @@ import { ExtractionSchema } from '@/lib/schema';
 import { extractLimiter, extractClientIp } from '@/lib/rate-limit';
 
 const MODEL_ID = 'claude-haiku-4-5-20251001';
-const FALLBACK_MODEL_ID = 'claude-sonnet-4-5-20241022';
+const FALLBACK_MODEL_ID = 'claude-sonnet-4-5-20250929';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA_TYPES = new Set([
   'image/png',
