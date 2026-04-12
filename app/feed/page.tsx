@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { CampusFeed } from '@/components/campus-feed';
 import { EventCard } from '@/components/event-card';
 import { Button } from '@/components/ui/button';
 import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
@@ -186,7 +187,10 @@ export default function FeedPage() {
                 event={row.event}
                 conflict={demoMode ? checkConflict(row.event, DEMO_CALENDAR) : null}
                 relevance={null}
+                campusMatch={null}
+                orgMatch={null}
                 noticings={generateNoticings(row.event, { demoCalendar: activeCalendar })}
+                busySlots={activeCalendar}
                 leaveBy={computeLeaveBy(row.event)}
                 onChange={() => undefined /* feed rows are read-only for Session 5 */}
                 onDownloadIcs={() => handleDownloadIcs(row)}
@@ -197,6 +201,10 @@ export default function FeedPage() {
           )}
         </div>
       )}
+
+      <div className="mt-6">
+        <CampusFeed />
+      </div>
 
       <footer className="mt-10 border-t border-border/50 pt-4 text-center text-[10px] font-mono text-muted-foreground">
         inform · don&rsquo;t decide
