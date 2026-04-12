@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CampusFeed } from '@/components/campus-feed';
 import { Dropzone } from '@/components/dropzone';
 import { EventCard } from '@/components/event-card';
 import { WeekDensity } from '@/components/week-density';
@@ -382,6 +383,7 @@ export default function Home() {
                 </p>
               </section>
             )}
+            <CampusFeed />
           </div>
         )}
 

@@ -84,11 +84,10 @@ export function EventCard({
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
-      {(conflict || relevance || campusMatch || orgMatch) && (
+      {(conflict || relevance || orgMatch) && (
         <div className="flex flex-wrap gap-1.5">
           {conflict && <ConflictBadge conflict={conflict} />}
           {relevance && <RelevanceBadge relevance={relevance} />}
-          {campusMatch && <CampusMatchBadge match={campusMatch} />}
           {orgMatch && <OrgMatchBadge match={orgMatch} />}
         </div>
       )}
@@ -196,6 +195,8 @@ export function EventCard({
         <DayShape event={event} busySlots={busySlots} />
       )}
 
+      {campusMatch && <CampusMatchBadge match={campusMatch} />}
+
       {leaveBy && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span aria-hidden>🕒</span>
@@ -293,20 +294,62 @@ function OrgMatchBadge({ match }: { match: OrgMatch }) {
 
 function CampusMatchBadge({ match }: { match: CampusMatch }) {
   return (
-    <a
-      href={match.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-1.5 rounded-md bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-500/30 transition-colors hover:bg-sky-500/20 dark:text-sky-400"
-    >
-      <span aria-hidden>🏛️</span>
-      <span>
-        on UMN Events
-        {match.group_title && (
-          <span className="hidden sm:inline opacity-60"> · {match.group_title}</span>
+    <div className="rounded-lg bg-sky-500/5 p-3 ring-1 ring-inset ring-sky-500/20">
+      <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-400">
+        <span aria-hidden>🏛️</span>
+        <span>Found on UMN Events Calendar</span>
+      </div>
+      <a
+        href={match.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+      >
+        {match.title}
+      </a>
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+        {match.group_title && <span>{match.group_title}</span>}
+        {match.location && (
+          <>
+            {match.group_title && <span className="text-border">·</span>}
+            <span>{match.location}</span>
+          </>
         )}
-      </span>
-    </a>
+        {match.cost && (
+          <>
+            <span className="text-border">·</span>
+            <span className={match.cost.toLowerCase() === 'free' ? 'text-emerald-600 dark:text-emerald-400' : ''}>
+              {match.cost}
+            </span>
+          </>
+        )}
+        {match.has_registration && (
+          <>
+            <span className="text-border">·</span>
+            <a
+              href={match.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-600 hover:underline dark:text-sky-400"
+            >
+              RSVP
+            </a>
+          </>
+        )}
+      </div>
+      {match.event_types.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {match.event_types.slice(0, 3).map((t) => (
+            <span
+              key={t}
+              className="inline-flex h-4 items-center rounded-full bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

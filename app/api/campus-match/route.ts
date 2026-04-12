@@ -13,8 +13,13 @@ export type CampusMatch = {
   url: string;
   date_iso: string;
   location: string | null;
+  location_latitude: number | null;
+  location_longitude: number | null;
   group_title: string | null;
   thumbnail: string | null;
+  cost: string | null;
+  has_registration: boolean;
+  event_types: string[];
 };
 
 export type CampusMatchResponse = {
@@ -90,8 +95,13 @@ export async function POST(req: Request): Promise<Response> {
         url: String(ev.url || ''),
         date_iso: String(ev.date_iso || ''),
         location: ev.location ? String(ev.location) : null,
+        location_latitude: ev.location_latitude ? Number(ev.location_latitude) : null,
+        location_longitude: ev.location_longitude ? Number(ev.location_longitude) : null,
         group_title: ev.group_title ? String(ev.group_title) : null,
         thumbnail: ev.thumbnail ? String(ev.thumbnail) : null,
+        cost: ev.cost ? String(ev.cost) : null,
+        has_registration: Boolean(ev.has_registration),
+        event_types: Array.isArray(ev.event_types) ? (ev.event_types as string[]) : [],
       };
     });
 
