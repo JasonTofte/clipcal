@@ -7,6 +7,11 @@ import type { LeaveByInfo } from '@/lib/leave-by';
 import type { Noticing, NoticingTone } from '@/lib/noticings';
 import type { RelevanceScore } from '@/lib/relevance';
 import { formatScoreBadge, scoreTone } from '@/lib/relevance';
+import type { CampusMatch } from '@/app/api/campus-match/route';
+import type { OrgMatch } from '@/app/api/campus-orgs/route';
+import type { BusySlot } from '@/lib/demo-calendar';
+import { DayShape } from '@/components/day-shape';
+import { TemporalBar } from '@/components/temporal-bar';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -14,8 +19,11 @@ type EventCardProps = {
   event: Event;
   conflict: ConflictResult | null;
   relevance: RelevanceScore | null;
+  campusMatch: CampusMatch | null;
+  orgMatch: OrgMatch | null;
   noticings: Noticing[];
   leaveBy: LeaveByInfo | null;
+  busySlots?: BusySlot[];
   readOnly?: boolean;
   onChange: (updated: Event) => void;
   onDownloadIcs: () => void;
@@ -60,8 +68,11 @@ export function EventCard({
   event,
   conflict,
   relevance,
+  campusMatch,
+  orgMatch,
   noticings,
   leaveBy,
+  busySlots,
   readOnly = false,
   onChange,
   onDownloadIcs,
@@ -73,10 +84,12 @@ export function EventCard({
 
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
-      {(conflict || relevance) && (
+      {(conflict || relevance || campusMatch || orgMatch) && (
         <div className="flex flex-wrap gap-1.5">
           {conflict && <ConflictBadge conflict={conflict} />}
           {relevance && <RelevanceBadge relevance={relevance} />}
+          {campusMatch && <CampusMatchBadge match={campusMatch} />}
+          {orgMatch && <OrgMatchBadge match={orgMatch} />}
         </div>
       )}
 
@@ -102,6 +115,8 @@ export function EventCard({
           {event.confidence}
         </span>
       </div>
+
+      <TemporalBar start={event.start} />
 
       <div className="grid grid-cols-2 gap-3">
         <LabeledField label="start">
@@ -153,6 +168,17 @@ export function EventCard({
             🍕 free food
           </span>
         )}
+        {event.venueSetting && (
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
+            {event.venueSetting === 'outdoor' ? '🌳' : event.venueSetting === 'hybrid' ? '🔄' : '🏢'}{' '}
+            {event.venueSetting}
+          </span>
+        )}
+        {event.crowdSize && (
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
+            👥 ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
+          </span>
+        )}
         <span className="ml-auto font-mono text-[10px] text-muted-foreground/70">
           {event.timezone}
         </span>
@@ -164,6 +190,10 @@ export function EventCard({
             <NoticingChip key={i} noticing={n} />
           ))}
         </div>
+      )}
+
+      {busySlots && busySlots.length > 0 && (
+        <DayShape event={event} busySlots={busySlots} />
       )}
 
       {leaveBy && (
@@ -239,6 +269,44 @@ function ConflictBadge({ conflict }: { conflict: ConflictResult }) {
         overlaps <span className="font-semibold">{conflict.conflictTitle}</span>
       </span>
     </div>
+  );
+}
+
+function OrgMatchBadge({ match }: { match: OrgMatch }) {
+  return (
+    <a
+      href={match.url || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1.5 rounded-md bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
+    >
+      <span aria-hidden>🎓</span>
+      <span>
+        GopherLink
+        {match.organizer && (
+          <span className="hidden sm:inline opacity-60"> · {match.organizer}</span>
+        )}
+      </span>
+    </a>
+  );
+}
+
+function CampusMatchBadge({ match }: { match: CampusMatch }) {
+  return (
+    <a
+      href={match.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1.5 rounded-md bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-500/30 transition-colors hover:bg-sky-500/20 dark:text-sky-400"
+    >
+      <span aria-hidden>🏛️</span>
+      <span>
+        on UMN Events
+        {match.group_title && (
+          <span className="hidden sm:inline opacity-60"> · {match.group_title}</span>
+        )}
+      </span>
+    </a>
   );
 }
 

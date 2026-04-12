@@ -17,6 +17,7 @@ export type NoticingContext = {
 
 const DEFAULT_WALK_MINUTES = 12;
 const BACK_TO_BACK_WINDOW_MIN = 15;
+const BUFFER_WINDOW_MIN = 45;
 const EARLY_CLASS_HOUR = 9;
 const DEFAULT_DURATION_MS = 60 * 60 * 1000;
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -97,32 +98,44 @@ export function generateNoticings(
     });
   }
 
-  // 4. Back-to-back — any busy slot whose end is within BACK_TO_BACK_WINDOW_MIN
-  //    before event.start, or whose start is within the window after event.end.
+  // 4. Back-to-back / transition buffer — detect nearby busy slots.
+  //    ≤15 min gap = back-to-back. 16–45 min gap = transition buffer (breathing room).
   const startMs = start.getTime();
   const endMs = end.getTime();
-  const windowMs = BACK_TO_BACK_WINDOW_MIN * 60 * 1000;
+  const backToBackMs = BACK_TO_BACK_WINDOW_MIN * 60 * 1000;
+  const bufferMs = BUFFER_WINDOW_MIN * 60 * 1000;
 
-  const neighbor = context.demoCalendar.find((slot) => {
+  let closestNeighbor: { slot: typeof context.demoCalendar[number]; gapMin: number } | null = null;
+
+  for (const slot of context.demoCalendar) {
     const slotStartMs = slot.start.getTime();
     const slotEndMs = slot.end.getTime();
-    // Skip anything that actually overlaps — that's a conflict, not a
-    // back-to-back.
-    if (slotEndMs > startMs && slotStartMs < endMs) return false;
+    // Skip overlaps — that's a conflict, not a neighbor.
+    if (slotEndMs > startMs && slotStartMs < endMs) continue;
     const gapBefore = startMs - slotEndMs;
     const gapAfter = slotStartMs - endMs;
-    return (
-      (gapBefore >= 0 && gapBefore <= windowMs) ||
-      (gapAfter >= 0 && gapAfter <= windowMs)
-    );
-  });
+    const gap = gapBefore >= 0 ? gapBefore : gapAfter >= 0 ? gapAfter : -1;
+    if (gap < 0 || gap > bufferMs) continue;
+    const gapMin = Math.round(gap / 60_000);
+    if (!closestNeighbor || gapMin < closestNeighbor.gapMin) {
+      closestNeighbor = { slot, gapMin };
+    }
+  }
 
-  if (neighbor) {
-    noticings.push({
-      icon: '🔁',
-      text: `back-to-back with ${neighbor.title}`,
-      tone: 'info',
-    });
+  if (closestNeighbor) {
+    if (closestNeighbor.gapMin <= BACK_TO_BACK_WINDOW_MIN) {
+      noticings.push({
+        icon: '🔁',
+        text: `back-to-back with ${closestNeighbor.slot.title}`,
+        tone: 'info',
+      });
+    } else {
+      noticings.push({
+        icon: '🫧',
+        text: `${closestNeighbor.gapMin}-min buffer before ${closestNeighbor.slot.title}`,
+        tone: 'delight',
+      });
+    }
   }
 
   // 5. Recorded class — only if this event OVERLAPS a recorded class.
@@ -137,6 +150,44 @@ export function generateNoticings(
       icon: '🎥',
       text: `${overlapped.title.split(/\s+/).slice(0, 3).join(' ')} usually recorded`,
       tone: 'delight',
+    });
+  }
+
+  // 6. Energy cost preview — heuristic observations about the commitment.
+  const durationHours = (endMs - startMs) / (1000 * 60 * 60);
+  const startHour = start.getHours();
+  const isEvening = startHour >= 18;
+  const isWeekend = start.getDay() === 0 || start.getDay() === 6;
+  const SOCIAL_CATEGORIES = new Set(['networking', 'career']);
+
+  if (durationHours >= 2.5 && isEvening) {
+    noticings.push({
+      icon: '🔋',
+      text: 'long evening commitment',
+      tone: 'info',
+    });
+  } else if (durationHours >= 3) {
+    const hrs = Math.round(durationHours * 10) / 10;
+    noticings.push({
+      icon: '🔋',
+      text: `~${hrs}-hr commitment`,
+      tone: 'info',
+    });
+  }
+
+  if (SOCIAL_CATEGORIES.has(event.category)) {
+    noticings.push({
+      icon: '💬',
+      text: 'social-energy event',
+      tone: 'info',
+    });
+  }
+
+  if (isWeekend) {
+    noticings.push({
+      icon: '📅',
+      text: 'weekend time',
+      tone: 'info',
     });
   }
 

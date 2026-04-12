@@ -186,7 +186,10 @@ export default function FeedPage() {
                 event={row.event}
                 conflict={demoMode ? checkConflict(row.event, DEMO_CALENDAR) : null}
                 relevance={null}
+                campusMatch={null}
+                orgMatch={null}
                 noticings={generateNoticings(row.event, { demoCalendar: activeCalendar })}
+                busySlots={activeCalendar}
                 leaveBy={computeLeaveBy(row.event)}
                 onChange={() => undefined /* feed rows are read-only for Session 5 */}
                 onDownloadIcs={() => handleDownloadIcs(row)}

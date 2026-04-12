@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Dropzone } from '@/components/dropzone';
 import { EventCard } from '@/components/event-card';
@@ -16,6 +16,8 @@ import { generateNoticings } from '@/lib/noticings';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { RelevanceBatchSchema, type RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
+import type { CampusMatch, CampusMatchResponse } from '@/app/api/campus-match/route';
+import type { OrgMatch, OrgMatchResponse } from '@/app/api/campus-orgs/route';
 
 type UxState =
   | { status: 'idle' }
@@ -26,6 +28,8 @@ type UxState =
       events: Event[];
       sourceNotes: string | null;
       relevance: RelevanceScore[] | null;
+      campusMatches: (CampusMatch | null)[] | null;
+      orgMatches: (OrgMatch | null)[] | null;
     }
   | { status: 'error'; message: string };
 
@@ -52,6 +56,50 @@ const TEASER_RELEVANCE: RelevanceScore = {
   score: 82,
   reason: 'matches your data + workshops interests',
 };
+
+async function fetchCampusMatches(
+  events: Event[],
+): Promise<(CampusMatch | null)[]> {
+  const results = await Promise.all(
+    events.map(async (event) => {
+      try {
+        const res = await fetch('/api/campus-match', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: event.title, start: event.start }),
+        });
+        if (!res.ok) return null;
+        const json = (await res.json()) as CampusMatchResponse;
+        return json.matches.length > 0 ? json.matches[0] : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return results;
+}
+
+async function fetchOrgMatches(
+  events: Event[],
+): Promise<(OrgMatch | null)[]> {
+  const results = await Promise.all(
+    events.map(async (event) => {
+      try {
+        const res = await fetch('/api/campus-orgs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: event.title, start: event.start }),
+        });
+        if (!res.ok) return null;
+        const json = (await res.json()) as OrgMatchResponse;
+        return json.matches.length > 0 ? json.matches[0] : null;
+      } catch {
+        return null;
+      }
+    }),
+  );
+  return results;
+}
 
 function openInNewTab(url: string) {
   window.open(url, '_blank', 'noopener,noreferrer');
@@ -80,25 +128,36 @@ export default function Home() {
   const [state, setState] = useState<UxState>({ status: 'idle' });
   const [demoMode, setDemoMode] = useState<boolean>(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const lastFileRef = useRef<File | null>(null);
 
-  // Load demo-mode preference and profile once on mount.
+  // Load demo-mode preference, profile, and register service worker on mount.
   useEffect(() => {
     const stored = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
     if (stored !== null) setDemoMode(stored === 'true');
     setProfile(loadProfileFromStorage());
+
+    // Register service worker for PWA share target (Android)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
   }, []);
 
   useEffect(() => {
     window.localStorage.setItem(DEMO_MODE_STORAGE_KEY, String(demoMode));
   }, [demoMode]);
 
-  const handleFiles = useCallback(async (files: File[]) => {
+  const handleFiles = useCallback(async (files: File[], model?: 'sonnet') => {
     if (files.length === 0) return;
     const file = files[0];
-    setState({ status: 'loading', message: LOADING_MESSAGE });
+    lastFileRef.current = file;
+    setState({
+      status: 'loading',
+      message: model === 'sonnet' ? 'Retrying with Claude Sonnet…' : LOADING_MESSAGE,
+    });
 
     const formData = new FormData();
     formData.append('image', file);
+    if (model) formData.append('model', model);
 
     try {
       const response = await fetch('/api/extract', { method: 'POST', body: formData });
@@ -124,6 +183,8 @@ export default function Home() {
         events: extraction.events,
         sourceNotes: extraction.sourceNotes,
         relevance: null,
+        campusMatches: null,
+        orgMatches: null,
       });
 
       // Kick off relevance scoring if we have a profile. Silent no-op
@@ -139,6 +200,22 @@ export default function Home() {
           });
         });
       }
+
+      // Kick off campus match lookup against UMN LiveWhale calendar.
+      void fetchCampusMatches(extraction.events).then((matches) => {
+        setState((prev) => {
+          if (prev.status !== 'success') return prev;
+          return { ...prev, campusMatches: matches };
+        });
+      });
+
+      // Kick off GopherLink student org match lookup.
+      void fetchOrgMatches(extraction.events).then((matches) => {
+        setState((prev) => {
+          if (prev.status !== 'success') return prev;
+          return { ...prev, orgMatches: matches };
+        });
+      });
     } catch (err) {
       setState({
         status: 'error',
@@ -170,6 +247,31 @@ export default function Home() {
 
     window.addEventListener('paste', onPaste);
     return () => window.removeEventListener('paste', onPaste);
+  }, [handleFiles]);
+
+  // Pick up images shared via Android share sheet (PWA share target).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('source') !== 'share') return;
+
+    // Clean the URL so a refresh doesn't re-trigger
+    window.history.replaceState({}, '', '/');
+
+    (async () => {
+      try {
+        const cache = await caches.open('clipcal-shared-media');
+        const response = await cache.match('/shared-media/latest');
+        if (!response) return;
+        const blob = await response.blob();
+        const file = new File([blob], response.headers.get('X-Filename') || 'shared.jpg', {
+          type: blob.type,
+        });
+        await cache.delete('/shared-media/latest');
+        handleFiles([file]);
+      } catch {
+        // Shared media pickup is best-effort
+      }
+    })();
   }, [handleFiles]);
 
   const updateEvent = (idx: number, updated: Event) => {
@@ -264,8 +366,11 @@ export default function Home() {
                   event={TEASER_EVENT}
                   conflict={checkConflict(TEASER_EVENT, DEMO_CALENDAR)}
                   relevance={TEASER_RELEVANCE}
+                  campusMatch={null}
+                  orgMatch={null}
                   noticings={generateNoticings(TEASER_EVENT, { demoCalendar: DEMO_CALENDAR })}
                   leaveBy={computeLeaveBy(TEASER_EVENT)}
+                  busySlots={DEMO_CALENDAR}
                   readOnly
                   onChange={() => undefined}
                   onDownloadIcs={() => undefined}
@@ -311,8 +416,11 @@ export default function Home() {
                 event={event}
                 conflict={conflicts[idx]}
                 relevance={state.relevance?.[idx] ?? null}
+                campusMatch={state.campusMatches?.[idx] ?? null}
+                orgMatch={state.orgMatches?.[idx] ?? null}
                 noticings={noticingsPerEvent[idx]}
                 leaveBy={leaveByPerEvent[idx]}
+                busySlots={activeCalendar}
                 onChange={(updated) => updateEvent(idx, updated)}
                 onDownloadIcs={() => handleDownloadIcs(event)}
                 onOpenGoogle={() => openInNewTab(googleCalendarUrl(event))}
@@ -324,9 +432,23 @@ export default function Home() {
                 note from Claude: {state.sourceNotes}
               </p>
             )}
-            <Button onClick={reset} variant="outline" className="w-fit">
-              Upload another
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={reset} variant="outline" className="w-fit">
+                Upload another
+              </Button>
+              {state.events.some((e) => e.confidence === 'low' || e.confidence === 'medium') &&
+                lastFileRef.current && (
+                  <Button
+                    variant="secondary"
+                    className="w-fit"
+                    onClick={() => {
+                      if (lastFileRef.current) handleFiles([lastFileRef.current], 'sonnet');
+                    }}
+                  >
+                    🔬 Try with stronger model
+                  </Button>
+                )}
+            </div>
           </div>
         )}
       </div>

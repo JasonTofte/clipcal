@@ -4,6 +4,7 @@ import { ExtractionSchema } from '@/lib/schema';
 import { extractLimiter, extractClientIp } from '@/lib/rate-limit';
 
 const MODEL_ID = 'claude-haiku-4-5-20251001';
+const FALLBACK_MODEL_ID = 'claude-sonnet-4-5-20241022';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA_TYPES = new Set([
   'image/png',
@@ -26,6 +27,8 @@ For every event shown on the flyer, extract:
 - hasFreeFood: true only if the flyer explicitly mentions free food, snacks, pizza, refreshments, or similar
 - timezone: the IANA timezone (default "America/Chicago" for UMN flyers unless the flyer states otherwise)
 - confidence: "high" if everything is clearly legible, "medium" if some fields required inference, "low" if the flyer is ambiguous
+- venueSetting: "indoor", "outdoor", "hybrid", or null if unknown — infer from venue name, photos, or event type
+- crowdSize: "small" (< 30), "medium" (30-100), "large" (100+), or null — infer from venue, event type, or any capacity hints
 
 If multiple events appear on the flyer, return ALL of them. Never skip an event.
 Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
@@ -74,11 +77,14 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'image too large' }, { status: 400 });
   }
 
+  const useFallback = formData.get('model') === 'sonnet';
+  const modelId = useFallback ? FALLBACK_MODEL_ID : MODEL_ID;
+
   const bytes = new Uint8Array(await imageEntry.arrayBuffer());
 
   try {
     const result = await generateObject({
-      model: anthropic(MODEL_ID),
+      model: anthropic(modelId),
       schema: ExtractionSchema,
       system: SYSTEM_PROMPT,
       messages: [

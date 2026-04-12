@@ -14,6 +14,9 @@ export const EventCategory = z.enum([
 
 export const Confidence = z.enum(['high', 'medium', 'low']);
 
+export const VenueSetting = z.enum(['indoor', 'outdoor', 'hybrid']).nullable();
+export const CrowdSize = z.enum(['small', 'medium', 'large']).nullable();
+
 export const EventSchema = z.object({
   title: z.string(),
   start: z.string(),
@@ -24,6 +27,8 @@ export const EventSchema = z.object({
   hasFreeFood: z.boolean(),
   timezone: z.string(),
   confidence: Confidence,
+  venueSetting: VenueSetting.optional(),
+  crowdSize: CrowdSize.optional(),
 });
 
 export const ExtractionSchema = z.object({
