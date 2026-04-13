@@ -10,7 +10,6 @@ import { GoldyEventRow } from '@/components/goldy-event-row';
 import { OneThingHero } from '@/components/one-thing-hero';
 import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
 import { EinkSyncButton } from '@/components/eink-sync-button';
-import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
   EVENT_STORE_KEY,
@@ -648,10 +647,6 @@ export function GoldyFeedClient() {
           </div>
         )}
       </section>
-
-      <div className="mt-6">
-        <CampusFeed />
-      </div>
 
       {undo && (
         <div
