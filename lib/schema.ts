@@ -31,6 +31,17 @@ export const EventSchema = z.object({
   crowdSize: CrowdSize.optional(),
   dressCode: z.string().nullable().optional(),
   room: z.string().nullable().optional(),
+  // Signup URL extracted from a QR code on the flyer (lib/qr-decode).
+  // Strict http(s)-only — rejects javascript:/data:/file: which would let
+  // a malicious flyer inject XSS via <a href={signupUrl}>.
+  signupUrl: z
+    .string()
+    .url()
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: 'signupUrl must use http(s)',
+    })
+    .nullable()
+    .optional(),
 });
 
 export const ExtractionSchema = z.object({

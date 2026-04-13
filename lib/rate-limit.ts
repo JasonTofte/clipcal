@@ -88,6 +88,14 @@ export const sonnetLimiter = createRateLimiter({
   windowMs: 60_000,
 });
 
+// Abbreviation runs once per e-ink sync. Tight per-key bucket since a real
+// user only syncs every few minutes; global headroom for hackathon traffic.
+export const abbreviateLimiter = createRateLimiter({
+  perKeyLimit: 6,
+  globalLimit: 30,
+  windowMs: 60_000,
+});
+
 export function extractClientIp(headers: Headers): string {
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
