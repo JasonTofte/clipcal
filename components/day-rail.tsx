@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Event } from '@/lib/schema';
 import type { BusySlot } from '@/lib/demo-calendar';
 
@@ -19,10 +19,27 @@ type Props = {
   now?: Date;
   rangeStartHour?: number;
   rangeEndHour?: number;
-  railHeight?: number; // px
+  // When omitted, the rail auto-sizes to 55% of the viewport height (clamped
+  // 320–640). Motor-impaired users on small phones otherwise hit a double-
+  // scroll trap inside a rail taller than the viewport.
+  railHeight?: number;
   onSelectEvent?: (event: Event) => void;
   onBack?: () => void;
 };
+
+function useAutoRailHeight(explicit: number | undefined): number {
+  const [height, setHeight] = useState<number>(explicit ?? 520);
+  useEffect(() => {
+    if (explicit !== undefined) return;
+    if (typeof window === 'undefined') return;
+    const compute = () =>
+      setHeight(Math.max(320, Math.min(640, Math.round(window.innerHeight * 0.55))));
+    compute();
+    window.addEventListener('resize', compute);
+    return () => window.removeEventListener('resize', compute);
+  }, [explicit]);
+  return height;
+}
 
 const MS_PER_MIN = 60 * 1000;
 
@@ -63,12 +80,15 @@ export function DayRail({
   events,
   busySlots,
   now,
-  rangeStartHour = 8,
-  rangeEndHour = 22,
-  railHeight = 520,
+  rangeStartHour: rangeStartHourProp = 8,
+  rangeEndHour: rangeEndHourProp = 22,
+  railHeight: railHeightProp,
   onSelectEvent,
   onBack,
 }: Props) {
+  const railHeight = useAutoRailHeight(railHeightProp);
+  const [rangeStartHour, setRangeStartHour] = useState(rangeStartHourProp);
+  const [rangeEndHour, setRangeEndHour] = useState(rangeEndHourProp);
   const nowDate = now ?? new Date();
   const { start: dayStart, end: dayEnd } = dayBoundsFor(weekStart, dayIdx);
 
@@ -82,14 +102,22 @@ export function DayRail({
     const inDay: { event: Event; start: Date; end: Date | null }[] = [];
     let earlierCount = 0;
     let laterCount = 0;
+    let earliestHour: number | null = null;
+    let latestHour: number | null = null;
 
     for (const ev of events) {
       const s = new Date(ev.start);
       if (Number.isNaN(s.getTime())) continue;
       if (s < dayStart || s >= dayEnd) continue;
-      if (s < rangeStart) earlierCount += 1;
-      else if (s >= rangeEnd) laterCount += 1;
-      else {
+      if (s < rangeStart) {
+        earlierCount += 1;
+        const h = s.getHours();
+        if (earliestHour === null || h < earliestHour) earliestHour = h;
+      } else if (s >= rangeEnd) {
+        laterCount += 1;
+        const endHr = ev.end ? new Date(ev.end).getHours() || 23 : s.getHours();
+        if (latestHour === null || endHr > latestHour) latestHour = endHr;
+      } else {
         const e = ev.end ? new Date(ev.end) : null;
         inDay.push({ event: ev, start: s, end: e });
       }
@@ -103,8 +131,15 @@ export function DayRail({
         b.end > rangeStart,
     );
 
-    return { inDay, busyInDay, earlierCount, laterCount };
+    return { inDay, busyInDay, earlierCount, laterCount, earliestHour, latestHour };
   }, [events, busySlots, dayStart, dayEnd, rangeStart, rangeEnd]);
+
+  const expandEarlier = () => {
+    if (layout.earliestHour !== null) setRangeStartHour(layout.earliestHour);
+  };
+  const expandLater = () => {
+    if (layout.latestHour !== null) setRangeEndHour(Math.min(23, layout.latestHour + 1));
+  };
 
   const showNowLine = nowDate >= rangeStart && nowDate < rangeEnd;
   const nowTopPct = hourFraction(nowDate, rangeStart, totalMinutes) * 100;
@@ -148,10 +183,22 @@ export function DayRail({
       </div>
 
       {layout.earlierCount > 0 && (
-        <div className="mb-2 rounded-lg border border-dashed px-3 py-2 text-[12px]"
-             style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
-          Earlier today: {layout.earlierCount} event{layout.earlierCount === 1 ? '' : 's'} before {formatHour(rangeStartHour)}
-        </div>
+        <button
+          type="button"
+          onClick={expandEarlier}
+          aria-label={`Show ${layout.earlierCount} event${layout.earlierCount === 1 ? '' : 's'} earlier than ${formatHour(rangeStartHour)}`}
+          className="mb-2 w-full rounded-lg border border-dashed px-3 py-2 text-left text-[12px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--goldy-maroon-500)]"
+          style={{
+            borderColor: 'var(--border)',
+            color: 'var(--muted-foreground)',
+            minHeight: 44,
+          }}
+        >
+          ↑ Earlier today: {layout.earlierCount} event{layout.earlierCount === 1 ? '' : 's'} before {formatHour(rangeStartHour)}
+          <span className="ml-2 font-semibold" style={{ color: 'var(--goldy-maroon-500)' }}>
+            Show
+          </span>
+        </button>
       )}
 
       <div
@@ -270,10 +317,22 @@ export function DayRail({
       </div>
 
       {layout.laterCount > 0 && (
-        <div className="mt-2 rounded-lg border border-dashed px-3 py-2 text-[12px]"
-             style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}>
-          After {formatHour(rangeEndHour)}: {layout.laterCount} event{layout.laterCount === 1 ? '' : 's'}
-        </div>
+        <button
+          type="button"
+          onClick={expandLater}
+          aria-label={`Show ${layout.laterCount} event${layout.laterCount === 1 ? '' : 's'} later than ${formatHour(rangeEndHour)}`}
+          className="mt-2 w-full rounded-lg border border-dashed px-3 py-2 text-left text-[12px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--goldy-maroon-500)]"
+          style={{
+            borderColor: 'var(--border)',
+            color: 'var(--muted-foreground)',
+            minHeight: 44,
+          }}
+        >
+          ↓ After {formatHour(rangeEndHour)}: {layout.laterCount} event{layout.laterCount === 1 ? '' : 's'}
+          <span className="ml-2 font-semibold" style={{ color: 'var(--goldy-maroon-500)' }}>
+            Show
+          </span>
+        </button>
       )}
     </section>
   );
