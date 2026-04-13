@@ -6,6 +6,7 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { GoldyWeekGlance } from '@/components/goldy-week-glance';
 import { GoldyEventCard } from '@/components/goldy-event-card';
 import { GoldyDayOfBanner } from '@/components/goldy-day-of-banner';
+import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
@@ -323,6 +324,8 @@ export function GoldyFeedClient() {
   return (
     <>
       <GoldyDayOfBanner events={allEvents} />
+
+      <LeaveByNotifyToggle events={allEvents} />
 
       {greetingBlurb && (
         <GoldyGreeting
