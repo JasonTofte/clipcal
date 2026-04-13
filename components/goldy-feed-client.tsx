@@ -105,12 +105,20 @@ export function GoldyFeedClient() {
   const flashTimerRef = useRef<number | null>(null);
 
   // Initial hydration: load batches + profile + demo-mode, and auto-seed
-  // a demo batch on first visit if the user has no data yet.
+  // a demo batch on first visit if the user has no data yet. A
+  // `?demo=force` URL param wipes existing batches and reseeds — useful
+  // when a presenter lands on a device that already has stale data.
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const forceDemo = params.get('demo') === 'force';
+    if (forceDemo) {
+      clearAllBatches();
+      window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
+    }
     const loaded = loadBatches();
     const dismissed =
       window.localStorage.getItem(DEMO_SEED_DISMISSED_KEY) === 'true';
-    if (loaded.length === 0 && !dismissed) {
+    if (loaded.length === 0 && (!dismissed || forceDemo)) {
       appendBatch(buildDemoBatch(new Date()).events, 'Demo events — first visit seed.');
       // appendBatch creates a fresh batch with a non-demo id; rewrite the
       // freshly-written batch to use the DEMO_SEED_ID so we can detect it.
@@ -329,6 +337,36 @@ export function GoldyFeedClient() {
           chipFilter={chipFilter}
           onChipFilter={setChipFilter}
         />
+      )}
+
+      {!hasDemoSeed && (
+        <div
+          className="mb-4 flex items-center justify-between rounded-2xl border px-3 py-2 text-[11px]"
+          style={{
+            background: 'var(--goldy-maroon-50)',
+            borderColor: 'var(--goldy-maroon-200)',
+            color: 'var(--goldy-maroon-700)',
+          }}
+        >
+          <span>
+            Showing your real data.{' '}
+            <span className="text-stone-600">
+              Want to see Goldy with seeded demo events?
+            </span>
+          </span>
+          <button
+            type="button"
+            onClick={handleLoadDemo}
+            className="ml-3 shrink-0 rounded-full border px-2.5 py-1 font-semibold"
+            style={{
+              borderColor: 'var(--goldy-maroon-500)',
+              color: 'var(--goldy-maroon-600)',
+              background: 'white',
+            }}
+          >
+            Load demo
+          </button>
+        </div>
       )}
 
       {hasDemoSeed && (
