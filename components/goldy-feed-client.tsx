@@ -252,6 +252,18 @@ export function GoldyFeedClient() {
     setBatches([]);
   };
 
+  const handleLoadDemo = () => {
+    window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
+    appendBatch(buildDemoBatch(new Date()).events, 'Demo events — manually reloaded.');
+    const refetched = loadBatches();
+    const last = refetched[refetched.length - 1];
+    if (last) {
+      last.id = DEMO_SEED_ID;
+      window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(refetched));
+    }
+    setBatches(loadBatches());
+  };
+
   const registerCardRef = (key: string) => (el: HTMLElement | null) => {
     if (el) cardRefs.current.set(key, el);
     else cardRefs.current.delete(key);
@@ -283,6 +295,14 @@ export function GoldyFeedClient() {
           >
             Upload a flyer
           </Link>
+          <button
+            type="button"
+            onClick={handleLoadDemo}
+            className="mt-1 text-xs font-semibold underline decoration-dotted underline-offset-4"
+            style={{ color: 'var(--goldy-maroon-600)' }}
+          >
+            Or load demo events
+          </button>
         </div>
       </div>
     );
