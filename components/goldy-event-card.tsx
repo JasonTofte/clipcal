@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import type { Event } from '@/lib/schema';
+import type { GoldyBucket, GoldyContext } from '@/lib/goldy-commentary';
 import { GoldyAvatar } from '@/components/goldy-avatar';
+import { buildGoldyWhy, bucketLabel } from '@/lib/goldy-why';
 import { formatEventWhen } from '@/lib/format';
 
 type Props = {
@@ -14,6 +16,10 @@ type Props = {
   // Add button switches to a two-tap "arm → commit" flow so users don't
   // silently double-book themselves.
   conflictTitle?: string | null;
+  // Full bucket + slots context, used to render the expand-on-tap
+  // "Why?" panel. Optional for backwards-compat with callers that
+  // haven't been wired yet.
+  goldyCtx?: GoldyContext;
   onAddToCalendar: () => void;
   onOpenMenu?: () => void;
 };
@@ -34,6 +40,7 @@ export function GoldyEventCard({
   matchPct,
   isTopPick = false,
   conflictTitle,
+  goldyCtx,
   onAddToCalendar,
   onOpenMenu,
 }: Props) {
@@ -42,6 +49,11 @@ export function GoldyEventCard({
   const hasConflict = !!conflictTitle;
   // When there's a conflict, first tap arms the button; second tap commits.
   const [armed, setArmed] = useState(false);
+  // Expand-on-tap for the speech bubble — shows Goldy's reasoning for
+  // this card's bucket + event.
+  const [whyOpen, setWhyOpen] = useState(false);
+  const whyText = goldyCtx ? buildGoldyWhy(event, goldyCtx) : null;
+  const bucketLbl = goldyCtx ? bucketLabel(goldyCtx.bucket as GoldyBucket) : null;
 
   const handleAddPress = () => {
     if (!hasConflict) {
@@ -128,6 +140,39 @@ export function GoldyEventCard({
               <strong style={{ color: 'var(--goldy-maroon-600)' }}>Goldy:</strong>
             </span>{' '}
             <span>&ldquo;{goldyLine}&rdquo;</span>
+            {whyText && (
+              <button
+                type="button"
+                onClick={() => setWhyOpen((v) => !v)}
+                aria-expanded={whyOpen}
+                aria-controls={`why-${event.start}`}
+                className="ml-1 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold underline-offset-2 hover:underline"
+                style={{ color: 'var(--goldy-maroon-600)' }}
+              >
+                {whyOpen ? 'hide why' : 'why?'}
+              </button>
+            )}
+            {whyText && whyOpen && (
+              <div
+                id={`why-${event.start}`}
+                className="mt-2 rounded-lg border px-2.5 py-2 text-[11px] leading-snug"
+                style={{
+                  background: 'rgba(255,255,255,0.55)',
+                  borderColor: 'rgba(90,0,19,0.18)',
+                  color: 'var(--goldy-maroon-700)',
+                }}
+              >
+                {bucketLbl && (
+                  <div
+                    className="mb-1 text-[9px] font-bold uppercase tracking-wider"
+                    style={{ color: 'var(--goldy-maroon-500)' }}
+                  >
+                    {bucketLbl}
+                  </div>
+                )}
+                <p>{whyText}</p>
+              </div>
+            )}
           </div>
 
           <div className="mt-3 flex flex-col gap-1.5">
