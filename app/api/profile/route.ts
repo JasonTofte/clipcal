@@ -1,9 +1,10 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateObject, type UIMessage } from 'ai';
 import { ProfileSchema } from '@/lib/profile';
-import { chatLimiter, extractClientIp } from '@/lib/rate-limit';
+import { chatLimiter } from '@/lib/rate-limit';
 import { MODEL_HAIKU } from '@/lib/models';
 import { sanitizeField, UNTRUSTED_PREAMBLE } from '@/lib/prompt-safety';
+import { requireAnthropic, logError } from '@/lib/api-utils';
 
 const MAX_TOTAL_CHARS = 20_000;
 
@@ -26,21 +27,8 @@ RULES
 - Short interests. "AI research" not "I am really into AI research and want to attend workshops about it".`;
 
 export async function POST(req: Request): Promise<Response> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'missing api key' }, { status: 500 });
-  }
-
-  const clientIp = extractClientIp(req.headers);
-  const limit = chatLimiter.check(clientIp);
-  if (!limit.allowed) {
-    return Response.json(
-      { error: 'rate limited, try again in a moment' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(limit.retryAfterSec) },
-      },
-    );
-  }
+  const gate = requireAnthropic(req, chatLimiter);
+  if (!gate.ok) return gate.response;
 
   let body: { messages?: UIMessage[] };
   try {
@@ -80,8 +68,7 @@ export async function POST(req: Request): Promise<Response> {
     });
     return Response.json(result.object);
   } catch (error) {
-    const e = error as { name?: string; message?: string };
-    console.error('[profile]', e?.name ?? 'Error', e?.message ?? 'unknown');
+    logError('profile', error);
     return Response.json({ error: 'profile extraction failed' }, { status: 500 });
   }
 }

@@ -3,9 +3,10 @@ import { generateObject } from 'ai';
 import { ProfileSchema, type Profile } from '@/lib/profile';
 import { RelevanceBatchSchema } from '@/lib/relevance';
 import { EventSchema, type Event } from '@/lib/schema';
-import { relevanceLimiter, extractClientIp } from '@/lib/rate-limit';
+import { relevanceLimiter } from '@/lib/rate-limit';
 import { MODEL_HAIKU } from '@/lib/models';
 import { sanitizeField, UNTRUSTED_PREAMBLE } from '@/lib/prompt-safety';
+import { requireAnthropic, logError } from '@/lib/api-utils';
 import { z } from 'zod';
 
 const MAX_EVENTS = 8;
@@ -31,21 +32,8 @@ REASON
 - Don't repeat the event title back. Assume they can see it.`;
 
 export async function POST(req: Request): Promise<Response> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'missing api key' }, { status: 500 });
-  }
-
-  const clientIp = extractClientIp(req.headers);
-  const limit = relevanceLimiter.check(clientIp);
-  if (!limit.allowed) {
-    return Response.json(
-      { error: 'rate limited, try again in a moment' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(limit.retryAfterSec) },
-      },
-    );
-  }
+  const gate = requireAnthropic(req, relevanceLimiter);
+  if (!gate.ok) return gate.response;
 
   let body: unknown;
   try {
@@ -72,8 +60,7 @@ export async function POST(req: Request): Promise<Response> {
     const aligned = alignScores(result.object.scores, events.length);
     return Response.json({ scores: aligned });
   } catch (error) {
-    const e = error as { name?: string; message?: string };
-    console.error('[relevance]', e?.name ?? 'Error', e?.message ?? 'unknown');
+    logError('relevance', error);
     return Response.json({ error: 'relevance scoring failed' }, { status: 500 });
   }
 }

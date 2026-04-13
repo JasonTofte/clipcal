@@ -1,8 +1,9 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import { ExtractionSchema } from '@/lib/schema';
-import { extractLimiter, sonnetLimiter, extractClientIp } from '@/lib/rate-limit';
+import { extractLimiter, sonnetLimiter } from '@/lib/rate-limit';
 import { MODEL_HAIKU, MODEL_SONNET } from '@/lib/models';
+import { requireAnthropic, logError } from '@/lib/api-utils';
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA_TYPES = new Set([
@@ -36,21 +37,9 @@ Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unu
 }
 
 export async function POST(req: Request): Promise<Response> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'missing api key' }, { status: 500 });
-  }
-
-  const clientIp = extractClientIp(req.headers);
-  const limit = extractLimiter.check(clientIp);
-  if (!limit.allowed) {
-    return Response.json(
-      { error: 'rate limited, try again in a moment' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(limit.retryAfterSec) },
-      },
-    );
-  }
+  const gate = requireAnthropic(req, extractLimiter);
+  if (!gate.ok) return gate.response;
+  const { clientIp } = gate;
 
   let formData: FormData;
   try {
@@ -121,8 +110,7 @@ export async function POST(req: Request): Promise<Response> {
 
     return Response.json(result.object);
   } catch (error) {
-    const e = error as { name?: string; message?: string };
-    console.error('[extract]', e?.name ?? 'Error', e?.message ?? 'unknown');
+    logError('extract', error);
     return Response.json({ error: 'extraction failed' }, { status: 500 });
   }
 }

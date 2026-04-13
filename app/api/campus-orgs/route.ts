@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseIcs, type IcsEvent } from '@/lib/ics-parse';
 
 const GOPHERLINK_ICS_URL =
   'https://gopherlink.umn.edu/ical/twincitiesumn/ical_twincitiesumn.ics';
@@ -7,18 +8,6 @@ const GOPHERLINK_ICS_URL =
 // GopherLink on every request.
 let icsCache: { events: IcsEvent[]; fetchedAt: number } | null = null;
 const CACHE_TTL_MS = 15 * 60 * 1000;
-
-type IcsEvent = {
-  uid: string;
-  summary: string;
-  dtstart: string;
-  dtend: string | null;
-  location: string | null;
-  description: string | null;
-  organizer: string | null;
-  url: string | null;
-  categories: string[];
-};
 
 export type OrgMatch = {
   summary: string;
@@ -37,63 +26,6 @@ const RequestSchema = z.object({
   title: z.string().min(1),
   start: z.string().min(1),
 });
-
-/** Minimal ICS VEVENT parser — extracts key fields from iCalendar text. */
-function parseIcs(text: string): IcsEvent[] {
-  const events: IcsEvent[] = [];
-  const blocks = text.split('BEGIN:VEVENT');
-
-  for (let i = 1; i < blocks.length; i++) {
-    const block = blocks[i].split('END:VEVENT')[0];
-    const get = (key: string): string | null => {
-      // Handle folded lines (continuation lines start with space/tab)
-      const unfolded = block.replace(/\r?\n[ \t]/g, '');
-      const match = unfolded.match(new RegExp(`^${key}[;:](.*)$`, 'm'));
-      return match ? match[1].replace(/^.*:/, '') || match[1] : null;
-    };
-
-    const uid = get('UID') || `event-${i}`;
-    const summary = get('SUMMARY') || '';
-    const dtstart = get('DTSTART') || '';
-    const dtend = get('DTEND');
-    const location = get('LOCATION');
-    const description = get('DESCRIPTION');
-    const url = get('URL');
-
-    // ORGANIZER often has CN="Name" prefix
-    const orgLine = block.match(/^ORGANIZER[;:](.*)$/m);
-    let organizer: string | null = null;
-    if (orgLine) {
-      const cnMatch = orgLine[1].match(/CN="?([^";\n]+)"?/);
-      organizer = cnMatch ? cnMatch[1] : null;
-    }
-
-    // CATEGORIES
-    const catLine = block.match(/^CATEGORIES[;:](.*)$/m);
-    const categories = catLine
-      ? catLine[1]
-          .replace(/^.*:/, '')
-          .split(',')
-          .map((c) => c.trim())
-      : [];
-
-    if (summary) {
-      events.push({
-        uid,
-        summary,
-        dtstart,
-        dtend,
-        location,
-        description,
-        organizer,
-        url,
-        categories,
-      });
-    }
-  }
-
-  return events;
-}
 
 /** Simple word-overlap similarity score (0–1). */
 function similarity(a: string, b: string): number {
