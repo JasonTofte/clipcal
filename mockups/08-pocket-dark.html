@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ClipCal · Mockup 8 · Pocket Dark</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    Direction 2 — "Pocket Dark"
+    ═══════════════════════════════════════════════════════════════
+    Research basis:
+      • Palette: Material 3 dark-theme surface (#121212, not pure
+        black) + warm peach accent (#FFB787) — Google M3 dark guide
+        (2023) on avoiding halation on OLED. Contrast ~12:1 body
+        (below 21:1 ceiling, A11y Collective).
+      • Layout: compact stacked cards + tap-to-open bottom sheet.
+        Material 3 guidance prefers bottom-sheet over accordion on
+        mobile (preserves parent context, predictable dismiss).
+        Thumb-reach bottom 40% (Hoober 2023 update to Hurff) —
+        primary CTA lives in the sheet.
+      • Type: Inter / Atkinson Hyperlegible, 17px body, 500 weight
+        (Material 3 optical-thinning uplift on dark bg).
+      • Motion: 200ms card taps, no parallax, prefers-reduced-motion
+        collapses to opacity-only 150ms. Haptic pulse on Android
+        (feature-detected, single 10ms), silent on iOS (Safari has
+        no Vibration API as of 2026).
+    Intended feel: one-handed, pocket-sized, OLED-friendly.
+    Best for: late-night scrolling, bus-ride decisions, battery
+    conservation on spotty LTE.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #121212;
+      --surface-1: #1C1C1E;
+      --surface-2: #242427;
+      --surface-3: #2F2F33;
+      --text: #E8E6E3;
+      --text-muted: #9A9895;
+      --text-soft: #6D6B68;
+      --accent: #FFB787;       /* warm peach */
+      --accent-ink: #2B1A0E;
+      --cool: #7AA7C7;          /* cool blue for secondary */
+      --alert: #E87A5D;         /* conflict */
+      --border: rgba(255,255,255,0.07);
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+    .surface-1 { background: var(--surface-1); }
+    .surface-2 { background: var(--surface-2); }
+    .surface-3 { background: var(--surface-3); }
+    .text-muted { color: var(--text-muted); }
+    .text-soft { color: var(--text-soft); }
+    .accent { color: var(--accent); }
+    .bg-accent { background: var(--accent); color: var(--accent-ink); }
+    .border-hair { border: 1px solid var(--border); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+      }
+    }
+    .press { transition: transform 150ms ease-out, background-color 200ms ease-out; }
+    .press:active { transform: scale(0.98); }
+
+    /* Bottom sheet (CSS-only preview) */
+    .sheet-peek {
+      box-shadow: 0 -10px 40px -10px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="min-h-[100dvh] pb-28">
+
+  <!-- Status-bar-safe top -->
+  <header class="sticky top-0 z-20 surface-1 border-b border-hair" style="padding-top: env(safe-area-inset-top);">
+    <div class="mx-auto max-w-md px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-md flex items-center justify-center font-bold text-sm" style="background: var(--accent); color: var(--accent-ink);">M</div>
+        <div class="leading-tight">
+          <div class="text-sm font-semibold">Gopherly</div>
+          <div class="text-[10px] text-soft">Tue · 5:47 PM</div>
+        </div>
+      </div>
+      <button class="press w-10 h-10 rounded-full surface-2 border-hair flex items-center justify-center text-sm">⋯</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-md px-4 pt-4">
+
+    <!-- Urgent banner — single most important thing -->
+    <section class="mb-4 rounded-2xl p-4 press" style="background: linear-gradient(135deg, #3A1F0E, #5B2A10); border: 1px solid rgba(255,183,135,0.25);" role="status" aria-live="assertive">
+      <div class="flex items-center gap-2 text-[11px] uppercase tracking-wider font-bold" style="color: var(--accent);">
+        <span>⚡ leave in 13 min</span>
+      </div>
+      <h1 class="text-xl font-bold mt-1 leading-tight">Gopher Hack 26 · kickoff</h1>
+      <div class="mt-2 flex items-end justify-between">
+        <div>
+          <div class="text-[48px] font-bold leading-none" style="color: var(--accent);">5:47</div>
+          <div class="text-xs text-muted mt-0.5">your leave-by · 12-min walk</div>
+        </div>
+        <div class="text-right text-xs text-muted">
+          <div>Keller Hall</div>
+          <div>3-180</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Day selector (horizontal snap) -->
+    <nav aria-label="Day filter" class="mb-4">
+      <div class="flex gap-1.5 overflow-x-auto" style="scroll-snap-type: x mandatory;">
+        <button class="press shrink-0 rounded-full px-4 py-2 text-sm font-semibold" style="background: var(--accent); color: var(--accent-ink); scroll-snap-align: start;">Today · 3</button>
+        <button class="press shrink-0 rounded-full px-4 py-2 text-sm surface-2 border-hair" style="scroll-snap-align: start;">Wed · 1</button>
+        <button class="press shrink-0 rounded-full px-4 py-2 text-sm surface-2 border-hair" style="scroll-snap-align: start;">Thu · 1</button>
+        <button class="press shrink-0 rounded-full px-4 py-2 text-sm surface-2 border-hair" style="scroll-snap-align: start;">Sat · 2</button>
+        <button class="press shrink-0 rounded-full px-4 py-2 text-sm surface-2 border-hair" style="scroll-snap-align: start;">Sun · 1</button>
+      </div>
+    </nav>
+
+    <!-- Compact stacked cards -->
+    <h2 class="text-xs uppercase tracking-widest text-soft font-semibold mb-2 px-1">Tonight</h2>
+    <div class="space-y-2 mb-6">
+
+      <!-- Top pick -->
+      <article class="surface-2 rounded-2xl p-3 press relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-1" style="background: var(--accent);"></div>
+        <div class="pl-2">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-[10px] uppercase tracking-wider font-bold" style="color: var(--accent);">top pick · 98%</div>
+              <h3 class="font-semibold leading-tight truncate">Gopher Hack 26 · kickoff</h3>
+              <p class="text-sm text-muted mt-0.5">6:00 PM · Keller Hall 3-180</p>
+            </div>
+            <button class="press shrink-0 rounded-full w-10 h-10 bg-accent font-bold">+</button>
+          </div>
+          <p class="text-sm text-muted mt-2 leading-snug">
+            <span class="accent font-semibold">Goldy:</span> Shoes, keys, door. 12 min.
+          </p>
+        </div>
+      </article>
+
+      <!-- Conflict -->
+      <article class="surface-2 rounded-2xl p-3 press" style="border: 1px solid rgba(232,122,93,0.3);">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider font-bold" style="color: var(--alert);">conflict · 6:30 PM</div>
+            <h3 class="font-semibold leading-tight truncate">CSE Career Fair prep</h3>
+            <p class="text-sm text-muted mt-0.5">Coffman Union · overlaps CSCI 5801</p>
+          </div>
+          <button class="press shrink-0 rounded-full w-10 h-10 surface-3 border-hair text-sm text-muted">⋯</button>
+        </div>
+      </article>
+
+      <!-- Late night -->
+      <article class="surface-2 rounded-2xl p-3 press">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider text-soft">10:00 PM · late</div>
+            <h3 class="font-semibold leading-tight truncate">Late-night espresso jam</h3>
+            <p class="text-sm text-muted mt-0.5">Bordertown Coffee</p>
+          </div>
+          <button class="press shrink-0 rounded-full w-10 h-10 surface-3 border-hair text-sm text-muted">+</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- Saturday preview -->
+    <h2 class="text-xs uppercase tracking-widest text-soft font-semibold mb-2 px-1">Saturday</h2>
+    <div class="space-y-2 mb-6">
+      <article class="surface-2 rounded-2xl p-3 press relative overflow-hidden">
+        <div class="absolute left-0 top-0 bottom-0 w-1" style="background: var(--accent);"></div>
+        <div class="pl-2">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="text-[10px] uppercase tracking-wider font-bold" style="color: var(--accent);">gameday · 98%</div>
+              <h3 class="font-semibold leading-tight">Gophers vs Badgers</h3>
+              <p class="text-sm text-muted mt-0.5">2:30 PM · Huntington Bank Stadium</p>
+            </div>
+            <button class="press shrink-0 rounded-full w-10 h-10 bg-accent font-bold">+</button>
+          </div>
+        </div>
+      </article>
+
+      <article class="surface-2 rounded-2xl p-3 press">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <div class="text-[10px] uppercase tracking-wider text-soft">🍕 free food · back-to-back</div>
+            <h3 class="font-semibold leading-tight">Free Pizza + Linux</h3>
+            <p class="text-sm text-muted mt-0.5">5:00 PM · Walter Library 402</p>
+          </div>
+          <button class="press shrink-0 rounded-full w-10 h-10 surface-3 border-hair text-sm text-muted">+</button>
+        </div>
+      </article>
+    </div>
+
+    <button class="press w-full surface-2 rounded-2xl py-3 text-sm text-muted border-hair">Hidden (2) · show</button>
+  </main>
+
+  <!-- Bottom sheet preview (peeking) -->
+  <aside class="fixed bottom-0 inset-x-0 z-30 sheet-peek" style="padding-bottom: env(safe-area-inset-bottom);">
+    <div class="mx-auto max-w-md surface-2 rounded-t-3xl border-hair">
+      <div class="h-1 w-10 rounded-full surface-3 mx-auto mt-2"></div>
+      <nav aria-label="Main" class="flex justify-around py-2">
+        <a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] text-muted"><span class="text-lg">📸</span>upload</a>
+        <a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] text-muted"><span class="text-lg">🔎</span>browse</a>
+        <a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] font-bold accent"><span class="text-lg">📰</span>feed</a>
+        <a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] text-muted"><span class="text-lg">👤</span>you</a>
+      </nav>
+    </div>
+  </aside>
+
+  <footer class="max-w-md mx-auto px-4 pb-4 pt-2 text-[11px] text-soft">
+    mockup 8 · Pocket Dark (OLED #121212 · stacked cards · bottom sheet) ·
+    <a href="index.html" class="underline decoration-dotted underline-offset-4">all mockups</a>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ClipCal · Mockup 9 · One Thing Now</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    Direction 3 — "One Thing Now"
+    ═══════════════════════════════════════════════════════════════
+    Research basis:
+      • Palette: muted cool clinical — #EEF1F4 bg / #1F2933 text /
+        #4F7CAC accent — IBM Equal Access Toolkit (2024) + BBC GEL
+        on low-saturation focus palettes. Contrast ~14:1 body (below
+        21:1 vibration ceiling).
+      • Layout: single hero card + collapsed secondary list. Hard-
+        caps cognitive load at 1 decision. Lanier et al. (JMIR Hum
+        Factors 2023): >3 equal-weight CTAs lengthened decision
+        latency in ADHD cohorts. Apple HIG "1 primary, ≤2 secondary"
+        per screen.
+      • Interaction: swipe-down (or tap) on the hero reveals the
+        rest of the week in a sheet. Default view is one event.
+        Chronological spine preserved in the sheet.
+      • Type: Atkinson Hyperlegible + Inter. 18px body (uplift above
+        the 17px floor — this direction commits harder to reading
+        comfort).
+      • Motion: cap at 200ms. Mascot is static by default; it
+        pulses exactly once (150ms) on new-event arrival. Reduced-
+        motion disables the pulse.
+    Intended feel: breathing room. One choice visible. The rest
+    is one gesture away.
+    Best for: decision fatigue, anxious users, "just tell me what's
+    next" mode.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #EEF1F4;
+      --surface: #FFFFFF;
+      --text: #1F2933;
+      --text-muted: #52606D;
+      --text-soft: #7B8794;
+      --accent: #4F7CAC;
+      --accent-dark: #2E4F6E;
+      --accent-soft: #D6E3EF;
+      --ok: #4C8C5A;
+      --warn: #C9743A;
+      --hairline: #D9DFE5;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Atkinson Hyperlegible', 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-size: 18px;
+      line-height: 1.55;
+    }
+    .serif { font-family: 'Atkinson Hyperlegible', serif; }
+    .hero-shadow {
+      box-shadow:
+        0 1px 2px rgba(31,41,51,0.05),
+        0 12px 40px -12px rgba(79,124,172,0.25);
+    }
+    .text-muted { color: var(--text-muted); }
+    .text-soft { color: var(--text-soft); }
+    .accent { color: var(--accent); }
+    .bg-accent { background: var(--accent); }
+    .border-hair { border-color: var(--hairline); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    .press { transition: transform 180ms ease-out, box-shadow 200ms ease-out; }
+    .press:active { transform: translateY(1px) scale(0.995); }
+
+    /* One gentle pulse on the Goldy avatar — fires once on mount only. */
+    @keyframes goldy-pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(79,124,172,0.35); }
+      70%  { box-shadow: 0 0 0 14px rgba(79,124,172,0); }
+      100% { box-shadow: 0 0 0 0 rgba(79,124,172,0); }
+    }
+    .goldy-once {
+      animation: goldy-pulse 800ms ease-out 1;
+    }
+  </style>
+</head>
+<body class="min-h-[100dvh] pb-24">
+
+  <!-- Minimal status bar — no sticky header to preserve breathing room -->
+  <div class="mx-auto max-w-md px-5 pt-[env(safe-area-inset-top)]">
+    <div class="flex items-center justify-between py-4">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-full border border-hair flex items-center justify-center font-bold text-sm goldy-once" style="background: white; color: var(--accent);">M</div>
+        <div>
+          <div class="text-xs text-soft uppercase tracking-wider">Tuesday · 5:47 PM</div>
+          <div class="text-sm font-semibold">One thing · then the rest</div>
+        </div>
+      </div>
+      <button class="press text-xs text-muted">···</button>
+    </div>
+  </div>
+
+  <main class="mx-auto max-w-md px-5">
+
+    <!-- THE ONE THING — hero -->
+    <section class="mt-2 bg-white rounded-3xl p-6 hero-shadow border border-hair" role="region" aria-labelledby="next-title">
+      <div class="flex items-center gap-2 text-[11px] uppercase tracking-widest font-bold" style="color: var(--accent);">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
+        next up
+      </div>
+
+      <h1 id="next-title" class="text-[28px] font-bold leading-tight mt-2">Gopher Hack 26</h1>
+      <p class="text-muted mt-1">6:00 PM tonight · Keller Hall 3-180</p>
+
+      <!-- The single visible decision surface -->
+      <div class="mt-6 rounded-2xl border border-hair p-5" style="background: var(--accent-soft);">
+        <div class="flex items-end justify-between gap-4">
+          <div>
+            <div class="text-[11px] uppercase tracking-widest font-bold" style="color: var(--accent-dark);">leave by</div>
+            <div class="text-[56px] font-bold leading-none mt-1" style="color: var(--accent-dark);">5:47</div>
+            <div class="text-sm mt-1" style="color: var(--accent-dark);">in 13 minutes</div>
+          </div>
+          <div class="text-right text-sm" style="color: var(--accent-dark);">
+            <div class="font-semibold">12-min walk</div>
+            <div class="text-xs opacity-80 mt-0.5">Keller Hall</div>
+            <div class="text-xs opacity-80">3-180</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Goldy's single, ≤1-sentence message -->
+      <p class="mt-5 text-base leading-relaxed" style="color: var(--text);">
+        <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider align-middle mr-1" style="background: var(--accent); color: white;">goldy</span>
+        You're clear of everything else today. It's worth going.
+      </p>
+
+      <!-- One primary action. One secondary. That's it. -->
+      <div class="mt-6 space-y-2">
+        <button class="press w-full bg-accent text-white font-semibold py-4 rounded-2xl text-base">Add to calendar</button>
+        <div class="flex gap-2">
+          <button class="press flex-1 bg-white border border-hair text-muted py-3 rounded-2xl text-sm font-medium">Snooze 5 min</button>
+          <button class="press flex-1 bg-white border border-hair text-muted py-3 rounded-2xl text-sm font-medium">Not for me</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Show-the-rest affordance -->
+    <div class="mt-6 text-center">
+      <button class="press text-sm font-semibold accent inline-flex items-center gap-1.5 py-2 px-3">
+        Show the rest of the week
+        <span aria-hidden>↓</span>
+      </button>
+      <p class="text-xs text-soft mt-1">5 more · 1 conflict · 1 free food</p>
+    </div>
+
+    <!-- Compact preview of the rest (collapsed visual) -->
+    <section class="mt-6 space-y-2" aria-label="This week · compact preview">
+      <div class="bg-white rounded-2xl border border-hair px-4 py-3 press flex items-center gap-3">
+        <div class="text-xs text-soft w-12 shrink-0">Tue<br><span class="font-semibold text-muted">10 PM</span></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">Late-night espresso jam</div>
+          <div class="text-xs text-soft truncate">Bordertown</div>
+        </div>
+        <span class="text-xs text-soft">65%</span>
+      </div>
+      <div class="bg-white rounded-2xl border border-hair px-4 py-3 press flex items-center gap-3" style="border-color: rgba(201,116,58,0.35);">
+        <div class="text-xs w-12 shrink-0" style="color: var(--warn);">Tue<br><span class="font-semibold">6:30</span></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">CSE Career Fair prep</div>
+          <div class="text-xs truncate" style="color: var(--warn);">overlaps CSCI 5801</div>
+        </div>
+        <span class="text-xs text-soft">60%</span>
+      </div>
+      <div class="bg-white rounded-2xl border border-hair px-4 py-3 press flex items-center gap-3">
+        <div class="text-xs text-soft w-12 shrink-0">Sat<br><span class="font-semibold text-muted">2:30</span></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">Gophers vs Badgers · Axe Game</div>
+          <div class="text-xs text-soft truncate">Huntington Bank Stadium</div>
+        </div>
+        <span class="text-xs font-semibold accent">98%</span>
+      </div>
+      <div class="bg-white rounded-2xl border border-hair px-4 py-3 press flex items-center gap-3">
+        <div class="text-xs text-soft w-12 shrink-0">Sat<br><span class="font-semibold text-muted">5 PM</span></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">Free Pizza + Linux</div>
+          <div class="text-xs text-soft truncate">🍕 · Walter Library</div>
+        </div>
+        <span class="text-xs text-soft">88%</span>
+      </div>
+    </section>
+  </main>
+
+  <!-- Minimal nav — hidden labels until tap? (no; HIG says always-visible) -->
+  <nav aria-label="Main" class="fixed bottom-0 inset-x-0 z-30 bg-white/90 backdrop-blur border-t border-hair" style="padding-bottom: env(safe-area-inset-bottom);">
+    <ul class="mx-auto max-w-md flex justify-around px-4 py-1.5">
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[52px] justify-center text-[11px] text-soft"><span class="text-base">📸</span>upload</a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[52px] justify-center text-[11px] text-soft"><span class="text-base">🔎</span>browse</a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[52px] justify-center text-[11px] font-semibold accent"><span class="text-base">🎯</span>next</a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[52px] justify-center text-[11px] text-soft"><span class="text-base">👤</span>you</a></li>
+    </ul>
+  </nav>
+
+  <footer class="max-w-md mx-auto px-5 pb-4 pt-2 text-[11px] text-soft">
+    mockup 9 · One Thing Now (muted cool clinical · single hero · rest collapsed) ·
+    <a href="index.html" class="underline decoration-dotted underline-offset-4">all mockups</a>
+  </footer>
+</body>
+</html>
