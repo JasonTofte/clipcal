@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { GoldyWeekGlance } from '@/components/goldy-week-glance';
 import { GoldyEventCard } from '@/components/goldy-event-card';
+import { GoldyDayOfBanner } from '@/components/goldy-day-of-banner';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
@@ -289,6 +290,8 @@ export function GoldyFeedClient() {
 
   return (
     <>
+      <GoldyDayOfBanner events={allEvents} />
+
       {greetingBlurb && (
         <GoldyGreeting
           blurb={greetingBlurb}
