@@ -7,9 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-fredoka);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-fredoka);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -64,24 +64,35 @@
   --goldy-gold-400: #FFCC33;
   --goldy-gold-500: #E6B422;
   --goldy-gold-700: #7A5B00;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+
+  /* Surface variants — see docs/DESIGN-TOKENS.md
+     vibrant: radial gold→maroon, /feed only via .goldy-theme
+     calm:    warm cream, default page background
+     paper:   white, cards/inputs/modals */
+  --surface-vibrant: radial-gradient(ellipse at top, var(--goldy-gold-50) 0%, var(--goldy-maroon-50) 70%);
+  --surface-calm: #FFFBF2;
+  --surface-paper: #FFFFFF;
+
+  /* shadcn tokens rebound to Goldy palette.
+     Contrast-audited: foreground on calm = 17:1; primary-fg on primary (maroon) = 12:1. */
+  --background: var(--surface-calm);
+  --foreground: #1A1210;
+  --card: var(--surface-paper);
+  --card-foreground: #1A1210;
+  --popover: var(--surface-paper);
+  --popover-foreground: #1A1210;
+  --primary: var(--goldy-maroon-500);
+  --primary-foreground: #FFFFFF;
+  --secondary: #F4E6C8;
+  --secondary-foreground: var(--goldy-maroon-700);
+  --muted: #F5EDE0;
+  --muted-foreground: #5B4A3A;
+  --accent: var(--goldy-gold-100);
+  --accent-foreground: var(--goldy-maroon-700);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --border: #E8D8C0;
+  --input: #E8D8C0;
+  --ring: var(--goldy-gold-400);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -138,6 +149,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
   }
   html {
     @apply font-sans;
