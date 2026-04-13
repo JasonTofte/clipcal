@@ -1,0 +1,50 @@
+# Supabase CLI config — see https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "clipcal"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true  # REQUIRED for AC-5 safe identity linking and C4
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret    = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
+redirect_uri = ""
+skip_nonce_check = false
+
+# Before User Created Hook — enforces @umn.edu and provider allowlist.
+# Wire up in the dashboard for hosted projects; this block is for `supabase start`.
+[auth.hook.before_user_created]
+enabled = true
+uri = "pg-functions://postgres/public/enforce_umn_domain"
