@@ -93,8 +93,7 @@ export function GoldyFeedClient() {
         return { row, ctx, line, pct };
       })
       .sort((a, b) => b.pct - a.pct);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows, demoMode, profile]);
+  }, [rows, demoMode, interests, allEvents]);
 
   const recentClips = rows
     .slice()
@@ -113,7 +112,7 @@ export function GoldyFeedClient() {
       return `Hey! I peeked at your week — your weekend is wide open. Want me to surface what fits?`;
     }
     return `Hey! You've got ${rows.length} event${rows.length === 1 ? '' : 's'} on deck. ${weekday}'s looking like your day.`;
-  }, [rows.length, allEvents]);
+  }, [rows, allEvents]);
 
   const handleAdd = (row: FeedRow) => {
     triggerIcsDownload([row.event]);
@@ -139,7 +138,7 @@ export function GoldyFeedClient() {
           </p>
           <Link
             href="/"
-            className="rounded-full px-4 py-2 text-xs font-bold"
+            className="inline-flex min-h-[44px] items-center rounded-full px-5 py-3 text-sm font-bold"
             style={{
               background: 'var(--goldy-maroon-500)',
               color: 'var(--goldy-gold-400)',
@@ -265,7 +264,11 @@ function GoldyGreeting({ blurb }: { blurb: string }) {
       <div className="shrink-0">
         <GoldyAvatar size={64} showStatus />
       </div>
-      <div className="goldy-bubble max-w-md rounded-2xl rounded-tl-sm px-4 py-3 shadow-md">
+      <div
+        className="goldy-bubble max-w-md rounded-2xl rounded-tl-sm px-4 py-3 shadow-md"
+        role="note"
+        aria-label="Goldy's greeting"
+      >
         <div
           className="mb-0.5 text-[10px] font-bold uppercase tracking-wider"
           style={{ color: 'var(--goldy-maroon-600)' }}

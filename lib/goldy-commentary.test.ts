@@ -437,13 +437,22 @@ describe('buildContext — remaining bucket paths', () => {
     expect(ctx.slots.walkMinutes).toBeUndefined();
   });
 
-  it('late-night: event starting at 22:00 UTC lands in late-night bucket', () => {
+  it('late-night: event at 10pm America/Chicago lands in late-night bucket', () => {
     const event = makeEvent({
-      start: '2026-04-15T22:30:00Z', // Wed 22:30 UTC
+      start: '2026-04-16T03:00:00Z', // Wed 22:00 CT
       title: 'Evening thing',
     });
     const ctx = buildContext(event, [], [event]);
     expect(ctx.bucket).toBe('late-night');
+  });
+
+  it('late-night: a 3pm America/Chicago event does NOT fall in late-night (regression: UTC bug)', () => {
+    const event = makeEvent({
+      start: '2026-04-15T20:00:00Z', // Wed 15:00 CT — would have been flagged late-night under the old UTC-hour check
+      title: 'Afternoon thing',
+    });
+    const ctx = buildContext(event, [], [event]);
+    expect(ctx.bucket).not.toBe('late-night');
   });
 
   it('weekend-open: Saturday event with no conflict lands in weekend-open', () => {

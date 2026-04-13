@@ -1,9 +1,16 @@
 import { GoldyFeedClient } from '@/components/goldy-feed-client';
 import { GoldyAvatar } from '@/components/goldy-avatar';
+import { GoldyFab } from '@/components/goldy-fab';
 
 export default function FeedPage() {
   return (
-    <div className="goldy-theme min-h-[100dvh] pb-12">
+    <div
+      className="goldy-theme min-h-[100dvh]"
+      style={{
+        paddingBottom:
+          'calc(env(safe-area-inset-bottom) + 120px)',
+      }}
+    >
       <header
         className="sticky top-0 z-20 shadow-lg"
         style={{
@@ -16,15 +23,15 @@ export default function FeedPage() {
           <div className="flex items-center gap-2.5">
             <GoldyAvatar size={44} showStatus />
             <div>
-              <div className="goldy-display text-lg font-bold leading-tight">
+              <h1 className="goldy-display text-lg font-bold leading-tight">
                 Gopherly
-              </div>
-              <div
+              </h1>
+              <p
                 className="text-[11px] leading-tight"
                 style={{ color: 'var(--goldy-gold-300)' }}
               >
                 Goldy · your campus sidekick
-              </div>
+              </p>
             </div>
           </div>
           <span
@@ -42,6 +49,7 @@ export default function FeedPage() {
       <main className="mx-auto max-w-2xl px-4 py-5">
         <GoldyFeedClient />
       </main>
+      <GoldyFab />
     </div>
   );
 }

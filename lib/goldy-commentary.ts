@@ -82,8 +82,34 @@ function matchesAnyInterest(event: Event, interests: string[]): string | null {
 
 const BACK_TO_BACK_MS = 90 * 60 * 1000;
 const DEFAULT_EVENT_DURATION_MS = 60 * 60 * 1000;
-const LATE_NIGHT_START_HOUR = 21; // UTC hour at which an event is considered "late night"
+const LATE_NIGHT_START_HOUR = 21; // local hour at which an event is considered "late night"
 const DEFAULT_WALK_MINUTES = 12; // assumed walk time between different venue locations
+
+// Hour-of-day and day-of-week in the event's local timezone. UTC would classify
+// events as "late night" based on server clock, not the user's wall clock — for
+// America/Chicago that's off by 5-6 hours and breaks the bucket entirely.
+function localHourAndDay(event: Event): { hour: number; day: number } {
+  const d = new Date(event.start);
+  const tz = event.timezone || 'America/Chicago';
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      hour: 'numeric',
+      hour12: false,
+      weekday: 'short',
+    }).formatToParts(d);
+    const hourStr = parts.find((p) => p.type === 'hour')?.value ?? '0';
+    const wkd = parts.find((p) => p.type === 'weekday')?.value ?? '';
+    const dayMap: Record<string, number> = {
+      Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+    };
+    // Intl sometimes returns "24" for midnight — normalize to 0.
+    const hourNum = Number(hourStr) % 24;
+    return { hour: hourNum, day: dayMap[wkd] ?? d.getUTCDay() };
+  } catch {
+    return { hour: d.getUTCHours(), day: d.getUTCDay() };
+  }
+}
 
 function findAdjacentEvent(
   event: Event,
@@ -162,15 +188,12 @@ export function buildContext(
     };
   }
 
-  // Priority 6: late-night
-  const startHourUtc = new Date(event.start).getUTCHours();
-  if (startHourUtc >= LATE_NIGHT_START_HOUR) {
+  // Priority 6 + 7: time-of-day / day-of-week in the event's local timezone.
+  const { hour, day } = localHourAndDay(event);
+  if (hour >= LATE_NIGHT_START_HOUR) {
     return { bucket: 'late-night', slots: {} };
   }
-
-  // Priority 7: weekend-open
-  const startDay = new Date(event.start).getUTCDay(); // 0=Sun, 6=Sat
-  if (startDay === 0 || startDay === 6) {
+  if (day === 0 || day === 6) {
     return { bucket: 'weekend-open', slots: {} };
   }
 

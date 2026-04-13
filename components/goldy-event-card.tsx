@@ -114,7 +114,7 @@ export function GoldyEventCard({
             aria-label="Goldy's take on this event"
           >
             <span className="inline-flex items-center gap-1">
-              <GoldyAvatar size={18} />
+              <GoldyAvatar size={18} decorative />
               <strong style={{ color: 'var(--goldy-maroon-600)' }}>Goldy:</strong>
             </span>{' '}
             <span>&ldquo;{goldyLine}&rdquo;</span>

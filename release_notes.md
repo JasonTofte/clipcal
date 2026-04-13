@@ -2,6 +2,20 @@
 
 ## Unreleased
 
+### Goldy Sidekick feed
+
+`/feed` is no longer a generic list — it's a mascot-forward feed where Goldy Gopher reacts to your calendar. Three pieces:
+
+- **Deterministic commentary.** Each event gets a 1–2 sentence Goldy line chosen from a 120-variant hand-authored bank (8 context buckets × 15 variants). A priority chain picks the bucket: conflict → gameday → interest-match → free-food → back-to-back → late-night → weekend-open → default. A djb2 hash of `event.start + event.title` picks a deterministic-but-varied template; slot substitution falls through if a template references a missing slot. No runtime LLM, no network, fully offline.
+- **Mobile-first shell.** `viewport-fit=cover`, `100dvh`, safe-area insets at top + bottom, `@media (hover: hover)` gating so hover affordances don't stick on touch. Graduate + Fredoka fonts via `next/font/google` (self-hosted, no external CDN). A sticky **bottom tab bar** (`Upload · Browse · Feed · Profile`) with `aria-current="page"` on the active tab replaces the old in-page "back to upload" link.
+- **UI fidelity.** Goldy greeting bubble · week-at-a-glance bars with today highlighted and weekend "OPEN" slots gilded · camera-roll of recent clips · ranked event cards with match % and Goldy speech bubbles. A persistent "Hey Goldy, I snapped a flyer" FAB above the bottom nav keeps the upload loop one tap away.
+
+**Design decision (Option 6 — hybrid):** We compared 7 commentary-generation strategies via `/deep-r`. Industry pattern is clear — Duolingo, Pokémon GO buddy, Siri humor all use hand-authored strings for short, high-frequency mascot copy; LLMs are reserved for long session-amortized dialog where voice drift matters less. We authored variants with LLM assist offline, human-curated, and ship them as a static JSON bank. Zero runtime cost, zero privacy concern (calendar data never leaves the browser), no offline breakage.
+
+**Accessibility.** Goldy speech bubbles carry `role="note"`. Inline decorative avatars inside already-labeled regions use `aria-hidden` so screen readers don't announce "Goldy Gopher" mid-sentence. Header uses a semantic `<h1>` ("Gopherly"); section headings are `<h2>` with `aria-labelledby`. Tap targets ≥44 px on all primary controls.
+
+**Timezone-correct late-night bucket.** Uses `Intl.DateTimeFormat` with the event's own `timezone` field (defaults to `America/Chicago`) instead of UTC hours — a 10 PM Central event was previously never flagged.
+
 ### Browse + search + interest-filtered calendar
 
 A new `/browse` page lets users discover UMN campus events ahead of time — not just the flyers they've extracted. Three orthogonal controls:
