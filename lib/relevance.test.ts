@@ -5,6 +5,7 @@ import {
   formatScoreBadge,
   scoreTone,
   matchesInterests,
+  scoreEvent,
 } from './relevance';
 
 describe('RelevanceScoreSchema', () => {
@@ -130,5 +131,37 @@ describe('matchesInterests', () => {
   it('AC-3: a single matching interest among multiple is sufficient', () => {
     const event = { title: 'Career Fair', group_title: null, event_types: ['Networking'] };
     expect(matchesInterests(event, ['robotics', 'networking', 'sailing'])).toBe(true);
+  });
+});
+
+describe('scoreEvent', () => {
+  const base = { title: 'Machine Learning Workshop', group_title: 'AI Club', event_types: ['Workshop'] };
+
+  it('returns null when interests are empty or whitespace-only', () => {
+    expect(scoreEvent(base, [])).toBeNull();
+    expect(scoreEvent(base, ['   ', '\t'])).toBeNull();
+  });
+
+  it('scores a title hit higher than a group/type hit', () => {
+    const titleHit = scoreEvent(base, ['machine learning']);
+    const groupHit = scoreEvent({ ...base, title: 'Weekly Social' }, ['ai club']);
+    const typeHit = scoreEvent({ ...base, title: 'Weekly Social', group_title: null }, ['workshop']);
+    expect(titleHit).toBeGreaterThan(groupHit as number);
+    expect(groupHit).toBe(typeHit);
+  });
+
+  it('applies a free-cost bonus', () => {
+    const withFree = scoreEvent({ ...base, cost: 'Free' }, ['machine learning']);
+    const withoutFree = scoreEvent({ ...base, cost: null }, ['machine learning']);
+    expect((withFree as number) - (withoutFree as number)).toBe(5);
+  });
+
+  it('caps the score at 99', () => {
+    const score = scoreEvent(base, ['machine learning', 'workshop', 'ai club', 'learning', 'machine']);
+    expect(score).toBeLessThanOrEqual(99);
+  });
+
+  it('returns the base score when no tokens match', () => {
+    expect(scoreEvent(base, ['sailing', 'pottery'])).toBe(10);
   });
 });

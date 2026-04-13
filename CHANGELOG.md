@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Campus-feed confidence scores** (`lib/relevance.ts` → `scoreEvent`, `components/campus-feed.tsx`) — each "Happening on Campus" row now shows a tone-tinted `NN%` chip driven by the user's saved profile interests. Deterministic keyword scoring (title hit +30, group/type hit +20, free bonus +5, capped at 99); returns `null` when no interests are set so cold-start users see no badge. 5 new unit tests.
 - **Calm Mode toggle** (`lib/calm-mode.ts`, `components/calm-mode-toggle.tsx`) — user-controllable sensory-low palette grounded in Tiimo's 2024/2025 Apple Design Award pattern: the control IS the design, not a preset. Toggling writes `clipcal_calm_mode_v1` to `localStorage`, sets `document.body.dataset.calm = "true"`, and all token-bound colors shift to desaturated variants within one frame. State is restored on page reload. Implemented as `useState + useEffect` hook so the toggle re-renders correctly; SSR returns safe no-op defaults. (AC-1)
 - **Sensory-low typography baseline** — app-wide, unconditionally: `body` line-height ≥ 1.6, paragraph `max-width` 68ch, minimum font weight 400 in primary-content regions. Applies regardless of Calm Mode state because wide-measure dense text is strictly worse for everyone, not a preference. Grounded in Ottawa Decision Support Framework (ODSF) guidance on reducing decisional conflict through environmental clarity. (AC-2)
 - **Calm Mode token overrides** (`app/globals.css`) — when `[data-calm="true"]`, body letter-spacing bumps +0.01em and the high-contrast maroon-on-cream pairing (~15:1) shifts to muted-maroon-on-warm-cream (~9–10:1), which still passes WCAG AA for body text but eliminates the contrast spike that triggers sensory fatigue. (AC-3)
@@ -37,10 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Custom color picker (Tiimo ships 3,000 user-selectable colors; we ship one Calm preset)
 - DayRail earlier/later tap-to-expand (summary rows are static `<div>`, not interactive; users can scroll full week view)
 - DayRail responsive `railHeight` (fixed 520px default; auto-viewport computation deferred)
-
----
-
-### Added
 
 - **QR code decode** (`lib/qr-decode.ts`) — extracts a signup URL from any uploaded flyer image. Uses the native `BarcodeDetector` API on Chrome/Edge/Android (zero bundle cost) and falls back to `qr-scanner` (nimiq, dynamically imported) on iOS Safari/Firefox. Result is filtered to `http(s)` only — `javascript:`, `data:`, `file:` URLs are rejected to prevent XSS via `<a href={signupUrl}>`. New `signupUrl` field on `EventSchema` is also URL-validated at the schema level.
 - **E-ink display sync infra** (`lib/ble-sync.ts`, `components/eink-sync-button.tsx`) — sync the next batch of upcoming events to a Pi Zero e-ink display worn on a phone case. Two transports: WiFi (HTTPS POST to the Pi's local IP — Chrome/Edge/Firefox; iOS Safari falls back to the Pi's captive-portal paste page) and BLE (Web Bluetooth, Chrome/Edge/Android). BLE writes are properly chunked into 20-byte ATT-MTU-safe slices with a notifications handshake on the TX characteristic — fixes a silent-truncation bug where 510-byte payloads were sent as a single write. Pi sync URL is env-gated via `NEXT_PUBLIC_EINK_PI_URL`; CSP `connect-src` is appended only when that env var is set, so the security headers stay tight by default.
