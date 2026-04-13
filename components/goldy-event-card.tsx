@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import type { Event } from '@/lib/schema';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { formatEventWhen } from '@/lib/format';
@@ -7,6 +10,10 @@ type Props = {
   goldyLine: string;
   matchPct?: number | null;
   isTopPick?: boolean;
+  // When present, the event overlaps a known busy slot. Rendering the
+  // Add button switches to a two-tap "arm → commit" flow so users don't
+  // silently double-book themselves.
+  conflictTitle?: string | null;
   onAddToCalendar: () => void;
   onOpenMenu?: () => void;
 };
@@ -26,11 +33,28 @@ export function GoldyEventCard({
   goldyLine,
   matchPct,
   isTopPick = false,
+  conflictTitle,
   onAddToCalendar,
   onOpenMenu,
 }: Props) {
   const flyer = flyerClass(event);
   const onPizza = flyer === 'flyer-pizza';
+  const hasConflict = !!conflictTitle;
+  // When there's a conflict, first tap arms the button; second tap commits.
+  const [armed, setArmed] = useState(false);
+
+  const handleAddPress = () => {
+    if (!hasConflict) {
+      onAddToCalendar();
+      return;
+    }
+    if (!armed) {
+      setArmed(true);
+      return;
+    }
+    onAddToCalendar();
+    setArmed(false);
+  };
 
   return (
     <article
@@ -106,28 +130,70 @@ export function GoldyEventCard({
             <span>&ldquo;{goldyLine}&rdquo;</span>
           </div>
 
-          <div className="mt-3 flex gap-1.5">
-            <button
-              type="button"
-              onClick={onAddToCalendar}
-              className="min-h-[44px] flex-1 rounded-full py-2 text-xs font-bold"
-              style={{
-                background: 'var(--goldy-maroon-500)',
-                color: 'var(--goldy-gold-400)',
-              }}
-            >
-              📅 Add to Calendar
-            </button>
-            {onOpenMenu && (
+          <div className="mt-3 flex flex-col gap-1.5">
+            {hasConflict && (
+              <div
+                className="rounded-lg px-2.5 py-1.5 text-[11px]"
+                style={{
+                  background: 'rgba(225, 29, 72, 0.08)',
+                  color: 'rgb(159, 18, 57)',
+                  border: '1px solid rgba(225, 29, 72, 0.25)',
+                }}
+                role="note"
+              >
+                {armed ? (
+                  <>
+                    ⚠ Overlaps <strong>{conflictTitle}</strong>. Tap again to add anyway.
+                  </>
+                ) : (
+                  <>
+                    ⚠ Overlaps <strong>{conflictTitle}</strong>.
+                  </>
+                )}
+              </div>
+            )}
+            <div className="flex gap-1.5">
               <button
                 type="button"
-                onClick={onOpenMenu}
-                aria-label="More options"
-                className="min-h-[44px] min-w-[44px] rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700"
+                onClick={handleAddPress}
+                aria-label={
+                  hasConflict
+                    ? armed
+                      ? `Confirm adding ${event.title} despite overlap with ${conflictTitle}`
+                      : `Add ${event.title} — overlaps ${conflictTitle}`
+                    : `Add ${event.title} to calendar`
+                }
+                className="min-h-[44px] flex-1 rounded-full py-2 text-xs font-bold transition-colors"
+                style={
+                  hasConflict && !armed
+                    ? {
+                        background: 'white',
+                        color: 'var(--goldy-maroon-600)',
+                        border: '2px solid var(--goldy-maroon-500)',
+                      }
+                    : {
+                        background: 'var(--goldy-maroon-500)',
+                        color: 'var(--goldy-gold-400)',
+                      }
+                }
               >
-                ⋯
+                {hasConflict
+                  ? armed
+                    ? '📅 Confirm — add anyway'
+                    : 'Add anyway · you decide'
+                  : '📅 Add to Calendar'}
               </button>
-            )}
+              {onOpenMenu && (
+                <button
+                  type="button"
+                  onClick={onOpenMenu}
+                  aria-label="More options"
+                  className="min-h-[44px] min-w-[44px] rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700"
+                >
+                  ⋯
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
