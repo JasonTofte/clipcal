@@ -112,6 +112,33 @@ export function extractKeywords(title: string, count = 3): string {
     .join('+');
 }
 
+const YYYY_MM_DD = /^\d{4}-\d{2}-\d{2}$/;
+
+export async function fetchBrowse(params: {
+  q: string;
+  startDate: string; // YYYY-MM-DD
+  endDate: string;   // YYYY-MM-DD
+  max?: number;
+}): Promise<LiveWhaleEvent[]> {
+  if (!YYYY_MM_DD.test(params.startDate) || !YYYY_MM_DD.test(params.endDate)) {
+    throw new Error(
+      `fetchBrowse: dates must be YYYY-MM-DD, got "${params.startDate}" / "${params.endDate}"`,
+    );
+  }
+  const max = Math.max(1, Math.min(200, params.max ?? 50));
+  let path: string;
+  if (params.q) {
+    path = `/search/${encodeURIComponent(params.q)}/start_date/${params.startDate}/end_date/${params.endDate}/max/${max}`;
+  } else {
+    path = `/start_date/${params.startDate}/end_date/${params.endDate}/max/${max}`;
+  }
+  try {
+    return await fetchLiveWhale(path);
+  } catch {
+    return [];
+  }
+}
+
 export function dateWindow(
   centerIso: string,
   paddingDays = 3,
