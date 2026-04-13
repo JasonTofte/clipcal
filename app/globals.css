@@ -49,6 +49,21 @@
 }
 
 :root {
+  /* UMN Goldy palette — used by the /feed Goldy Sidekick UI */
+  --goldy-maroon-50: #FBF2F3;
+  --goldy-maroon-100: #F4DCDE;
+  --goldy-maroon-200: #E3A9AE;
+  --goldy-maroon-400: #9E2F3A;
+  --goldy-maroon-500: #7A0019;
+  --goldy-maroon-600: #5B0013;
+  --goldy-maroon-700: #40000D;
+  --goldy-gold-50: #FFF8E1;
+  --goldy-gold-100: #FFEDB3;
+  --goldy-gold-200: #FFDE7A;
+  --goldy-gold-300: #FFD24D;
+  --goldy-gold-400: #FFCC33;
+  --goldy-gold-500: #E6B422;
+  --goldy-gold-700: #7A5B00;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -128,3 +143,44 @@
     @apply font-sans;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Goldy Sidekick utilities (scoped under .goldy-theme on /feed)
+   Keeps the rest of the app on the stock shadcn palette.
+   ------------------------------------------------------------------------ */
+.goldy-theme {
+  font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  background: radial-gradient(ellipse at top, var(--goldy-gold-50) 0%, var(--goldy-maroon-50) 70%);
+  min-height: 100dvh;
+}
+.goldy-theme .goldy-display {
+  font-family: var(--font-graduate), Georgia, serif;
+}
+.goldy-theme .goldy-bubble {
+  background: linear-gradient(135deg, var(--goldy-gold-400) 0%, var(--goldy-gold-200) 100%);
+  position: relative;
+}
+.goldy-theme .goldy-bubble::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 16px;
+  border-right: 12px solid var(--goldy-gold-400);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+.goldy-theme .flyer-hack { background: linear-gradient(135deg, var(--goldy-maroon-500) 0%, var(--goldy-maroon-700) 100%); }
+.goldy-theme .flyer-pizza { background: linear-gradient(135deg, var(--goldy-gold-400) 0%, var(--goldy-gold-500) 100%); color: var(--goldy-maroon-700); }
+.goldy-theme .flyer-career { background: linear-gradient(135deg, var(--goldy-maroon-600) 0%, var(--goldy-maroon-500) 60%, var(--goldy-gold-400) 150%); }
+.goldy-theme .flyer-fest { background: linear-gradient(135deg, var(--goldy-maroon-400) 0%, var(--goldy-gold-300) 140%); }
+.goldy-theme .flyer-game { background: linear-gradient(135deg, var(--goldy-maroon-700) 0%, var(--goldy-maroon-500) 100%); }
+.goldy-theme .flyer-default { background: linear-gradient(135deg, var(--goldy-maroon-500) 0%, var(--goldy-maroon-400) 100%); }
+
+/* Hover affordances only on real pointers — stops sticky-hover on tap. */
+@media (hover: hover) and (pointer: fine) {
+  .goldy-theme .goldy-hover\:brighten:hover { filter: brightness(1.05); }
+}
+
+/* Hide scrollbar on horizontal rails (camera roll). */
+.scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

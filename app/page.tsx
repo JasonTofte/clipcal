@@ -2,12 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { CampusFeed } from '@/components/campus-feed';
-import { Dropzone } from '@/components/dropzone';
-import { EventCard } from '@/components/event-card';
-import { WeekDensity } from '@/components/week-density';
 import { Button } from '@/components/ui/button';
-import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
+import { HomeIdleView } from '@/components/home-idle-view';
+import { HomeSuccessView } from '@/components/home-success-view';
+import { WeekDensity } from '@/components/week-density';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { appendBatch, markBatchCommitted } from '@/lib/event-store';
@@ -15,10 +13,18 @@ import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings } from '@/lib/noticings';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
-import { RelevanceBatchSchema, type RelevanceScore } from '@/lib/relevance';
+import type { RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
-import type { CampusMatch, CampusMatchResponse } from '@/app/api/campus-match/route';
-import type { OrgMatch, OrgMatchResponse } from '@/app/api/campus-orgs/route';
+import type { CampusMatch } from '@/app/api/campus-match/route';
+import type { OrgMatch } from '@/app/api/campus-orgs/route';
+import {
+  fetchRelevance,
+  fetchCampusMatches,
+  fetchOrgMatches,
+} from '@/lib/extraction-client';
+import { useDemoMode } from '@/hooks/use-demo-mode';
+import { usePasteFiles } from '@/hooks/use-paste-files';
+import { useShareTarget } from '@/hooks/use-share-target';
 
 type UxState =
   | { status: 'idle' }
@@ -35,117 +41,19 @@ type UxState =
   | { status: 'error'; message: string };
 
 const LOADING_MESSAGE = 'Claude is reading your flyer…';
-const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
-
-// Stable sample event used for the idle-state teaser. Hardcoded (not computed
-// from new Date()) so SSR prerender and client hydration produce identical
-// output. Values are chosen so noticings + conflict + leave-by + relevance all
-// fire with visually interesting results against DEMO_CALENDAR.
-const TEASER_EVENT: Event = {
-  title: 'Data Viz Workshop',
-  start: '2026-04-18T19:00:00-05:00', // Sat 7:00 PM Central
-  end: '2026-04-18T20:30:00-05:00',
-  location: 'Walter Library 101',
-  description: 'Intro to D3.js and observable notebooks. Beginner friendly — come play.',
-  category: 'workshop',
-  hasFreeFood: true,
-  timezone: 'America/Chicago',
-  confidence: 'high',
-};
-
-const TEASER_RELEVANCE: RelevanceScore = {
-  score: 82,
-  reason: 'matches your data + workshops interests',
-};
-
-async function fetchCampusMatches(
-  events: Event[],
-): Promise<(CampusMatch | null)[]> {
-  const results = await Promise.all(
-    events.map(async (event) => {
-      try {
-        const res = await fetch('/api/campus-match', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: event.title, start: event.start }),
-        });
-        if (!res.ok) return null;
-        const json = (await res.json()) as CampusMatchResponse;
-        return json.matches.length > 0 ? json.matches[0] : null;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return results;
-}
-
-async function fetchOrgMatches(
-  events: Event[],
-): Promise<(OrgMatch | null)[]> {
-  const results = await Promise.all(
-    events.map(async (event) => {
-      try {
-        const res = await fetch('/api/campus-orgs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title: event.title, start: event.start }),
-        });
-        if (!res.ok) return null;
-        const json = (await res.json()) as OrgMatchResponse;
-        return json.matches.length > 0 ? json.matches[0] : null;
-      } catch {
-        return null;
-      }
-    }),
-  );
-  return results;
-}
-
-function openInNewTab(url: string) {
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-async function fetchRelevance(
-  events: Event[],
-  profile: Profile,
-): Promise<RelevanceScore[] | null> {
-  try {
-    const response = await fetch('/api/relevance', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events, profile }),
-    });
-    if (!response.ok) return null;
-    const json: unknown = await response.json();
-    const parsed = RelevanceBatchSchema.safeParse(json);
-    return parsed.success ? parsed.data.scores : null;
-  } catch {
-    return null;
-  }
-}
 
 export default function Home() {
   const [state, setState] = useState<UxState>({ status: 'idle' });
-  const [demoMode, setDemoMode] = useState<boolean>(true);
+  const [demoMode, setDemoMode] = useDemoMode(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const lastFileRef = useRef<File | null>(null);
 
-  // Load demo-mode preference, profile, and register service worker on mount.
   useEffect(() => {
-    const stored = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
-    if (stored !== null) setDemoMode(stored === 'true');
     setProfile(loadProfileFromStorage());
-
-    // Register service worker for PWA share target (Android)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
     }
   }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem(DEMO_MODE_STORAGE_KEY, String(demoMode));
-  }, [demoMode]);
 
   const handleFiles = useCallback(async (files: File[], model?: 'sonnet') => {
     if (files.length === 0) return;
@@ -188,34 +96,21 @@ export default function Home() {
         orgMatches: null,
       });
 
-      // Kick off relevance scoring if we have a profile. Silent no-op
-      // otherwise. Errors are absorbed — relevance is an enhancement, not
-      // a hard dependency of the success state.
+      // Kick off enrichment calls. All three are fire-and-forget — errors
+      // are absorbed inside each client; these features enhance the success
+      // state but aren't required for it.
       const currentProfile = loadProfileFromStorage();
       if (currentProfile) {
         void fetchRelevance(extraction.events, currentProfile).then((scores) => {
           if (!scores) return;
-          setState((prev) => {
-            if (prev.status !== 'success') return prev;
-            return { ...prev, relevance: scores };
-          });
+          setState((prev) => (prev.status === 'success' ? { ...prev, relevance: scores } : prev));
         });
       }
-
-      // Kick off campus match lookup against UMN LiveWhale calendar.
       void fetchCampusMatches(extraction.events).then((matches) => {
-        setState((prev) => {
-          if (prev.status !== 'success') return prev;
-          return { ...prev, campusMatches: matches };
-        });
+        setState((prev) => (prev.status === 'success' ? { ...prev, campusMatches: matches } : prev));
       });
-
-      // Kick off GopherLink student org match lookup.
       void fetchOrgMatches(extraction.events).then((matches) => {
-        setState((prev) => {
-          if (prev.status !== 'success') return prev;
-          return { ...prev, orgMatches: matches };
-        });
+        setState((prev) => (prev.status === 'success' ? { ...prev, orgMatches: matches } : prev));
       });
     } catch (err) {
       setState({
@@ -225,55 +120,8 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    function onPaste(e: ClipboardEvent) {
-      const active = document.activeElement;
-      if (active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA') return;
-
-      const items = e.clipboardData?.items;
-      if (!items) return;
-
-      const files: File[] = [];
-      for (const item of items) {
-        if (item.kind === 'file' && item.type.startsWith('image/')) {
-          const file = item.getAsFile();
-          if (file) files.push(file);
-        }
-      }
-      if (files.length > 0) {
-        e.preventDefault();
-        handleFiles(files);
-      }
-    }
-
-    window.addEventListener('paste', onPaste);
-    return () => window.removeEventListener('paste', onPaste);
-  }, [handleFiles]);
-
-  // Pick up images shared via Android share sheet (PWA share target).
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('source') !== 'share') return;
-
-    // Clean the URL so a refresh doesn't re-trigger
-    window.history.replaceState({}, '', '/');
-
-    (async () => {
-      try {
-        const cache = await caches.open('clipcal-shared-media');
-        const response = await cache.match('/shared-media/latest');
-        if (!response) return;
-        const blob = await response.blob();
-        const rawName = response.headers.get('X-Filename') || 'shared.jpg';
-        const safeName = rawName.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120) || 'shared.jpg';
-        const file = new File([blob], safeName, { type: blob.type });
-        await cache.delete('/shared-media/latest');
-        handleFiles([file]);
-      } catch {
-        // Shared media pickup is best-effort
-      }
-    })();
-  }, [handleFiles]);
+  usePasteFiles(handleFiles);
+  useShareTarget(useCallback((file: File) => handleFiles([file]), [handleFiles]));
 
   const updateEvent = (idx: number, updated: Event) => {
     setState((prev) => {
@@ -286,10 +134,6 @@ export default function Home() {
 
   const reset = () => setState({ status: 'idle' });
 
-  // Derived: compute conflicts for each event against the active calendar source.
-  // In demo mode, use DEMO_CALENDAR. When demo mode is off, we have no real
-  // calendar source wired up yet (live OAuth is a Session 3 stretch), so we
-  // return null → EventCard hides the badge.
   const events = state.status === 'success' ? state.events : [];
   const activeCalendar = demoMode ? DEMO_CALENDAR : [];
   const conflicts = useMemo(
@@ -297,11 +141,8 @@ export default function Home() {
     [events, demoMode],
   );
   const noticingsPerEvent = useMemo(
-    () =>
-      events.map((event) =>
-        generateNoticings(event, { demoCalendar: activeCalendar }),
-      ),
-    [events, demoMode],
+    () => events.map((event) => generateNoticings(event, { demoCalendar: activeCalendar })),
+    [events, activeCalendar],
   );
   const leaveByPerEvent = useMemo(
     () => events.map((event) => computeLeaveBy(event)),
@@ -310,15 +151,15 @@ export default function Home() {
 
   const handleDownloadIcs = (event: Event) => {
     triggerIcsDownload([event]);
-    if (state.status === 'success') {
-      markBatchCommitted(state.batchId);
-    }
+    if (state.status === 'success') markBatchCommitted(state.batchId);
   };
-
   const handleDownloadAll = () => {
     if (state.status !== 'success') return;
     triggerIcsDownload(state.events);
     markBatchCommitted(state.batchId);
+  };
+  const handleRetryWithSonnet = () => {
+    if (lastFileRef.current) handleFiles([lastFileRef.current], 'sonnet');
   };
 
   return (
@@ -358,39 +199,7 @@ export default function Home() {
       )}
 
       <div className="flex-1">
-        {state.status === 'idle' && (
-          <div className="flex flex-col gap-6">
-            <Dropzone onFiles={handleFiles} />
-            {demoMode && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <span>What you&rsquo;ll see</span>
-                  <div className="h-px flex-1 bg-border/60" />
-                  <span className="font-mono text-[10px] text-muted-foreground/60">sample</span>
-                </div>
-                <EventCard
-                  event={TEASER_EVENT}
-                  conflict={checkConflict(TEASER_EVENT, DEMO_CALENDAR)}
-                  relevance={TEASER_RELEVANCE}
-                  campusMatch={null}
-                  orgMatch={null}
-                  noticings={generateNoticings(TEASER_EVENT, { demoCalendar: DEMO_CALENDAR })}
-                  leaveBy={computeLeaveBy(TEASER_EVENT)}
-                  busySlots={DEMO_CALENDAR}
-                  readOnly
-                  onChange={() => undefined}
-                  onDownloadIcs={() => undefined}
-                  onOpenGoogle={() => undefined}
-                  onOpenOutlook={() => undefined}
-                />
-                <p className="text-center text-[11px] text-muted-foreground/70">
-                  Upload any flyer above to get your own.
-                </p>
-              </section>
-            )}
-            <CampusFeed />
-          </div>
-        )}
+        {state.status === 'idle' && <HomeIdleView demoMode={demoMode} onFiles={handleFiles} />}
 
         {state.status === 'loading' && <LoadingPanel message={state.message} />}
 
@@ -407,60 +216,26 @@ export default function Home() {
         )}
 
         {state.status === 'success' && (
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-sm">
-                <span className="text-emerald-500" aria-hidden>✓</span>
-                <span className="font-medium">
-                  {state.events.length === 1 ? 'Found an event!' : `${state.events.length} events found`}
-                </span>
-              </div>
-              {state.events.length > 1 && (
-                <Button size="sm" variant="default" onClick={handleDownloadAll}>
-                  + Add all
-                </Button>
-              )}
-            </div>
-            {state.events.map((event, idx) => (
-              <EventCard
-                key={idx}
-                event={event}
-                conflict={conflicts[idx]}
-                relevance={state.relevance?.[idx] ?? null}
-                campusMatch={state.campusMatches?.[idx] ?? null}
-                orgMatch={state.orgMatches?.[idx] ?? null}
-                noticings={noticingsPerEvent[idx]}
-                leaveBy={leaveByPerEvent[idx]}
-                busySlots={activeCalendar}
-                onChange={(updated) => updateEvent(idx, updated)}
-                onDownloadIcs={() => handleDownloadIcs(event)}
-                onOpenGoogle={() => openInNewTab(googleCalendarUrl(event))}
-                onOpenOutlook={() => openInNewTab(outlookCalendarUrl(event))}
-              />
-            ))}
-            {state.sourceNotes && (
-              <p className="text-xs italic text-muted-foreground">
-                note from Claude: {state.sourceNotes}
-              </p>
-            )}
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={reset} variant="outline" className="w-fit">
-                Upload another
-              </Button>
-              {state.events.some((e) => e.confidence === 'low' || e.confidence === 'medium') &&
-                lastFileRef.current && (
-                  <Button
-                    variant="secondary"
-                    className="w-fit"
-                    onClick={() => {
-                      if (lastFileRef.current) handleFiles([lastFileRef.current], 'sonnet');
-                    }}
-                  >
-                    🔬 Try with stronger model
-                  </Button>
-                )}
-            </div>
-          </div>
+          <HomeSuccessView
+            events={state.events}
+            sourceNotes={state.sourceNotes}
+            relevance={state.relevance}
+            campusMatches={state.campusMatches}
+            orgMatches={state.orgMatches}
+            conflicts={conflicts}
+            noticingsPerEvent={noticingsPerEvent}
+            leaveByPerEvent={leaveByPerEvent}
+            busySlots={activeCalendar}
+            canRetryWithSonnet={
+              state.events.some((e) => e.confidence === 'low' || e.confidence === 'medium') &&
+              lastFileRef.current !== null
+            }
+            onUpdateEvent={updateEvent}
+            onDownloadIcs={handleDownloadIcs}
+            onDownloadAll={handleDownloadAll}
+            onReset={reset}
+            onRetryWithSonnet={handleRetryWithSonnet}
+          />
         )}
       </div>
 
