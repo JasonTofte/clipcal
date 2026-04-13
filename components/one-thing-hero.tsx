@@ -12,6 +12,7 @@ import { formatEventWhen } from '@/lib/format';
 import type { GoldyContext } from '@/lib/goldy-commentary';
 import { pickGoldyLine } from '@/lib/goldy-commentary';
 import type { Event } from '@/lib/schema';
+import type { CampusFeedResponse } from '@/app/api/campus-feed/route';
 
 // Hero takes a payload in two modes:
 //  • when an event lives in the ranked feed, caller passes that payload
@@ -43,6 +44,10 @@ export function OneThingHero({
   onHide,
 }: Props) {
   const [tick, setTick] = useState(0);
+  // Live-fallback: when the user has uploaded nothing AND nothing in
+  // the local events list is upcoming, fetch one event from the campus
+  // feed so the hero still has something authentic to surface.
+  const [liveFallback, setLiveFallback] = useState<Event | null>(null);
   const nowOverride = useMemo(() => {
     if (typeof window === 'undefined') return null;
     return parseNowOverride(window.location.search);
@@ -53,6 +58,48 @@ export function OneThingHero({
     const id = window.setInterval(() => setTick((t) => t + 1), TICK_MS);
     return () => window.clearInterval(id);
   }, [nowOverride]);
+
+  // Trigger the live fetch only when local data is exhausted. Avoids a
+  // wasteful network call for the common case of users with uploads.
+  useEffect(() => {
+    const now = nowOverride ?? new Date();
+    const haveLocal =
+      (ranked && ranked.length > 0) ||
+      findNextUpcomingEvent(events, now) !== null;
+    if (haveLocal) {
+      if (liveFallback) setLiveFallback(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/campus-feed');
+        if (!res.ok) return;
+        const json = (await res.json()) as CampusFeedResponse;
+        const earliest = json.events
+          .filter((e) => new Date(e.date_iso).getTime() > now.getTime())
+          .sort((a, b) => a.date_iso.localeCompare(b.date_iso))[0];
+        if (!earliest || cancelled) return;
+        setLiveFallback({
+          title: earliest.title,
+          start: earliest.date_iso,
+          end: null,
+          location: earliest.location ?? null,
+          description: earliest.group_title ?? null,
+          category: 'other',
+          hasFreeFood: false,
+          timezone: 'America/Chicago',
+          confidence: 'high',
+        });
+      } catch {
+        // Network error — leave fallback null; hero stays hidden.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [events, ranked, nowOverride, tick]);
 
   const payload = useMemo(() => {
     const now = nowOverride ?? new Date();
@@ -70,27 +117,56 @@ export function OneThingHero({
         leaveBy,
         phase,
         minutesToStart,
+        isLiveFallback: false,
       };
     }
-    // Fallback: next upcoming event in the window.
+    // Fallback 1: next upcoming local event (within the day-of window).
     const next = findNextUpcomingEvent(events, now);
-    if (!next) return null;
-    const leaveBy = computeLeaveBy(next);
-    const phase = computeDayOfState([next], now)?.phase ?? 'heads-up';
-    const minutesToStart = Math.max(
-      0,
-      Math.round((new Date(next.start).getTime() - now.getTime()) / 60000),
-    );
-    // ctx/line fallback when caller didn't compute (shouldn't usually happen).
-    const ctx: GoldyContext = { bucket: 'default', slots: {} };
-    return { event: next, ctx, line: pickGoldyLine(next, ctx), leaveBy, phase, minutesToStart };
-    // `tick` intentionally in deps so we re-evaluate each interval.
+    if (next) {
+      const leaveBy = computeLeaveBy(next);
+      const phase = computeDayOfState([next], now)?.phase ?? 'heads-up';
+      const minutesToStart = Math.max(
+        0,
+        Math.round((new Date(next.start).getTime() - now.getTime()) / 60000),
+      );
+      const ctx: GoldyContext = { bucket: 'default', slots: {} };
+      return {
+        event: next,
+        ctx,
+        line: pickGoldyLine(next, ctx),
+        leaveBy,
+        phase,
+        minutesToStart,
+        isLiveFallback: false,
+      };
+    }
+    // Fallback 2: next live UMN campus event. May lack time-of-day, in
+    // which case computeLeaveBy returns null and we render a no-leave-by
+    // panel.
+    if (liveFallback) {
+      const leaveBy = computeLeaveBy(liveFallback);
+      const minutesToStart = Math.max(
+        0,
+        Math.round((new Date(liveFallback.start).getTime() - now.getTime()) / 60000),
+      );
+      const ctx: GoldyContext = { bucket: 'default', slots: {} };
+      return {
+        event: liveFallback,
+        ctx,
+        line: pickGoldyLine(liveFallback, ctx),
+        leaveBy,
+        phase: 'heads-up' as DayOfPhase,
+        minutesToStart,
+        isLiveFallback: true,
+      };
+    }
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events, ranked, nowOverride, tick]);
+  }, [events, ranked, liveFallback, nowOverride, tick]);
 
   if (!payload) return null;
 
-  const { event, line, leaveBy, phase, minutesToStart } = payload;
+  const { event, line, leaveBy, phase, minutesToStart, isLiveFallback } = payload;
   const isUrgent = phase === 'urgent' || phase === 'leaving-now';
 
   return (
@@ -115,7 +191,11 @@ export function OneThingHero({
           className="inline-block h-1.5 w-1.5 rounded-full"
           style={{ background: 'var(--goldy-maroon-500)' }}
         />
-        {isUrgent ? "it's time" : 'next up'}
+        {isUrgent
+          ? "it's time"
+          : isLiveFallback
+            ? 'happening on campus'
+            : 'next up'}
       </div>
 
       <h2
