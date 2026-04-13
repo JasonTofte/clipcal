@@ -64,7 +64,9 @@ export async function GET(): Promise<Response> {
 
     feedCache = { events, fetchedAt: Date.now() };
     return Response.json({ events } satisfies CampusFeedResponse);
-  } catch {
+  } catch (err) {
+    const e = err as { name?: string; message?: string };
+    console.warn('[campus-feed]', e?.name ?? 'Error', e?.message ?? 'unknown');
     return Response.json({ events: [] } satisfies CampusFeedResponse);
   }
 }

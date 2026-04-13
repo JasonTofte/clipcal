@@ -106,8 +106,9 @@ export async function POST(req: Request): Promise<Response> {
     });
 
     return Response.json({ matches } satisfies CampusMatchResponse);
-  } catch {
-    // Network errors are non-fatal — campus match is an enhancement
+  } catch (err) {
+    const e = err as { name?: string; message?: string };
+    console.warn('[campus-match]', e?.name ?? 'Error', e?.message ?? 'unknown');
     return Response.json({ matches: [] } satisfies CampusMatchResponse);
   }
 }

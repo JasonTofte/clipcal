@@ -145,12 +145,11 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: 'title and start required' }, { status: 400 });
   }
 
-  const { title, start } = parsed.data;
+  const { title } = parsed.data;
 
   try {
     const icsEvents = await fetchAndCacheIcs();
 
-    // Score each ICS event against the extracted title
     const scored = icsEvents
       .map((e) => ({
         event: e,
@@ -160,8 +159,6 @@ export async function POST(req: Request): Promise<Response> {
       .sort((a, b) => b.sim - a.sim)
       .slice(0, 3);
 
-    // Further filter by date proximity if we have a valid start date
-    const eventDate = new Date(start);
     const matches: OrgMatch[] = scored.map((s) => ({
       summary: s.event.summary,
       dtstart: s.event.dtstart,
@@ -172,7 +169,9 @@ export async function POST(req: Request): Promise<Response> {
     }));
 
     return Response.json({ matches } satisfies OrgMatchResponse);
-  } catch {
+  } catch (err) {
+    const e = err as { name?: string; message?: string };
+    console.warn('[campus-orgs]', e?.name ?? 'Error', e?.message ?? 'unknown');
     return Response.json({ matches: [] } satisfies OrgMatchResponse);
   }
 }

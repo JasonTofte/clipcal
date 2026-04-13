@@ -1,10 +1,9 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { generateObject } from 'ai';
 import { ExtractionSchema } from '@/lib/schema';
-import { extractLimiter, extractClientIp } from '@/lib/rate-limit';
+import { extractLimiter, sonnetLimiter, extractClientIp } from '@/lib/rate-limit';
+import { MODEL_HAIKU, MODEL_SONNET } from '@/lib/models';
 
-const MODEL_ID = 'claude-haiku-4-5-20251001';
-const FALLBACK_MODEL_ID = 'claude-sonnet-4-6';
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MEDIA_TYPES = new Set([
   'image/png',
@@ -13,9 +12,11 @@ const ALLOWED_MEDIA_TYPES = new Set([
   'image/webp',
 ]);
 
-const SYSTEM_PROMPT = `You are extracting structured event information from a flyer image.
+function buildSystemPrompt(): string {
+  const today = new Date().toISOString().slice(0, 10);
+  return `You are extracting structured event information from a flyer image.
 
-Today is 2026-04-10, timezone America/Chicago.
+Today is ${today}, timezone America/Chicago.
 
 For every event shown on the flyer, extract:
 - title: the primary event name
@@ -32,6 +33,7 @@ For every event shown on the flyer, extract:
 
 If multiple events appear on the flyer, return ALL of them. Never skip an event.
 Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
+}
 
 export async function POST(req: Request): Promise<Response> {
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -78,7 +80,19 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const useFallback = formData.get('model') === 'sonnet';
-  const modelId = useFallback ? FALLBACK_MODEL_ID : MODEL_ID;
+  if (useFallback) {
+    const sonnetLimit = sonnetLimiter.check(clientIp);
+    if (!sonnetLimit.allowed) {
+      return Response.json(
+        { error: 'sonnet fallback rate limited, try again shortly' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(sonnetLimit.retryAfterSec) },
+        },
+      );
+    }
+  }
+  const modelId = useFallback ? MODEL_SONNET : MODEL_HAIKU;
 
   const bytes = new Uint8Array(await imageEntry.arrayBuffer());
 
@@ -86,7 +100,7 @@ export async function POST(req: Request): Promise<Response> {
     const result = await generateObject({
       model: anthropic(modelId),
       schema: ExtractionSchema,
-      system: SYSTEM_PROMPT,
+      system: buildSystemPrompt(),
       messages: [
         {
           role: 'user',
@@ -107,7 +121,8 @@ export async function POST(req: Request): Promise<Response> {
 
     return Response.json(result.object);
   } catch (error) {
-    console.error('[extract] generateObject failed', error);
+    const e = error as { name?: string; message?: string };
+    console.error('[extract]', e?.name ?? 'Error', e?.message ?? 'unknown');
     return Response.json({ error: 'extraction failed' }, { status: 500 });
   }
 }

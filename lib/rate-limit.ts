@@ -80,6 +80,14 @@ export const relevanceLimiter = createRateLimiter({
   windowMs: 60_000,
 });
 
+// Sonnet fallback is client-initiated and 5-10x more expensive than Haiku.
+// Tight per-key + global ceiling so a looped escalation can't run up the bill.
+export const sonnetLimiter = createRateLimiter({
+  perKeyLimit: 2,
+  globalLimit: 10,
+  windowMs: 60_000,
+});
+
 export function extractClientIp(headers: Headers): string {
   const forwarded = headers.get('x-forwarded-for');
   if (forwarded) {
@@ -87,5 +95,10 @@ export function extractClientIp(headers: Headers): string {
     // is the original client per the de-facto convention Vercel follows.
     return forwarded.split(',')[0].trim();
   }
-  return headers.get('x-real-ip') ?? 'unknown';
+  const realIp = headers.get('x-real-ip');
+  if (realIp) return realIp;
+  // No identifying header: generate a fresh token per request so unknown-IP
+  // clients don't all share a single bucket (which one actor could block by
+  // stripping headers and spamming). Global limiter still bounds damage.
+  return `anon-${crypto.randomUUID()}`;
 }
