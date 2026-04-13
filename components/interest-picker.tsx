@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { saveProfileToStorage, type Profile } from '@/lib/profile';
+import {
+  loadProfileFromStorage,
+  saveProfileToStorage,
+  type Profile,
+} from '@/lib/profile';
 import { cn } from '@/lib/utils';
 
 const INTEREST_OPTIONS = [
@@ -42,6 +46,19 @@ export function InterestPicker() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [stage, setStage] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Pre-fill from saved profile so users can see + edit their prior picks.
+  // Without this, revisiting /profile looks like a blank form and the
+  // previous "Save" vanished — even though data is in localStorage.
+  useEffect(() => {
+    const existing = loadProfileFromStorage();
+    if (existing) {
+      setSelected(new Set(existing.interests));
+      setStage(existing.stage ?? null);
+    }
+    setHydrated(true);
+  }, []);
 
   function toggle(interest: string) {
     setSelected((prev) => {
@@ -53,12 +70,16 @@ export function InterestPicker() {
   }
 
   function handleSave() {
+    // Merge with anything already stored (e.g. major/vibe set elsewhere)
+    // so saving interests doesn't blow away unrelated fields.
+    const existing = loadProfileFromStorage();
     const profile: Profile = {
-      major: null,
+      major: existing?.major ?? null,
       stage: (stage as Profile['stage']) ?? null,
       interests: Array.from(selected),
-      preferences: { showTradeoffs: true, surfaceNoticings: true },
-      vibe: null,
+      preferences:
+        existing?.preferences ?? { showTradeoffs: true, surfaceNoticings: true },
+      vibe: existing?.vibe ?? null,
     };
     saveProfileToStorage(profile);
     setSaved(true);
@@ -121,6 +142,13 @@ export function InterestPicker() {
           ))}
         </div>
       </div>
+
+      {hydrated && selected.size > 0 && (
+        <p className="text-xs text-muted-foreground">
+          Loaded {selected.size} saved interest{selected.size === 1 ? '' : 's'}.
+          Toggle to edit, then save to update.
+        </p>
+      )}
 
       <Button
         onClick={handleSave}
