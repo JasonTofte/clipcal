@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { GoldyAvatar } from '@/components/goldy-avatar';
-import { GoldyWeekGlance } from '@/components/goldy-week-glance';
+import { WeekStrip } from '@/components/week-strip';
+import { DayRail } from '@/components/day-rail';
+import { CalmModeToggle } from '@/components/calm-mode-toggle';
 import { GoldyEventRow } from '@/components/goldy-event-row';
 import { OneThingHero } from '@/components/one-thing-hero';
 import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
@@ -417,7 +419,8 @@ export function GoldyFeedClient() {
 
       {/* Hidden when NEXT_PUBLIC_EINK_PI_URL is unset, or when the user
           has nothing upcoming. Component handles both gates internally. */}
-      <div className="mb-3 flex justify-end">
+      <div className="mb-3 flex items-center justify-between">
+        <CalmModeToggle compact />
         <EinkSyncButton events={allEvents} />
       </div>
 
@@ -456,12 +459,25 @@ export function GoldyFeedClient() {
       )}
 
 
-      <GoldyWeekGlance
-        events={allEvents}
+      <WeekStrip
+        mode={{ source: 'events', events: allEvents }}
         weekStart={weekStart}
         selectedDayIdx={selectedDayIdx}
         onSelectDay={setSelectedDayIdx}
       />
+
+      {selectedDayIdx !== null && (
+        <div className="mb-5">
+          <DayRail
+            dayIdx={selectedDayIdx}
+            weekStart={weekStart}
+            events={allEvents}
+            busySlots={calendar}
+            now={nowOverride ?? undefined}
+            onBack={() => setSelectedDayIdx(null)}
+          />
+        </div>
+      )}
 
       {recentClips.length > 0 && (
         <section className="mb-8" aria-labelledby="goldy-recent-heading">

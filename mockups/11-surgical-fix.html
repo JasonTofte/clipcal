@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 11 · Surgical Fix (P0 + P1 ship)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP 11 — "Surgical Fix"
+    Ships the concrete deep-r recommendations without redesigning the app:
+      • /feed week pills ARE buttons (aria-pressed, focus ring, sticky
+        active-filter chip at top).
+      • Upload page: camera + library as primary CTAs, dropzone demoted
+        to desktop-only affordance, capture-preview during loading.
+      • Consolidated WeekStrip (hour-density ticks inside busy pills).
+      • WCAG 2.2: honors prefers-reduced-motion; 44×44 targets.
+    Scope: ~1 session of work. No palette change, no new motion.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-50:#FBF2F3; --maroon-100:#F4DCDE; --maroon-500:#7A0019;
+      --maroon-600:#5B0013; --gold-300:#FFD24D; --gold-400:#FFCC33;
+      --gold-500:#E6B82E; --cream:#FFFBF2; --ink:#1A1210; --muted:#6B5D58;
+      --surface-paper:#FFFFFF; --surface-calm:#FFF6E8;
+      --border:#E7DFCE;
+    }
+    html,body{background:#F1ECDC;}
+    body { font-family:'Atkinson Hyperlegible','Inter',ui-sans-serif,system-ui,sans-serif;
+           color:var(--ink); }
+    .phone { width:375px; height:760px; border-radius:42px;
+             background:var(--cream); box-shadow:0 20px 60px rgba(30,10,8,0.18);
+             overflow:hidden; position:relative; border:1px solid rgba(0,0,0,0.06); }
+    .phone-notch { position:absolute; top:0; left:50%; transform:translateX(-50%);
+                   width:120px; height:24px; background:#000; border-radius:0 0 14px 14px; z-index:30; }
+    .phone-inner { position:absolute; inset:0; overflow-y:auto; padding-top:30px; }
+    .caption { font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+               color:var(--muted); font-weight:700; }
+    .callout { background:#FFF; border:1px solid var(--border); border-radius:14px;
+               padding:14px 16px; font-size:13px; line-height:1.55; color:var(--ink); }
+    .chip { display:inline-flex; align-items:center; gap:4px; padding:4px 10px;
+            border-radius:999px; font-size:11px; font-weight:600; }
+    .chip-active { background:var(--maroon-500); color:#FFF; }
+    .chip-gold { background:var(--gold-400); color:#40000D; }
+    @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+    /* Week pill — surgical-fix keeps the encoding, promotes to button */
+    .pill { width:36px; height:54px; border-radius:12px; border:1px solid var(--border);
+            background:var(--surface-calm); display:flex; flex-direction:column; justify-content:flex-end;
+            align-items:center; font-weight:700; font-size:12px; color:var(--maroon-500);
+            position:relative; padding:6px 0; cursor:pointer; }
+    .pill:focus-visible { outline:3px solid var(--gold-400); outline-offset:2px; }
+    .pill-open { background:transparent; border:1.5px solid var(--gold-400); color:var(--gold-500); }
+    .pill-selected { border:2px solid var(--maroon-500);
+                     box-shadow:0 0 0 3px rgba(122,0,25,0.12); }
+    .pill-fill { position:absolute; inset-inline:0; bottom:0; background:var(--maroon-500); border-radius:10px; }
+    /* hour-density ticks inside busy pill (the P1 upgrade) */
+    .ticks { position:absolute; inset:4px 6px; display:flex; flex-direction:column-reverse; gap:2px; }
+    .tick  { height:3px; border-radius:2px; background:rgba(255,255,255,0.85); }
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-6xl mx-auto px-5 sm:px-8 py-10">
+
+  <header class="mb-10">
+    <p class="caption">Mockup 11 · grounded in deep-r P0+P1</p>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2">Surgical Fix</h1>
+    <p class="text-[var(--muted)] mt-2 max-w-2xl text-sm leading-relaxed">
+      Minimum changes to address real bugs. Pills become buttons.
+      Upload gets a primary-action hierarchy. A capture-preview replaces
+      the blank loading state. One session of work; no palette change.
+    </p>
+    <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+      <span class="chip chip-active">P0 · prod bug</span>
+      <span class="chip" style="background:var(--maroon-100); color:var(--maroon-600);">P1 · upload CTAs</span>
+      <span class="chip" style="background:var(--maroon-100); color:var(--maroon-600);">P1 · reduced-motion</span>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-2 gap-12">
+
+    <!-- FEED (fixed) -->
+    <section>
+      <p class="caption mb-3">/feed · pills ARE buttons now</p>
+      <div class="phone mx-auto">
+        <div class="phone-notch"></div>
+        <div class="phone-inner px-5">
+          <!-- Sticky active-filter bar (new) -->
+          <div class="sticky top-0 -mx-5 px-5 py-2.5 bg-[var(--cream)]/95 backdrop-blur border-b border-[var(--border)] z-20 flex items-center gap-2 text-[13px]">
+            <span class="chip chip-active">Wed · filter on</span>
+            <button class="text-[var(--maroon-500)] font-semibold text-xs ml-auto underline">Clear</button>
+          </div>
+
+          <!-- Greeting -->
+          <div class="mt-4 flex items-start gap-2.5">
+            <span class="w-8 h-8 rounded-full bg-[var(--maroon-500)] text-white grid place-items-center text-[11px] font-bold">G</span>
+            <div class="bg-white border border-[var(--border)] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-[13.5px] leading-snug">
+              Wed is packed — 3 events and your 8am lab. Want me to narrow picks to just today?
+            </div>
+          </div>
+
+          <!-- Week strip with NEW hour-density ticks in busy pills -->
+          <div class="mt-5 bg-white border border-[var(--border)] rounded-2xl p-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="caption">This week</span>
+              <span class="text-[10px] text-[var(--muted)] font-mono">Apr 13 – 19</span>
+            </div>
+            <div class="grid grid-cols-7 gap-1.5 justify-items-center">
+              <!-- M -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] font-bold text-[var(--maroon-500)]">M</span>
+                <button class="pill" aria-pressed="false" aria-label="Monday, 2 events"><div class="pill-fill" style="height:45%"></div><div class="ticks"><div class="tick" style="width:55%"></div><div class="tick" style="width:30%"></div></div><span class="relative z-10 text-[11px] text-white">2</span></button></div>
+              <!-- T open -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] text-[var(--gold-500)] font-semibold">T</span>
+                <button class="pill pill-open" aria-pressed="false" aria-label="Tuesday, open"><span class="block w-2 h-2 rounded-full bg-[var(--gold-400)] absolute inset-0 m-auto"></span></button></div>
+              <!-- W selected, packed -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] font-bold text-[var(--maroon-500)] border-b-2 border-[var(--maroon-500)] pb-[2px]">W</span>
+                <button class="pill pill-selected" aria-pressed="true" aria-label="Wednesday, 3 events, filter on"><div class="pill-fill" style="height:100%"></div><div class="ticks"><div class="tick" style="width:70%"></div><div class="tick" style="width:55%"></div><div class="tick" style="width:85%"></div></div><span class="relative z-10 text-[11px] text-white">3</span></button></div>
+              <!-- T -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] text-[var(--muted)] font-semibold">T</span>
+                <button class="pill" aria-pressed="false"><div class="pill-fill" style="height:65%"></div><div class="ticks"><div class="tick" style="width:45%"></div><div class="tick" style="width:60%"></div></div><span class="relative z-10 text-[11px] text-white">2</span></button></div>
+              <!-- F -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] text-[var(--muted)] font-semibold">F</span>
+                <button class="pill" aria-pressed="false"><div class="pill-fill" style="height:30%"></div><div class="ticks"><div class="tick" style="width:35%"></div></div><span class="relative z-10 text-[11px] text-[var(--maroon-500)]">1</span></button></div>
+              <!-- S open -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] text-[var(--gold-500)] font-semibold">S</span>
+                <button class="pill pill-open" aria-pressed="false"><span class="block w-2 h-2 rounded-full bg-[var(--gold-400)] absolute inset-0 m-auto"></span></button></div>
+              <!-- S open -->
+              <div class="flex flex-col items-center gap-1.5"><span class="text-[11px] text-[var(--gold-500)] font-semibold">S</span>
+                <button class="pill pill-open" aria-pressed="false"><span class="block w-2 h-2 rounded-full bg-[var(--gold-400)] absolute inset-0 m-auto"></span></button></div>
+            </div>
+            <p class="text-[11px] text-[var(--muted)] mt-3">Tap a day to filter · tap again to clear.</p>
+          </div>
+
+          <!-- Card preview -->
+          <section class="mt-4">
+            <span class="caption">Picks for Wed</span>
+            <div class="mt-2 bg-white border border-[var(--border)] rounded-2xl p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <h3 class="text-[15px] font-bold leading-tight">Data Viz Workshop</h3>
+                  <p class="text-[12px] text-[var(--muted)] mt-0.5">Walter Library 101 · 7:00 PM</p>
+                </div>
+                <span class="chip chip-gold">82% match</span>
+              </div>
+              <div class="mt-3 flex flex-wrap gap-1.5">
+                <span class="chip" style="background:#E9F5EA; color:#146C43;">● free</span>
+                <span class="chip" style="background:var(--surface-calm); color:var(--maroon-500);">12-min walk</span>
+                <span class="chip" style="background:var(--surface-calm); color:var(--maroon-500);">first open eve</span>
+              </div>
+              <div class="mt-3 flex items-center justify-between">
+                <span class="text-[11px] text-[var(--muted)]">Leave by <strong class="text-[var(--maroon-500)]">6:43 PM</strong></span>
+                <button class="bg-[var(--maroon-500)] text-white text-xs font-bold px-3 py-1.5 rounded-full">Add</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+      <p class="text-xs text-[var(--muted)] mt-3 leading-relaxed max-w-xs mx-auto text-center">
+        Pills now render as <code class="text-[10px]">&lt;button aria-pressed&gt;</code>. Sticky
+        filter chip top-of-scroll. Hour-density ticks inside busy pills.
+      </p>
+    </section>
+
+    <!-- UPLOAD (redesigned) -->
+    <section>
+      <p class="caption mb-3">/ · camera-first, paste is a link</p>
+      <div class="phone mx-auto">
+        <div class="phone-notch"></div>
+        <div class="phone-inner px-5">
+          <!-- Header -->
+          <div class="pt-4 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-[var(--maroon-500)] text-white grid place-items-center text-[11px] font-bold">M</span>
+              <span class="font-bold text-[15px]">ClipCal</span>
+            </div>
+            <span class="text-[11px] text-[var(--muted)]">UMN</span>
+          </div>
+
+          <!-- Goldy intro -->
+          <div class="mt-5 flex items-start gap-2.5">
+            <span class="w-8 h-8 rounded-full bg-[var(--gold-400)] grid place-items-center text-[13px]">🐿️</span>
+            <div class="bg-white border border-[var(--border)] rounded-2xl rounded-tl-sm px-3.5 py-2.5 text-[13.5px] leading-snug">
+              Snap a flyer. I'll pull the when, where, and whether you're free.
+            </div>
+          </div>
+
+          <!-- PRIMARY actions -->
+          <div class="mt-5 flex flex-col gap-2.5">
+            <button class="flex items-center justify-center gap-2 w-full bg-[var(--maroon-500)] text-white font-bold py-3.5 rounded-2xl text-[15px]" style="min-height:44px;">
+              <span>📷</span> Take a photo
+            </button>
+            <button class="flex items-center justify-center gap-2 w-full border-2 border-[var(--maroon-500)] text-[var(--maroon-500)] font-bold py-3 rounded-2xl text-[15px]" style="min-height:44px;">
+              <span>🖼️</span> Choose from library
+            </button>
+            <button class="text-center w-full text-[var(--maroon-500)] font-semibold text-[13px] py-1.5 underline">
+              or paste from clipboard
+            </button>
+          </div>
+
+          <!-- Share-target hint (newly surfaced) -->
+          <div class="mt-4 callout">
+            <strong class="text-[var(--maroon-500)]">Tip:</strong> Share any flyer from Instagram
+            or Messages straight to ClipCal once you've added it to your home screen.
+          </div>
+
+          <!-- Sample event with less chrome -->
+          <div class="mt-5">
+            <p class="caption">Sample result</p>
+            <div class="mt-2 bg-white border border-dashed border-[var(--border)] rounded-2xl p-4 opacity-90">
+              <div class="flex items-center justify-between">
+                <h3 class="text-[14px] font-bold">Data Viz Workshop</h3>
+                <span class="chip chip-gold">82%</span>
+              </div>
+              <p class="text-[12px] text-[var(--muted)] mt-0.5">Sat · 7 PM · Walter 101</p>
+              <div class="mt-2 flex gap-1.5 flex-wrap">
+                <span class="chip" style="background:#E9F5EA; color:#146C43;">● free</span>
+                <span class="chip" style="background:var(--surface-calm); color:var(--maroon-500);">12-min walk</span>
+              </div>
+            </div>
+            <p class="text-[11px] text-center text-[var(--muted)] mt-1.5 italic">Upload above to get yours.</p>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-[var(--muted)] mt-3 leading-relaxed max-w-xs mx-auto text-center">
+        Two visible buttons (Camera + Library). Dropzone demoted to desktop hover. Web Share Target made visible.
+      </p>
+    </section>
+
+  </div>
+
+  <section class="mt-14 grid md:grid-cols-3 gap-4 text-sm">
+    <div class="callout"><strong>Effort</strong><br/><span class="text-[var(--muted)]">~4–6 hours of one session.</span></div>
+    <div class="callout"><strong>Risk</strong><br/><span class="text-[var(--muted)]">Low. No palette, motion, or token changes. Adds button semantics + a sticky bar.</span></div>
+    <div class="callout"><strong>Won't earn an award</strong><br/><span class="text-[var(--muted)]">But it <em>will</em> stop lying to users. That's the bar for shipping.</span></div>
+  </section>
+
+</main>
+</body>
+</html>

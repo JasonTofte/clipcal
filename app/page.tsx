@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
 import { decodeQRFromFile } from '@/lib/qr-decode';
-import { WeekDensity } from '@/components/week-density';
+import { WeekStrip } from '@/components/week-strip';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { appendBatch, markBatchCommitted } from '@/lib/event-store';
@@ -203,7 +203,7 @@ export default function Home() {
 
       {demoMode && (
         <div className="mb-4">
-          <WeekDensity busySlots={DEMO_CALENDAR} />
+          <WeekStrip mode={{ source: 'busy', busySlots: DEMO_CALENDAR }} />
         </div>
       )}
 
@@ -232,6 +232,7 @@ export default function Home() {
             orgMatches={state.orgMatches}
             conflicts={conflicts}
             noticingsPerEvent={noticingsPerEvent}
+            interests={profile?.interests ?? null}
             leaveByPerEvent={leaveByPerEvent}
             busySlots={activeCalendar}
             canRetryWithSonnet={
