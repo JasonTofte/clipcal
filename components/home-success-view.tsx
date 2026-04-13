@@ -20,6 +20,7 @@ type Props = {
   orgMatches: (OrgMatch | null)[] | null;
   conflicts: (ConflictResult | null)[];
   noticingsPerEvent: Noticing[][];
+  interests?: string[] | null;
   leaveByPerEvent: (LeaveByInfo | null)[];
   busySlots: BusySlot[];
   canRetryWithSonnet: boolean;
@@ -42,6 +43,7 @@ export function HomeSuccessView({
   orgMatches,
   conflicts,
   noticingsPerEvent,
+  interests,
   leaveByPerEvent,
   busySlots,
   canRetryWithSonnet,
@@ -72,6 +74,7 @@ export function HomeSuccessView({
           campusMatch={campusMatches?.[idx] ?? null}
           orgMatch={orgMatches?.[idx] ?? null}
           noticings={noticingsPerEvent[idx]}
+          interests={interests}
           leaveBy={leaveByPerEvent[idx]}
           busySlots={busySlots}
           onChange={(updated) => onUpdateEvent(idx, updated)}

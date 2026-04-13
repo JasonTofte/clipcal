@@ -9,6 +9,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Calm Mode toggle** (`lib/calm-mode.ts`, `components/calm-mode-toggle.tsx`) — user-controllable sensory-low palette grounded in Tiimo's 2024/2025 Apple Design Award pattern: the control IS the design, not a preset. Toggling writes `clipcal_calm_mode_v1` to `localStorage`, sets `document.body.dataset.calm = "true"`, and all token-bound colors shift to desaturated variants within one frame. State is restored on page reload. Implemented as `useState + useEffect` hook so the toggle re-renders correctly; SSR returns safe no-op defaults. (AC-1)
+- **Sensory-low typography baseline** — app-wide, unconditionally: `body` line-height ≥ 1.6, paragraph `max-width` 68ch, minimum font weight 400 in primary-content regions. Applies regardless of Calm Mode state because wide-measure dense text is strictly worse for everyone, not a preference. Grounded in Ottawa Decision Support Framework (ODSF) guidance on reducing decisional conflict through environmental clarity. (AC-2)
+- **Calm Mode token overrides** (`app/globals.css`) — when `[data-calm="true"]`, body letter-spacing bumps +0.01em and the high-contrast maroon-on-cream pairing (~15:1) shifts to muted-maroon-on-warm-cream (~9–10:1), which still passes WCAG AA for body text but eliminates the contrast spike that triggers sensory fatigue. (AC-3)
+- **`prefers-reduced-motion` audit** — global CSS block zeros all `transition-duration`, `animation-duration`, and `animation-iteration-count` when the OS setting is `reduce`. Non-essential animations (`animate-bounce` on Goldy, spring transitions on cards, shimmer loaders) are fully suppressed; `animate-spin` on loading indicators degrades to static icon (acceptable trade-off: informational fallback exists). (AC-4)
+- **Day Rail** (`components/day-rail.tsx`) — proportional time view replacing the flat card list when a day is selected on `/feed`. Renders 8 AM–10 PM as a vertical rail; each event block's pixel height is `(durationMinutes / totalRangeMinutes) × railHeight`, making relative time cost perceptually honest (Barkley's "make time visible" principle). A "now" line marks the current time when within range. Events outside the range collapse to "Earlier today (N)" and "After 10 PM (N)" summary rows. Tapping any block opens the full card. Minimum block height 44px enforced for WCAG 2.5.8. (AC-5)
+- **Chip-ranking module** (`lib/chip-ranking.ts`) — deterministic `rankChips()` function orders event chips by cognitive load priority: (1) stated-interest match, (2) conflict status, (3) walk/transit distance, (4) time constraints, (5) amenities (food/free). The highest-priority chip receives a gold-filled "priority" style (matches match-% badge weight) so the single most load-bearing reason to attend reads at a glance. Deterministic sort is stable: tie-breaking uses alphabetical `rankKey` to prevent render jitter. (AC-6) Rationale: unranked information increases decisional conflict (ODSF critique).
+- **Empty-profile chip fallback** — when a user has not completed the interest interview, `rankChips()` falls back to a default order (conflict → time → walk → amenities) and suppresses the "priority" style entirely. A subtle nudge toward the profile flow appears on the feed. (AC-7)
+- **WeekStrip consolidation** (`components/week-strip.tsx`) — single implementation behind a `mode` discriminated union replaces both `components/week-density.tsx` and `components/goldy-week-glance.tsx`. Both `app/page.tsx` and `components/goldy-feed-client.tsx` now consume it with the correct `interactive` prop. (AC-8)
+
+### Changed
+
+- `components/event-card.tsx` now consumes `rankChips()` from `lib/chip-ranking.ts`; chips render in priority order with distinct gold-filled top chip.
+- `components/goldy-feed-client.tsx` mounts `DayRail` when `selectedDayIdx !== null`, renders `CalmModeToggle` (compact variant) in the feed header, and consumes `WeekStrip`.
+- `app/page.tsx` swaps `WeekDensity` for `WeekStrip`.
+- `app/globals.css` gains sensory-low type baseline at `:root`, Calm Mode token overrides at `[data-calm="true"]`, and expanded `@media (prefers-reduced-motion: reduce)` guards covering all surfaces.
+
+### Removed
+
+- `components/week-density.tsx` — consolidated into `components/week-strip.tsx`. (AC-8)
+- `components/goldy-week-glance.tsx` — consolidated into `components/week-strip.tsx`. (AC-8)
+
+### Deferred (out of scope this cycle)
+
+- Co-design sessions with ADHD students (falsifiable accessibility — required for "Tiimo-caliber" claim, explicitly out-of-scope for this cycle)
+- Spoon/energy widget
+- Custom color picker (Tiimo ships 3,000 user-selectable colors; we ship one Calm preset)
+- DayRail earlier/later tap-to-expand (summary rows are static `<div>`, not interactive; users can scroll full week view)
+- DayRail responsive `railHeight` (fixed 520px default; auto-viewport computation deferred)
+
+---
+
+### Added
+
 - **QR code decode** (`lib/qr-decode.ts`) — extracts a signup URL from any uploaded flyer image. Uses the native `BarcodeDetector` API on Chrome/Edge/Android (zero bundle cost) and falls back to `qr-scanner` (nimiq, dynamically imported) on iOS Safari/Firefox. Result is filtered to `http(s)` only — `javascript:`, `data:`, `file:` URLs are rejected to prevent XSS via `<a href={signupUrl}>`. New `signupUrl` field on `EventSchema` is also URL-validated at the schema level.
 - **E-ink display sync infra** (`lib/ble-sync.ts`, `components/eink-sync-button.tsx`) — sync the next batch of upcoming events to a Pi Zero e-ink display worn on a phone case. Two transports: WiFi (HTTPS POST to the Pi's local IP — Chrome/Edge/Firefox; iOS Safari falls back to the Pi's captive-portal paste page) and BLE (Web Bluetooth, Chrome/Edge/Android). BLE writes are properly chunked into 20-byte ATT-MTU-safe slices with a notifications handshake on the TX characteristic — fixes a silent-truncation bug where 510-byte payloads were sent as a single write. Pi sync URL is env-gated via `NEXT_PUBLIC_EINK_PI_URL`; CSP `connect-src` is appended only when that env var is set, so the security headers stay tight by default.
 - **`/api/abbreviate`** LLM endpoint — Claude Haiku 4.5 shortens event titles (≤20 chars) and locations (≤14 chars) for the 250×122px e-ink display. Wrapped in the standard `requireAnthropic` guard + dedicated `abbreviateLimiter` bucket (6/min per-key, 30/min global), 10 KB body cap, 50-event ceiling. All untrusted titles + locations pass through `prompt-safety` fencing (`<title>`, `<location>` tags + `UNTRUSTED_PREAMBLE`) so a malicious flyer can't slip a fresh instruction into the prompt.

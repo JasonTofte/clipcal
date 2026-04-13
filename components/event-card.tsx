@@ -5,6 +5,7 @@ import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
 import type { LeaveByInfo } from '@/lib/leave-by';
 import type { Noticing } from '@/lib/noticings';
+import { rankChips } from '@/lib/chip-ranking';
 import type { RelevanceScore } from '@/lib/relevance';
 import { formatScoreBadge, scoreTone } from '@/lib/relevance';
 import type { CampusMatch } from '@/app/api/campus-match/route';
@@ -23,6 +24,7 @@ type EventCardProps = {
   campusMatch: CampusMatch | null;
   orgMatch: OrgMatch | null;
   noticings: Noticing[];
+  interests?: string[] | null;
   leaveBy: LeaveByInfo | null;
   busySlots?: BusySlot[];
   readOnly?: boolean;
@@ -66,6 +68,7 @@ export function EventCard({
   campusMatch,
   orgMatch,
   noticings,
+  interests,
   leaveBy,
   busySlots,
   readOnly = false,
@@ -208,16 +211,19 @@ export function EventCard({
         <TimezoneBadge timezone={event.timezone} className="ml-auto" />
       </div>
 
-      {noticings.length > 0 && (
-        <div className="space-y-2 border-t border-border/40 pt-3">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">worth noticing</div>
-          <div className="flex flex-wrap gap-1.5">
-            {noticings.map((n, i) => (
-              <NoticingChip key={i} noticing={n} />
-            ))}
+      {noticings.length > 0 && (() => {
+        const ranked = rankChips(noticings, interests ?? []);
+        return (
+          <div className="space-y-2 border-t border-border/40 pt-3">
+            <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">worth noticing</div>
+            <div className="flex flex-wrap gap-1.5">
+              {ranked.map((r) => (
+                <NoticingChip key={r.rankKey} noticing={r} priority={r.priority} />
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {busySlots && busySlots.length > 0 && (
         <DayShape event={event} busySlots={busySlots} />

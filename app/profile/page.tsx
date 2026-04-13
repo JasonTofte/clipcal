@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { InterestPicker } from '@/components/interest-picker';
+import { CalmModeToggle } from '@/components/calm-mode-toggle';
 import { Button } from '@/components/ui/button';
 import { GoldyBubble } from '@/components/shared';
 import { ProfileSchema, saveProfileToStorage } from '@/lib/profile';
@@ -79,12 +80,15 @@ export default function ProfilePage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
-      <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Pick your interests</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tap what you&rsquo;re into. ClipCal uses this to highlight events that fit you — never
-          auto-declines anything. Prefer a chat? Toggle to interview mode below.
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Pick your interests</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Tap what you&rsquo;re into. ClipCal uses this to highlight events that fit you — never
+            auto-declines anything. Prefer a chat? Toggle to interview mode below.
+          </p>
+        </div>
+        <CalmModeToggle />
       </header>
 
       <GoldyBubble avatar tone="gold" className="mb-5 self-start max-w-md">
