@@ -24,12 +24,23 @@ import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
 import { parseNowOverride } from '@/lib/day-of-reminder';
 import { formatShortDate, formatWeekday } from '@/lib/format';
 import { buildDemoBatch, DEMO_SEED_ID, isDemoBatch } from '@/lib/demo-feed-seed';
+import {
+  hideEvent,
+  loadHiddenIds,
+  unhideEvent,
+  clearHiddenEvents,
+} from '@/lib/hidden-events';
+import { detectDuplicates, siblingDatesLabel } from '@/lib/dedupe-events';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
 const DEMO_SEED_DISMISSED_KEY = 'clipcal_demo_seed_dismissed';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const UNDO_WINDOW_MS = 5000;
+
+type UndoAction =
+  | { kind: 'add'; batchId: string; title: string }
+  | { kind: 'hide'; rowKey: string; title: string };
 
 type ChipFilter = 'all' | 'gameday' | 'free-food';
 
@@ -99,8 +110,12 @@ export function GoldyFeedClient() {
   const [demoMode, setDemoMode] = useState(true);
   const [chipFilter, setChipFilter] = useState<ChipFilter>('all');
   const [selectedDayIdx, setSelectedDayIdx] = useState<number | null>(null);
-  const [undo, setUndo] = useState<{ batchId: string; title: string } | null>(null);
+  // Undo is a discriminated action — same snackbar handles Add-to-Cal
+  // reversal and hide reversal.
+  const [undo, setUndo] = useState<UndoAction | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const [showHidden, setShowHidden] = useState(false);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
   const picksSectionRef = useRef<HTMLElement | null>(null);
   const undoTimerRef = useRef<number | null>(null);
@@ -151,6 +166,7 @@ export function GoldyFeedClient() {
       setBatches(loaded);
     }
     setProfile(loadProfileFromStorage());
+    setHiddenIds(loadHiddenIds());
     const storedDemo = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
     if (storedDemo !== null) setDemoMode(storedDemo === 'true');
   }, []);
@@ -291,8 +307,25 @@ export function GoldyFeedClient() {
     if (selectedDayIdx !== null) {
       out = out.filter(({ row }) => eventDayIdx(row.event.start, weekStart) === selectedDayIdx);
     }
+    // Hidden events only show when the user explicitly expands the
+    // "Hidden (N)" pill at the bottom.
+    if (!showHidden) {
+      out = out.filter(({ row }) => !hiddenIds.has(`${row.batchId}-${row.eventIndex}`));
+    }
     return out;
-  }, [ranked, chipFilter, selectedDayIdx, weekStart]);
+  }, [ranked, chipFilter, selectedDayIdx, weekStart, hiddenIds, showHidden]);
+
+  // Build duplicate index over all rows (even hidden ones, since a
+  // hidden event can still be a sibling of a visible one).
+  const duplicateIndex = useMemo(() => {
+    const inputs = rows.map((r) => ({
+      rowKey: `${r.batchId}-${r.eventIndex}`,
+      event: r.event,
+    }));
+    return detectDuplicates(inputs);
+  }, [rows]);
+
+  const hiddenCount = hiddenIds.size;
 
   const activeFilterSummary = useMemo(() => {
     const parts: string[] = [];
@@ -302,26 +335,48 @@ export function GoldyFeedClient() {
     return parts.join(' · ');
   }, [chipFilter, selectedDayIdx]);
 
-  const handleAdd = (row: FeedRow) => {
-    triggerIcsDownload([row.event]);
-    markBatchCommitted(row.batchId);
-    setBatches(loadBatches());
-    // Pop an undo snackbar for UNDO_WINDOW_MS.
+  // Single helper: set undo action + start/reset the 5s dismissal timer.
+  const armUndo = (action: UndoAction) => {
     if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
-    setUndo({ batchId: row.batchId, title: row.event.title });
+    setUndo(action);
     undoTimerRef.current = window.setTimeout(() => {
       setUndo(null);
       undoTimerRef.current = null;
     }, UNDO_WINDOW_MS);
   };
 
+  const handleAdd = (row: FeedRow) => {
+    triggerIcsDownload([row.event]);
+    markBatchCommitted(row.batchId);
+    setBatches(loadBatches());
+    armUndo({ kind: 'add', batchId: row.batchId, title: row.event.title });
+  };
+
+  const handleHide = (row: FeedRow) => {
+    const key = `${row.batchId}-${row.eventIndex}`;
+    hideEvent(key);
+    setHiddenIds(loadHiddenIds());
+    armUndo({ kind: 'hide', rowKey: key, title: row.event.title });
+  };
+
   const handleUndo = () => {
     if (!undo) return;
-    markBatchUncommitted(undo.batchId);
-    setBatches(loadBatches());
+    if (undo.kind === 'add') {
+      markBatchUncommitted(undo.batchId);
+      setBatches(loadBatches());
+    } else {
+      unhideEvent(undo.rowKey);
+      setHiddenIds(loadHiddenIds());
+    }
     if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
     undoTimerRef.current = null;
     setUndo(null);
+  };
+
+  const handleUnhideAll = () => {
+    clearHiddenEvents();
+    setHiddenIds(new Set());
+    setShowHidden(false);
   };
 
   const handleCameraTap = (key: string) => {
@@ -644,11 +699,43 @@ export function GoldyFeedClient() {
                       ctx.bucket === 'conflict' ? ctx.slots.conflictTitle : null
                     }
                     goldyCtx={ctx}
+                    duplicateLabel={siblingDatesLabel(key, duplicateIndex)}
                     onAddToCalendar={() => handleAdd(row)}
+                    onHide={() => handleHide(row)}
                   />
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {hiddenCount > 0 && (
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
+            <button
+              type="button"
+              onClick={() => setShowHidden((v) => !v)}
+              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 py-1.5 font-semibold"
+              style={{
+                background: 'white',
+                borderColor: 'var(--goldy-maroon-500)',
+                color: 'var(--goldy-maroon-600)',
+              }}
+              aria-pressed={showHidden}
+            >
+              {showHidden
+                ? `Hiding ${hiddenCount} — hide them again`
+                : `Hidden (${hiddenCount}) — show`}
+            </button>
+            {showHidden && (
+              <button
+                type="button"
+                onClick={handleUnhideAll}
+                className="inline-flex min-h-[36px] items-center rounded-full px-3 py-1.5 font-semibold underline decoration-dotted underline-offset-4"
+                style={{ color: 'var(--goldy-maroon-500)' }}
+              >
+                Unhide all
+              </button>
+            )}
           </div>
         )}
       </section>
@@ -674,7 +761,15 @@ export function GoldyFeedClient() {
             }}
           >
             <span className="text-sm">
-              Added <strong>{undo.title}</strong> to calendar.
+              {undo.kind === 'add' ? (
+                <>
+                  Added <strong>{undo.title}</strong> to calendar.
+                </>
+              ) : (
+                <>
+                  Hid <strong>{undo.title}</strong>.
+                </>
+              )}
             </span>
             <button
               type="button"

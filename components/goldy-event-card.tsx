@@ -20,8 +20,13 @@ type Props = {
   // "Why?" panel. Optional for backwards-compat with callers that
   // haven't been wired yet.
   goldyCtx?: GoldyContext;
+  // "also on Apr 15" copy when this event has same-title siblings
+  // within 7 days. Caller derives via lib/dedupe-events.
+  duplicateLabel?: string | null;
   onAddToCalendar: () => void;
-  onOpenMenu?: () => void;
+  // "Not for me" soft-hide. Wired up from goldy-feed-client with a
+  // 5s undo snackbar; card just calls the callback.
+  onHide?: () => void;
 };
 
 function flyerClass(event: Event): string {
@@ -41,8 +46,9 @@ export function GoldyEventCard({
   isTopPick = false,
   conflictTitle,
   goldyCtx,
+  duplicateLabel,
   onAddToCalendar,
-  onOpenMenu,
+  onHide,
 }: Props) {
   const flyer = flyerClass(event);
   const onPizza = flyer === 'flyer-pizza';
@@ -125,6 +131,20 @@ export function GoldyEventCard({
                 {formatEventWhen(event.start)}
                 {event.location ? ` · ${event.location}` : ''}
               </p>
+              {duplicateLabel && (
+                <span
+                  className="mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold"
+                  style={{
+                    background: 'var(--goldy-gold-50)',
+                    borderColor: 'var(--goldy-gold-200)',
+                    color: 'var(--goldy-maroon-700)',
+                  }}
+                  title="Same-title event detected within a 7-day window"
+                >
+                  <span aria-hidden>↔</span>
+                  Possible duplicate — {duplicateLabel}
+                </span>
+              )}
             </div>
             {!isTopPick && typeof matchPct === 'number' && (
               <div className="shrink-0 text-right">
@@ -236,14 +256,15 @@ export function GoldyEventCard({
                     : 'Add anyway · you decide'
                   : '📅 Add to Calendar'}
               </button>
-              {onOpenMenu && (
+              {onHide && (
                 <button
                   type="button"
-                  onClick={onOpenMenu}
-                  aria-label="More options"
-                  className="min-h-[44px] min-w-[44px] rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700"
+                  onClick={onHide}
+                  aria-label={`Not for me — hide ${event.title}`}
+                  title="Not for me"
+                  className="min-h-[44px] min-w-[44px] rounded-full bg-stone-100 px-3 py-2 text-xs text-stone-700 transition-colors hover:bg-stone-200"
                 >
-                  ⋯
+                  ✕
                 </button>
               )}
             </div>
