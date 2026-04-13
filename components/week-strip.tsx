@@ -1,19 +1,8 @@
 'use client';
 
 import type { Event } from '@/lib/schema';
+import type { BusySlot } from '@/lib/demo-calendar';
 import { formatWeekRange } from '@/lib/format';
-
-// Shares the encoding of WeekDensity (home): bucketed fill against
-// busiest-day count, hollow gold-ring for open days, maroon fill with
-// count inside for busy days, today underline under the letter.
-// Adds tap-to-filter so /feed can zoom to one weekday.
-
-type Props = {
-  events: Event[];
-  weekStart?: Date;
-  selectedDayIdx?: number | null;
-  onSelectDay?: (idx: number | null) => void;
-};
 
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 const DAY_FULL = [
@@ -27,6 +16,19 @@ const DAY_FULL = [
 ];
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+type WeekStripMode =
+  | { source: 'events'; events: Event[] }
+  | { source: 'busy'; busySlots: BusySlot[] };
+
+type Props = {
+  mode: WeekStripMode;
+  weekStart?: Date;
+  selectedDayIdx?: number | null;
+  onSelectDay?: (idx: number | null) => void;
+  now?: Date;
+  caption?: string;
+};
+
 function startOfWeekMonday(d: Date): Date {
   const copy = new Date(d);
   copy.setHours(0, 0, 0, 0);
@@ -34,6 +36,14 @@ function startOfWeekMonday(d: Date): Date {
   const diff = day === 0 ? -6 : 1 - day;
   copy.setDate(copy.getDate() + diff);
   return copy;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function bucketFor(count: number, max: number): 0 | 1 | 2 | 3 {
@@ -47,17 +57,7 @@ function bucketFor(count: number, max: number): 0 | 1 | 2 | 3 {
 
 const BUCKET_FILL_PCT = [0, 30, 65, 100] as const;
 
-export function GoldyWeekGlance({
-  events,
-  weekStart,
-  selectedDayIdx = null,
-  onSelectDay,
-}: Props) {
-  const interactive = !!onSelectDay;
-  const start = weekStart ?? startOfWeekMonday(new Date());
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
+function countEventsPerDay(events: Event[], start: Date): number[] {
   const counts = new Array(7).fill(0) as number[];
   for (const ev of events) {
     const d = new Date(ev.start);
@@ -69,29 +69,60 @@ export function GoldyWeekGlance({
     );
     if (daysFromStart >= 0 && daysFromStart < 7) counts[daysFromStart] += 1;
   }
+  return counts;
+}
+
+function countBusyPerDay(busySlots: BusySlot[], start: Date): number[] {
+  const counts = new Array(7).fill(0) as number[];
+  for (let i = 0; i < 7; i++) {
+    const dayStart = new Date(start);
+    dayStart.setDate(dayStart.getDate() + i);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    counts[i] = busySlots.filter(
+      (slot) => slot.start < dayEnd && slot.end > dayStart,
+    ).length;
+  }
+  return counts;
+}
+
+export function WeekStrip({
+  mode,
+  weekStart,
+  selectedDayIdx = null,
+  onSelectDay,
+  now,
+  caption,
+}: Props) {
+  const start = weekStart ?? startOfWeekMonday(now ?? new Date());
+  const today = now ?? new Date();
+  const interactive = !!onSelectDay;
+
+  const counts =
+    mode.source === 'events'
+      ? countEventsPerDay(mode.events, start)
+      : countBusyPerDay(mode.busySlots, start);
 
   const maxCount = Math.max(1, ...counts);
-  const todayIdx = Math.round((today.getTime() - start.getTime()) / MS_PER_DAY);
 
-  const handleDayTap = (i: number) => {
+  const handleTap = (i: number) => {
     if (!onSelectDay) return;
-    if (selectedDayIdx === i) onSelectDay(null);
-    else onSelectDay(i);
+    onSelectDay(selectedDayIdx === i ? null : i);
   };
 
   return (
     <section
-      aria-labelledby="goldy-week-heading"
+      aria-labelledby="week-strip-heading"
       className="mb-5 rounded-2xl border bg-card p-4"
       style={{ borderColor: 'var(--border)' }}
     >
       <div className="mb-3 flex items-center justify-between">
         <h2
-          id="goldy-week-heading"
+          id="week-strip-heading"
           className="text-[11px] font-bold uppercase tracking-widest"
           style={{ color: 'var(--goldy-maroon-600)' }}
         >
-          This week
+          {caption ?? 'This week'}
         </h2>
         <span
           className="text-[10px]"
@@ -106,7 +137,9 @@ export function GoldyWeekGlance({
           const count = counts[i];
           const bucket = bucketFor(count, maxCount);
           const fillPct = BUCKET_FILL_PCT[bucket];
-          const isToday = i === todayIdx;
+          const dayStart = new Date(start);
+          dayStart.setDate(dayStart.getDate() + i);
+          const isToday = isSameDay(dayStart, today);
           const isSelected = selectedDayIdx === i;
           const isOpen = count === 0;
 
@@ -115,13 +148,11 @@ export function GoldyWeekGlance({
               <span
                 className={`text-[11px] ${isToday || isSelected ? 'font-bold' : 'font-semibold'}`}
                 style={{
-                  color: isSelected
+                  color: isSelected || isToday
                     ? 'var(--goldy-maroon-600)'
-                    : isToday
-                      ? 'var(--goldy-maroon-600)'
-                      : isOpen
-                        ? 'var(--goldy-gold-700)'
-                        : 'var(--muted-foreground)',
+                    : isOpen
+                      ? 'var(--goldy-gold-700)'
+                      : 'var(--muted-foreground)',
                   borderBottom:
                     isToday || isSelected
                       ? '2px solid var(--goldy-maroon-500)'
@@ -133,7 +164,6 @@ export function GoldyWeekGlance({
               >
                 {label}
               </span>
-
               <div
                 className="relative w-full overflow-hidden"
                 style={{
@@ -195,24 +225,24 @@ export function GoldyWeekGlance({
 
           if (!interactive) {
             return (
-              <li key={label} className="flex flex-col items-center gap-1.5">
+              <li
+                key={label + i}
+                aria-label={ariaLabel}
+                className="flex flex-col items-center gap-1.5"
+              >
                 {pill}
               </li>
             );
           }
 
           return (
-            <li key={label}>
+            <li key={label + i}>
               <button
                 type="button"
-                onClick={() => handleDayTap(i)}
+                onClick={() => handleTap(i)}
                 aria-pressed={isSelected}
                 aria-label={ariaLabel}
-                className="flex min-h-[72px] w-full flex-col items-center gap-1.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1"
-                style={{
-                  // @ts-expect-error - custom ring color
-                  '--tw-ring-color': 'var(--goldy-gold-400)',
-                }}
+                className="flex min-h-[72px] w-full flex-col items-center gap-1.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--goldy-maroon-500)]"
               >
                 {pill}
               </button>

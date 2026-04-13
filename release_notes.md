@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+### Tiimo-Caliber cycle — falsifiable neuro-inclusion
+
+**Product thesis shift: "Inform, don't decide" is no longer a tagline — it is now grounded in cited research.**
+
+This cycle raises ClipCal from "ADHD-flavored vibes" to falsifiable neuro-inclusion. The framing comes from the Ottawa Decision Support Framework (O'Connor et al.), which measures decisional conflict reduction as an outcome, and from cognitive offloading research (Risko & Gilbert 2016), which explains why visible time structure reduces working-memory load for ADHD users. Tiimo's 2024 and 2025 Apple Design Award wins validated the pattern in shipping software: the award language explicitly cited user-controllable sensory environments as the design rationale, not fixed presets.
+
+What this means in practice: every change this cycle has a citation, not just a rationale.
+
+---
+
+#### What users see
+
+**Calm Mode toggle.** A compact switch appears in the `/feed` header and on `/profile`. Toggling it shifts the entire app into a desaturated, lower-contrast, wider-spaced palette — within a single frame, because it is a CSS token cascade on `<body>`, not a page reload. The preference is remembered across sessions via `localStorage`. If you prefer the full UMN maroon-and-gold warmth, Calm Mode is off by default; you opt in. That user-controlled opt-in is the entire design. Tiimo's research backing (and their Apple Design Award) is for the control itself, not for any particular palette.
+
+**Sensory-low typography baseline (always on).** Line-height is now 1.6+ throughout, paragraph width is capped at 68ch, and no ultra-thin weights appear in body text. This is not behind Calm Mode because dense narrow text with thin weights is strictly worse for ADHD reading — it is not a stylistic preference. This is a correction.
+
+**Proportional Day Rail.** When you tap a day on the week strip, the feed switches from a flat event list to a vertical time rail covering 8 AM – 10 PM. Each event block's height is proportional to its duration: a 2-hour workshop is twice as tall as a 1-hour talk. The purpose is perceptual time honesty — ADHD time blindness is partly spatial, and a layout where a 2-hour commitment looks identical to a 15-minute drop-in is a failure of the interface. A "now" line marks the current time. Events outside the range collapse to summary rows ("Earlier today · 2", "After 10 PM · 1"). Tapping a block opens the full event card.
+
+**Ranked chips, not a pile.** Each event card's "worth noticing" chips now appear in a deterministic priority order: stated-interest match first, then conflict status, then walk/transit distance, then time constraints, then amenities. The top chip gets a gold-filled treatment that matches the visual weight of the match-% badge — so at a glance you can read "this is the reason I should care." This addresses the ODSF critique that unranked, visually-equivalent information increases decisional conflict rather than resolving it.
+
+**Empty-profile fallback.** If you haven't completed the interest interview, chips use a default priority order (conflict → time → walk → amenities) and no gold-filled "priority" chip appears, because we have no stated interest to prioritize. A subtle nudge toward the profile flow takes its place.
+
+**WeekStrip consolidation.** The two prior week-bar components (`WeekDensity` and `GoldyWeekGlance`) have been merged into a single `WeekStrip` component. Users see no difference; this eliminates a fork in the codebase where the two implementations were drifting apart in behavior.
+
+**Reduced-motion everywhere.** If your OS is set to "reduce motion," every non-essential animation in the app is now suppressed: Goldy bounce, spring card transitions, shimmer loaders. This was an audit, not a feature — the animations existed, but `prefers-reduced-motion` guards did not consistently cover them.
+
+---
+
+#### What is NOT in this release (honest deferrals)
+
+The cycle was scoped explicitly to ship the architectural foundations. The following are follow-up tasks, not forgotten items:
+
+- **Co-design sessions with ADHD students.** The research foundation is cited; the falsifiable accessibility claim requires real user testing. Logged as a required follow-up before we call ourselves "Tiimo-caliber" in public marketing.
+- **Spoon/energy widget.** Tiimo's signature daily capacity tracker. Not shipped; requires its own design cycle.
+- **Custom color picker.** Tiimo offers 3,000 user-selectable colors. We ship one Calm preset. A picker is a follow-up.
+- **DayRail tap-to-expand for "earlier/later" rows.** The summary rows are static, not tappable. Users can scroll the week view instead. Deferred; logged in the plan's Pivot Log.
+
+---
+
+#### Architecture decision (approved before coding)
+
+Calm Mode is implemented as `[data-calm="true"]` on `<body>`, overriding CSS design tokens. This mirrors the existing `.goldy-theme` additive-class pattern from PR #24, where tokens were promoted to `:root` to avoid per-surface WCAG audits. Any shadcn primitive that uses tokens picks up Calm Mode for free. A full ADR is at `docs/adr/` (see this PR).
+
+Rejected alternatives: per-page theme classes (same drift problem PR #24 solved), Tailwind `dark:`-style `class="calm"` (data-attribute is simpler, avoids custom Tailwind variant config), fixed 3-surface preset without toggle (rejects the research pattern — user control is load-bearing).
+
+---
+
 ### Unified UI — one Goldy language across the whole app
 
 Until now `/feed` was the only page wearing the Goldy brand; `/`, `/browse`, and `/profile` ran on stock shadcn neutrals. The split fought the product's "Goldy as sidekick" promise — and worse, non-feed pages never inherited the ADHD decision-support chrome (conflict badges, interest chips, leave-by clock) that makes the feed trustworthy.

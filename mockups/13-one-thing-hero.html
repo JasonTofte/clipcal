@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 13 · One-Thing Hero (award-swing)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP 13 — "One-Thing Hero"
+    Boldest direction. Makes the ADHD thesis visible from pixel one:
+      • Feed leads with ONE event as the full-screen hero (FocusView,
+        CHI 2025, arxiv 2511.01248).
+      • Everything else is a scrollable tape below — available, not
+        demanding.
+      • Upload page is a single photo-as-hero tap, no chrome.
+      • Goldy speaks one line, then shuts up.
+      • Secondary actions (hide, snooze, details) sit under a "More"
+        disclosure — decision is singular.
+    Scope: 2–3 sessions. Award-swing territory. Higher redesign risk.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-500:#7A0019; --maroon-600:#5B0013; --maroon-700:#40000D;
+      --gold-400:#FFCC33; --gold-500:#E6B82E;
+      --cream:#FFFBF2; --ink:#1A1210; --muted:#6B5D58;
+      --paper:#FFFFFF; --calm:#FFF6E8; --border:#E7DFCE;
+      --ink-inv:#FFFBF2;
+    }
+    html,body{background:#1A1210;}
+    body{font-family:'Atkinson Hyperlegible','Inter',ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
+    .phone{width:375px;height:780px;border-radius:42px;background:var(--cream);
+           box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow:hidden;position:relative;
+           border:1px solid rgba(255,255,255,0.06);}
+    .phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+                 width:120px;height:24px;background:#000;border-radius:0 0 14px 14px;z-index:30;}
+    .phone-inner{position:absolute;inset:0;overflow-y:auto;padding-top:30px;}
+    .caption{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+             color:#8B7F76;font-weight:700;}
+    .hero-card{background:linear-gradient(180deg, var(--maroon-500) 0%, var(--maroon-700) 100%);
+               color:var(--ink-inv); border-radius:28px; padding:24px 20px;
+               position:relative; overflow:hidden;}
+    .hero-card::after{content:''; position:absolute; inset:0;
+                      background:radial-gradient(circle at 90% 10%, rgba(255,204,51,0.22), transparent 60%);
+                      pointer-events:none;}
+    .duration-bar{position:absolute; right:16px; top:80px; bottom:80px; width:4px;
+                  border-radius:4px; background:rgba(255,255,255,0.18);}
+    .duration-fill{position:absolute; left:0; right:0; border-radius:4px; background:var(--gold-400);
+                   box-shadow:0 0 18px rgba(255,204,51,0.45);}
+    .chip{display:inline-flex; gap:4px; padding:4px 10px; border-radius:999px;
+          font-size:11px; font-weight:600;}
+    .chip-on-dark{background:rgba(255,255,255,0.14); color:#FFF;}
+    .chip-gold{background:var(--gold-400); color:var(--maroon-700);}
+    @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important;}}
+    .tape{display:flex; gap:10px; overflow-x:auto; padding-bottom:10px; scroll-snap-type:x mandatory;}
+    .tape > *{scroll-snap-align:start; flex:0 0 74%;}
+    .section-heading{font-size:12px; font-weight:700; color:var(--muted); letter-spacing:0.12em; text-transform:uppercase;}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-6xl mx-auto px-5 sm:px-8 py-10">
+
+  <header class="mb-10">
+    <p class="caption text-[var(--gold-400)]">Mockup 13 · the award swing</p>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2 text-white">One-Thing Hero</h1>
+    <p class="text-[#B8ADA3] mt-2 max-w-2xl text-sm leading-relaxed">
+      The thesis made visible. Feed opens with one event — proportional
+      duration bar on the right, leave-by clock as the hero number,
+      Goldy as a single line. Everything else is a calm tape below.
+      Decision cost drops toward zero.
+    </p>
+    <div class="mt-3 flex flex-wrap gap-2 text-[11px]">
+      <span class="chip chip-gold">Award swing</span>
+      <span class="chip chip-on-dark">FocusView (CHI 2025)</span>
+      <span class="chip chip-on-dark">Barkley proportional time</span>
+      <span class="chip chip-on-dark">Single-decision framing</span>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-2 gap-12">
+
+    <!-- FEED -->
+    <section>
+      <p class="caption text-[#8B7F76] mb-3">/feed · one thing, now</p>
+      <div class="phone mx-auto">
+        <div class="phone-notch"></div>
+        <div class="phone-inner px-5">
+
+          <!-- Minimal header: date + tiny week ribbon toggle -->
+          <div class="pt-4 flex items-center justify-between">
+            <div>
+              <span class="caption">Wed · 6:41 PM</span>
+              <h1 class="text-[22px] font-bold leading-none mt-0.5">Tonight</h1>
+            </div>
+            <button class="text-[11px] text-[var(--muted)] font-semibold underline">week view</button>
+          </div>
+
+          <!-- HERO CARD — the entire thesis in one surface -->
+          <article class="mt-4 hero-card">
+            <!-- Proportional duration rail -->
+            <div class="duration-bar"></div>
+            <div class="duration-fill" style="top:25%; bottom:30%;"></div>
+
+            <p class="text-[11px] font-semibold uppercase tracking-wider opacity-80">Your pick</p>
+            <h2 class="text-[26px] font-bold leading-tight mt-1">Data Viz Workshop</h2>
+            <p class="text-[13px] opacity-85 mt-1">Walter Library 101 · 7:00 – 8:30 PM</p>
+
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="chip chip-gold">82% match</span>
+              <span class="chip chip-on-dark">● free</span>
+              <span class="chip chip-on-dark">12-min walk</span>
+            </div>
+
+            <!-- Leave-by is the hero number (Risko & Gilbert cognitive offload) -->
+            <div class="mt-6">
+              <p class="text-[11px] uppercase tracking-wider opacity-70">Leave by</p>
+              <p class="text-[56px] font-bold leading-none mt-1"
+                 style="font-variant-numeric:tabular-nums;">6:43</p>
+              <p class="text-[12px] opacity-80 mt-1">
+                2 minutes. Pocket keys, charger, maroon hoodie.
+              </p>
+            </div>
+
+            <!-- Primary CTA + disclosure -->
+            <div class="mt-5 flex items-center gap-2">
+              <button class="flex-1 bg-[var(--gold-400)] text-[var(--maroon-700)] font-bold py-3 rounded-2xl text-[14px]" style="min-height:44px;">
+                Add to Calendar
+              </button>
+              <button class="px-3 py-3 bg-white/10 rounded-2xl text-white text-[12px] border border-white/15" style="min-height:44px;">
+                More…
+              </button>
+            </div>
+          </article>
+
+          <!-- Goldy — ONE line, then quiet -->
+          <div class="mt-4 flex items-start gap-2.5 opacity-90">
+            <span class="w-7 h-7 rounded-full bg-[var(--gold-400)] grid place-items-center text-[12px]">🐿️</span>
+            <p class="text-[13px] leading-snug italic text-[var(--muted)]">
+              “Tricky one — your 2 PM ran late, but you've got buffer. This is the one.”
+            </p>
+          </div>
+
+          <!-- Calm tape of everything else — available, not demanding -->
+          <div class="mt-6">
+            <p class="section-heading mb-2.5">Also tonight · scroll if curious</p>
+            <div class="tape">
+              <div class="bg-white border border-[var(--border)] rounded-2xl p-3.5">
+                <h3 class="text-[13.5px] font-bold leading-tight">Late-night maker jam</h3>
+                <p class="text-[11.5px] text-[var(--muted)] mt-0.5">Tate Hall · 9 PM</p>
+                <div class="mt-2 flex flex-wrap gap-1"><span class="chip" style="background:var(--calm); color:var(--maroon-500);">60% match</span></div>
+              </div>
+              <div class="bg-white border border-[var(--border)] rounded-2xl p-3.5">
+                <h3 class="text-[13.5px] font-bold leading-tight">Gophers vs Wisconsin</h3>
+                <p class="text-[11.5px] text-[var(--muted)] mt-0.5">Williams · 7 PM · conflict</p>
+                <div class="mt-2 flex flex-wrap gap-1"><span class="chip" style="background:#FCE7E9; color:#7A0019;">overlaps</span></div>
+              </div>
+              <div class="bg-white border border-[var(--border)] rounded-2xl p-3.5">
+                <h3 class="text-[13.5px] font-bold leading-tight">Coffee w/ Jae</h3>
+                <p class="text-[11.5px] text-[var(--muted)] mt-0.5">You put this on Mon</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tiny energy indicator — optional spoon cue -->
+          <div class="mt-5 flex items-center justify-between text-[12px] text-[var(--muted)]">
+            <div class="flex items-center gap-2">
+              <span>Energy today</span>
+              <span class="flex gap-0.5">
+                <span class="w-2 h-2 rounded-full bg-[var(--maroon-500)]"></span>
+                <span class="w-2 h-2 rounded-full bg-[var(--maroon-500)]"></span>
+                <span class="w-2 h-2 rounded-full bg-[var(--maroon-500)]"></span>
+                <span class="w-2 h-2 rounded-full bg-[var(--border)]"></span>
+                <span class="w-2 h-2 rounded-full bg-[var(--border)]"></span>
+              </span>
+            </div>
+            <button class="underline">adjust</button>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-[#8B7F76] mt-3 leading-relaxed max-w-xs mx-auto text-center">
+        Single hero card. Proportional duration. Leave-by as hero number. Everything else scrolls calmly below.
+      </p>
+    </section>
+
+    <!-- UPLOAD HERO -->
+    <section>
+      <p class="caption text-[#8B7F76] mb-3">/ · photo is the whole page</p>
+      <div class="phone mx-auto">
+        <div class="phone-notch"></div>
+        <div class="phone-inner">
+
+          <!-- Full-bleed capture viewfinder -->
+          <div class="relative h-[520px]" style="background:linear-gradient(135deg, #2C1B14, #1A1210);">
+            <div class="absolute inset-6 rounded-3xl border-2 border-white/15 flex items-center justify-center text-center">
+              <div>
+                <p class="text-[var(--gold-400)] text-[12px] uppercase tracking-widest font-bold">Snap the flyer</p>
+                <div class="mt-3 w-16 h-16 rounded-full border-4 border-white/80 mx-auto"></div>
+                <p class="text-white/70 text-[11px] mt-3 leading-snug max-w-[200px]">
+                  Fill the frame.<br/>
+                  Any angle. Any lighting.<br/>
+                  We'll read it.
+                </p>
+              </div>
+            </div>
+            <!-- Top-right: library switch -->
+            <button class="absolute top-5 right-5 bg-white/15 backdrop-blur rounded-full w-10 h-10 grid place-items-center text-lg">🖼️</button>
+            <!-- Bottom: shutter -->
+            <div class="absolute bottom-6 left-0 right-0 flex items-center justify-center gap-6">
+              <button class="text-white/70 text-[11px] underline font-semibold">paste</button>
+              <button class="w-16 h-16 rounded-full bg-white grid place-items-center">
+                <span class="w-12 h-12 rounded-full bg-[var(--gold-400)] block"></span>
+              </button>
+              <button class="text-white/70 text-[11px] underline font-semibold">upload</button>
+            </div>
+          </div>
+
+          <!-- Bottom reveal panel — minimal context -->
+          <div class="px-5 pt-4 pb-6">
+            <div class="flex items-start gap-2.5">
+              <span class="w-7 h-7 rounded-full bg-[var(--gold-400)] grid place-items-center text-[12px]">🐿️</span>
+              <div class="text-[13px] leading-snug flex-1">
+                <strong class="text-[var(--maroon-500)]">Just one flyer.</strong>
+                I'll handle the rest — conflict check, leave-by clock, whether it's your thing.
+              </div>
+            </div>
+            <button class="mt-4 text-[11px] text-[var(--muted)] underline">Share from Instagram instead →</button>
+          </div>
+        </div>
+      </div>
+      <p class="text-xs text-[#8B7F76] mt-3 leading-relaxed max-w-xs mx-auto text-center">
+        Viewfinder is the entire idle state. Shutter is one tap. Library + paste are tertiary text links. Award-caliber is also award-risky.
+      </p>
+    </section>
+
+  </div>
+
+  <section class="mt-14 grid md:grid-cols-3 gap-4 text-sm">
+    <div class="bg-[#231914] border border-white/10 text-[#DFD4C8] rounded-xl p-4">
+      <strong class="text-[var(--gold-400)]">What this earns</strong>
+      <ul class="mt-2 text-[12px] text-[#B8ADA3] leading-relaxed list-disc ml-4">
+        <li>Jury recognition — a visible thesis in every surface</li>
+        <li>ADHD-inclusive in practice, not just copy</li>
+        <li>Singular decision — lowest decision cost of any direction</li>
+      </ul>
+    </div>
+    <div class="bg-[#231914] border border-white/10 text-[#DFD4C8] rounded-xl p-4">
+      <strong class="text-[var(--gold-400)]">What this costs</strong>
+      <ul class="mt-2 text-[12px] text-[#B8ADA3] leading-relaxed list-disc ml-4">
+        <li>2–3 sessions · real redesign, not a patch</li>
+        <li>Hero card requires good ranking — garbage in, award out</li>
+        <li>"More" disclosure hides features → discoverability risk</li>
+      </ul>
+    </div>
+    <div class="bg-[#231914] border border-white/10 text-[#DFD4C8] rounded-xl p-4">
+      <strong class="text-[var(--gold-400)]">Required before shipping</strong>
+      <ul class="mt-2 text-[12px] text-[#B8ADA3] leading-relaxed list-disc ml-4">
+        <li>Co-design session w/ 2 ADHD students (falsifiable accessibility)</li>
+        <li>prefers-reduced-motion audit end-to-end</li>
+        <li>Fallback: if no events ranked high, hero gracefully becomes "snap your next flyer"</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

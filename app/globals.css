@@ -156,6 +156,58 @@
   html {
     @apply font-sans;
   }
+  /* Sensory-low typography baseline (AC-2): ship globally because
+     line-height 1.6 + constrained paragraph width + no ultra-thin weights
+     are strictly better for everyone, not just Calm Mode users.
+     Cited: Atkinson Hyperlegible project + Tiimo sensory design guidance. */
+  p {
+    max-width: 68ch;
+  }
+  /* Never ship sub-400 weights for primary content. */
+  body, p, li, span, button, input, textarea {
+    font-weight: 400;
+  }
+}
+
+/* Calm Mode — user-controllable sensory-low palette + typography delta
+   (AC-1, AC-3). Toggled by lib/calm-mode.ts via document.body.dataset.calm.
+   Pattern is Tiimo's Apple Design Award-winning user-controllable sensory
+   palette, not a fixed preset — the hidden risk of a fixed preset is that
+   it bakes in our guess about what "calm" means for every neurodivergent
+   profile. The data-attribute cascade mirrors PR #24's tokens-at-root
+   approach: every shadcn primitive picks up Calm Mode for free. */
+body[data-calm="true"] {
+  /* Desaturated maroon & gold — reduces contrast spikes while keeping
+     body text at ~9:1 (still WCAG AA compliant). */
+  --goldy-maroon-400: #7A5058;
+  --goldy-maroon-500: #6A3A42;
+  --goldy-maroon-600: #51282E;
+  --goldy-maroon-700: #3A1A1E;
+  --goldy-gold-300: #E0D4B3;
+  --goldy-gold-400: #D4C9A8;
+  --goldy-gold-500: #B0A278;
+  --goldy-gold-700: #8A7D50;
+  /* Warmer, flatter surfaces. No radial gradient. */
+  --background: #F5F1E8;
+  --surface-calm: #F2EEE3;
+  --surface-paper: #FBF9F3;
+  --surface-vibrant: #F5F1E8;
+  --border: #D8D0BC;
+  /* Slight letter-spacing and looser tracking — established sensory
+     pattern in neuro-inclusive type systems. */
+  letter-spacing: 0.01em;
+}
+body[data-calm="true"] .goldy-theme {
+  background: var(--surface-calm);
+}
+/* Calm Mode opt-out for mascot animations — Goldy stays still when
+   the user has signaled sensory preference, regardless of OS
+   prefers-reduced-motion. */
+body[data-calm="true"] *,
+body[data-calm="true"] *::before,
+body[data-calm="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
 }
 
 /* ------------------------------------------------------------------------
