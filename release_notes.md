@@ -1,5 +1,24 @@
 # Release Notes
 
+## Unreleased
+
+### Browse + search + interest-filtered calendar
+
+A new `/browse` page lets users discover UMN campus events ahead of time — not just the flyers they've extracted. Three orthogonal controls:
+
+- **Search.** Debounced keyword query (300 ms) hits a new `/api/campus-browse` endpoint that wraps LiveWhale's date-range search. Empty query is valid — returns all events in the current month.
+- **Month navigation.** Prev/next buttons swap the date range; each month is a fresh fetch. In-memory LRU cache (50 entries, 10-min TTL) deduplicates repeat visits.
+- **Interest match.** Users with a populated profile get an opt-in checkbox ("match my interests") that filters the visible list to events whose title, group, or category contains any of their interest keywords. Client-side, word-boundary match — no LLM call on the browse path.
+
+Two views, one dataset:
+
+- **List** (default) — best-practice for discovery/search UIs, fast first paint.
+- **Calendar** — 7-column Sunday-first month grid, max 3 event pills per day with "+N more" overflow that jumps to list view for the full count. Collapses to an agenda list under `sm` because a 7-column grid on a phone is rough.
+
+Accessibility: view toggle has `role="radiogroup"` + `aria-checked`, calendar pills carry descriptive `aria-label`, loading/error states are announced via an `aria-live="polite"` region.
+
+Safety: date params validated with `^\d{4}-\d{2}-\d{2}$`, `max` clamped to `[1, 200]` at both route and client helper, upstream failures degrade to empty results (200 + empty array) so a flaky LiveWhale feed never surfaces a raw error to users.
+
 ## v1.0.2 — 2026-04-12
 
 ### Security, forensics, and maintainability audit

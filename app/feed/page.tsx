@@ -117,12 +117,20 @@ export default function FeedPage() {
             Everything you&rsquo;ve extracted. Filter by what matters.
           </p>
         </div>
-        <Link
-          href="/"
-          className="shrink-0 text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
-        >
-          back to upload
-        </Link>
+        <div className="flex shrink-0 gap-3 text-xs">
+          <Link
+            href="/browse"
+            className="text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+          >
+            browse campus events
+          </Link>
+          <Link
+            href="/"
+            className="text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+          >
+            back to upload
+          </Link>
+        </div>
       </header>
 
       <div className="mb-4 flex flex-wrap gap-2">
