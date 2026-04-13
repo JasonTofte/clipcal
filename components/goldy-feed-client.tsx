@@ -195,18 +195,52 @@ export function GoldyFeedClient() {
     .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
     .slice(0, 6);
 
+  // Greeting blurb picks the most interesting signal out of the ranked
+  // results and addresses it directly. Falls back through: urgent →
+  // packed-today → gameday-this-week → free-food-coming → open-weekend →
+  // light-week → default. Each branch is a distinct sentence so reloading
+  // the feed in different states reads as deliberate observation, not
+  // a generic greeting.
   const greetingBlurb = useMemo(() => {
     if (rows.length === 0) return null;
     const weekday = formatWeekday(new Date());
-    const openWeekend = allEvents.every((e) => {
-      const d = new Date(e.start).getDay();
-      return d !== 0 && d !== 6;
-    });
-    if (openWeekend) {
-      return `Hey! I peeked at your week — your weekend is wide open. Want me to surface what fits?`;
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    const urgent = ranked.find(({ ctx }) => ctx.bucket === 'urgent');
+    if (urgent) {
+      const m = urgent.ctx.slots.minutesToLeaveBy ?? 0;
+      return `Heads up — ${urgent.row.event.title} needs you moving in about ${m} min. Everything else can wait.`;
     }
-    return `Hey! You've got ${rows.length} event${rows.length === 1 ? '' : 's'} on deck. ${weekday}'s looking like your day.`;
-  }, [rows, allEvents]);
+
+    const todayEvents = allEvents.filter((e) => e.start.startsWith(todayISO));
+    if (todayEvents.length >= 3) {
+      return `${weekday}'s stacked — ${todayEvents.length} things on deck today. Want me to zoom in on today?`;
+    }
+
+    const gameday = ranked.find(({ ctx }) => ctx.bucket === 'top-pick-gameday');
+    if (gameday) {
+      return `Gameday on the calendar this week — ${gameday.row.event.title}. Want me to surface everything that fits around it?`;
+    }
+
+    const freeFood = ranked.find(({ ctx }) => ctx.bucket === 'free-food');
+    if (freeFood) {
+      return `Free food incoming: ${freeFood.row.event.title}. Worth a detour?`;
+    }
+
+    const weekendBooked = allEvents.some((e) => {
+      const d = new Date(e.start).getDay();
+      return d === 0 || d === 6;
+    });
+    if (!weekendBooked) {
+      return `Peeked at your week — your weekend's wide open. Want me to surface what fits?`;
+    }
+
+    if (rows.length <= 2) {
+      return `Quiet week — just ${rows.length} event${rows.length === 1 ? '' : 's'} on deck. Want a look at what's new on campus?`;
+    }
+
+    return `You've got ${rows.length} events on deck. ${weekday}'s looking like your day.`;
+  }, [rows, ranked, allEvents]);
 
   const visibleRanked = useMemo(() => {
     let out = ranked;
@@ -543,6 +577,7 @@ export function GoldyFeedClient() {
                     conflictTitle={
                       ctx.bucket === 'conflict' ? ctx.slots.conflictTitle : null
                     }
+                    goldyCtx={ctx}
                     onAddToCalendar={() => handleAdd(row)}
                   />
                 </div>
