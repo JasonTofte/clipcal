@@ -61,6 +61,14 @@ export function markBatchCommitted(batchId: string): void {
   saveBatches(next);
 }
 
+export function markBatchUncommitted(batchId: string): void {
+  const existing = loadBatches();
+  const next = existing.map((b) =>
+    b.id === batchId ? { ...b, icsCommitted: false } : b,
+  );
+  saveBatches(next);
+}
+
 export function clearAllBatches(): void {
   if (typeof window === 'undefined') return;
   window.localStorage.removeItem(EVENT_STORE_KEY);
