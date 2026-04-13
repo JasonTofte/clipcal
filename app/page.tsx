@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
+import { decodeQRFromFile } from '@/lib/qr-decode';
 import { WeekDensity } from '@/components/week-density';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
@@ -69,7 +70,14 @@ export default function Home() {
     if (model) formData.append('model', model);
 
     try {
-      const response = await fetch('/api/extract', { method: 'POST', body: formData });
+      // Run QR decode in parallel with extraction. Decode is on-device
+      // (BarcodeDetector or qr-scanner), filtered to http(s) URLs only.
+      // If a QR is present, we attach the URL to every extracted event
+      // as `signupUrl` — surfaced as a link chip in the event card.
+      const [response, qrUrl] = await Promise.all([
+        fetch('/api/extract', { method: 'POST', body: formData }),
+        decodeQRFromFile(file).catch(() => null),
+      ]);
       const json: unknown = await response.json().catch(() => null);
 
       if (!response.ok) {
@@ -85,6 +93,12 @@ export default function Home() {
       }
 
       const extraction = json as Extraction;
+      if (qrUrl) {
+        extraction.events = extraction.events.map((e) => ({
+          ...e,
+          signupUrl: qrUrl,
+        }));
+      }
       const saved = appendBatch(extraction.events, extraction.sourceNotes);
       setState({
         status: 'success',
