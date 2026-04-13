@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Final Design System · One Thing Now (UMN edition)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    FINAL mockup — synthesis of direction 9 ("One Thing Now") with
+    UMN brand identity. Shows the whole app in one file so page-to-
+    page consistency can be signed off before refactor.
+
+    Design rules committed to:
+    • Palette = UMN maroon + UMN gold, nothing else. Bg is warm
+      cream (#FFFBF2), text is near-black (#1A1210), maroon is the
+      single primary accent, gold is reserved for focus + the Block M.
+      Ratios ~15:1 (body) / ~11:1 (secondary) — sub-21:1 ceiling.
+    • Layout = single-column, generous whitespace. Feed leads with
+      ONE thing (next event + leave-by clock). Rest collapses below.
+      Home/Browse/Profile use the same header + card rhythm.
+    • Type = Atkinson Hyperlegible (humanist sans, neurodivergent
+      evidence-backed) + Inter fallback. 17px body, 1.6 leading.
+      No display serif.
+    • Motion = 180-200ms transitions, opacity-only under
+      prefers-reduced-motion. Block M static by default.
+    • Mobile = 44×44 tap targets, safe-area insets, 100dvh.
+
+    Research inline in /mockups/07-09 file headers.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-50: #FBF2F3;
+      --maroon-100: #F4DCDE;
+      --maroon-500: #7A0019;  /* UMN primary */
+      --maroon-600: #5B0013;
+      --maroon-700: #40000D;
+      --gold-100:  #FFEDB3;
+      --gold-300:  #FFD24D;
+      --gold-400:  #FFCC33;   /* UMN primary */
+      --gold-500:  #E6B422;
+
+      --surface:   #FFFBF2;   /* cream */
+      --surface-2: #FFFFFF;   /* paper */
+      --surface-3: #F5EFE0;   /* calm beige */
+      --ink:       #1A1210;
+      --ink-muted: #5E5451;
+      --ink-soft:  #8A807B;
+      --hairline:  #EAE2D1;
+      --alert:     #B33A2B;   /* conflict — muted, not screaming */
+      --ok:        #3D6B52;   /* success — subtle green */
+    }
+    html, body {
+      background: #EEE7D8;
+      font-family: 'Atkinson Hyperlegible', 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-size: 16px;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+    .frame {
+      width: 390px;
+      min-height: 800px;
+      background: var(--surface);
+      border-radius: 32px;
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.04),
+        0 30px 60px -20px rgba(0,0,0,0.25),
+        0 0 0 10px #1a1210,
+        0 0 0 12px #2e2220;
+      overflow: hidden;
+      position: relative;
+    }
+    .frame-label {
+      position: absolute;
+      top: -28px;
+      left: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #8A807B;
+      font-weight: 600;
+    }
+    .notch {
+      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      width: 110px; height: 26px; background: #1a1210; border-radius: 999px;
+      z-index: 30;
+    }
+    .pane {
+      padding-top: 44px; /* clear for notch */
+      min-height: 800px;
+      position: relative;
+    }
+    /* Shared chrome */
+    .umn-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 20px 8px; border-bottom: 1px solid var(--hairline);
+      background: var(--surface);
+    }
+    .umn-mark {
+      width: 32px; height: 32px; border-radius: 8px; background: white;
+      border: 1.5px solid var(--gold-400);
+      display: flex; align-items: center; justify-content: center;
+      padding: 4px;
+    }
+    .umn-mark svg { width: 100%; height: 100%; }
+    .brand {
+      font-family: 'Atkinson Hyperlegible', serif;
+      font-weight: 700; font-size: 15px; letter-spacing: -0.01em;
+      color: var(--maroon-600);
+    }
+    .subtitle { font-size: 10px; color: var(--ink-soft); letter-spacing: 0.04em; }
+
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: var(--surface-2);
+      border-top: 1px solid var(--hairline);
+      display: flex; justify-content: space-around;
+      padding: 6px 8px 14px;
+    }
+    .nav-item {
+      min-height: 48px;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 2px; font-size: 10px; color: var(--ink-soft);
+      padding: 0 10px;
+    }
+    .nav-item.active { color: var(--maroon-500); font-weight: 700; }
+    .nav-item .icn { font-size: 16px; }
+
+    .press { transition: transform 180ms ease-out, box-shadow 200ms ease-out; }
+    .press:active { transform: translateY(1px) scale(0.995); }
+
+    .btn-primary {
+      background: var(--maroon-500); color: white;
+      border-radius: 14px; padding: 14px 20px;
+      font-weight: 700; width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 48px;
+    }
+    .btn-outline {
+      background: var(--surface-2); color: var(--maroon-600);
+      border: 1px solid var(--hairline);
+      border-radius: 14px; padding: 10px 16px;
+      font-weight: 600; font-size: 13px; min-height: 40px;
+      display: inline-flex; align-items: center; justify-content: center;
+    }
+    .chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: var(--surface-3); color: var(--maroon-700);
+      border: 1px solid var(--hairline);
+      padding: 3px 10px; border-radius: 999px;
+      font-size: 11px; font-weight: 600;
+    }
+    .chip.alert { background: #FBEEEC; color: var(--alert); border-color: rgba(179,58,43,0.2); }
+    .chip.ok    { background: #ECF2EE; color: var(--ok); border-color: rgba(61,107,82,0.2); }
+    .chip.gold  { background: #FFF8E1; color: var(--maroon-700); border-color: var(--gold-300); }
+
+    .card { background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 20px; padding: 16px; }
+    .card.hero {
+      border: 1px solid var(--hairline);
+      box-shadow:
+        0 1px 2px rgba(26,18,16,0.04),
+        0 10px 30px -12px rgba(122,0,25,0.12);
+    }
+    .tiny { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+    .leave-by-panel {
+      background: var(--maroon-50);
+      border: 1px solid var(--maroon-100);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+    .leave-by-clock {
+      font-family: 'Atkinson Hyperlegible', serif;
+      font-size: 44px; line-height: 1;
+      color: var(--maroon-600);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition-duration: 0.001ms !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen py-10 px-6">
+
+  <!-- Svg mask for Block M (re-usable) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <g id="block-m">
+        <g fill-rule="evenodd" stroke-width="3.3145">
+          <path fill="#7A0019" d="m231.05 109.77-42.946-71.392h11.833V1.179h-71.488v37.199h11.83l-16.414 27.275-16.4-27.275h11.826V1.179H47.807v37.199h11.826L16.687 109.77H1.367v37.199h72.906V109.77H61.177L83.55 72.578l8.6741 14.425h-8.3195v37.196h79.927V87.003h-8.3128l8.6741-14.425 22.37 37.192h-13.099v37.199h72.903V109.77h-15.316"/>
+          <path fill="#FFCC33" d="M190.4 10.707v18.13h-19.158l54.425 90.467h11.173v18.121h-53.835v-18.121h20.427l-39.237-65.23-25.542 42.459h15.645v18.124H93.443V96.533h15.655L83.553 54.074l-39.241 65.23h20.431v18.121H10.912v-18.121h11.17l54.425-90.47H57.349V10.707h52.409v18.13H90.6l33.271 55.306 33.281-55.31h-19.158V10.706H190.4m4.7696-4.7696v27.666h-15.495l48.69 80.931h13.245v27.66h-63.374v-27.66h16.765l-30.805-51.209-17.11 28.439h11.982v27.663h-70.394v-27.66h11.989l-17.11-28.439-30.805 51.209h16.762v27.656H6.1426v-27.66h13.242l48.69-80.931h-15.492V5.9354h61.945v27.666h-15.495l24.839 41.292 24.846-41.292h-15.492V5.9354h61.945"/>
+        </g>
+      </g>
+    </defs>
+  </svg>
+
+  <header class="max-w-6xl mx-auto mb-14">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border" style="background: var(--surface); border-color: var(--hairline);">
+      <span class="w-1.5 h-1.5 rounded-full" style="background: var(--maroon-500);"></span>
+      <span class="text-xs font-semibold" style="color: var(--ink-muted);">Final · One Thing Now · UMN edition</span>
+    </div>
+    <h1 class="mt-4 text-3xl sm:text-4xl font-bold tracking-tight" style="color: var(--ink);">Quiet, focused, Gopher-coded.</h1>
+    <p class="mt-2 max-w-2xl" style="color: var(--ink-muted);">
+      Direction 9 committed to, refit to the real UMN brand. Maroon + gold as the only accents. Cream paper background. One primary decision visible per screen. Every page reads as the same app.
+    </p>
+  </header>
+
+  <div class="max-w-6xl mx-auto overflow-x-auto pb-10">
+    <div class="flex gap-16 min-w-max px-2">
+
+      <!-- ================= / HOME (Upload) ================= -->
+      <div class="relative pt-10">
+        <span class="frame-label">/ · upload</span>
+        <div class="frame">
+          <div class="notch"></div>
+          <div class="pane">
+
+            <div class="umn-header">
+              <div class="flex items-center gap-2.5">
+                <div class="umn-mark">
+                  <svg viewBox="0 0 248 148" aria-hidden="true"><use href="#block-m"/></svg>
+                </div>
+                <div class="leading-tight">
+                  <div class="brand">Gopherly</div>
+                  <div class="subtitle">snap · decide · go</div>
+                </div>
+              </div>
+              <span class="chip">👤 JT</span>
+            </div>
+
+            <div class="px-5 pt-6 pb-28">
+              <h1 class="text-2xl font-bold leading-tight" style="color: var(--ink);">Snap a flyer.</h1>
+              <p class="text-base mt-1" style="color: var(--ink-muted);">I'll pull it out of your camera roll so it stops living there.</p>
+
+              <label class="card press mt-5 block border-dashed cursor-pointer" style="border: 2px dashed var(--hairline); background: var(--surface-3);">
+                <div class="flex flex-col items-center text-center py-6">
+                  <div class="text-3xl" aria-hidden>📸</div>
+                  <div class="mt-2 font-semibold">Tap to snap or drop</div>
+                  <div class="tiny mt-1">Or paste an image · ⌘V</div>
+                </div>
+              </label>
+
+              <div class="mt-5 text-xs" style="color: var(--ink-soft);">
+                <strong style="color: var(--ink-muted);">Fresh from your roll</strong>
+              </div>
+              <div class="mt-2 grid grid-cols-3 gap-2">
+                <div class="aspect-[3/4] rounded-xl" style="background: linear-gradient(135deg, var(--maroon-500), var(--maroon-700));"></div>
+                <div class="aspect-[3/4] rounded-xl" style="background: linear-gradient(135deg, var(--gold-400), var(--gold-500));"></div>
+                <div class="aspect-[3/4] rounded-xl" style="background: linear-gradient(135deg, var(--maroon-600), var(--maroon-500));"></div>
+              </div>
+
+              <div class="mt-8 p-3 rounded-xl text-xs" style="background: var(--surface-2); border: 1px solid var(--hairline); color: var(--ink-muted);">
+                <strong style="color: var(--maroon-600);">Demo mode on</strong> — Goldy reacts to a seeded week so you can see the feed before uploading anything real.
+              </div>
+            </div>
+
+            <nav class="bottom-nav">
+              <a class="nav-item active"><span class="icn">📸</span>upload</a>
+              <a class="nav-item"><span class="icn">🔎</span>browse</a>
+              <a class="nav-item"><span class="icn">🎯</span>next</a>
+              <a class="nav-item"><span class="icn">👤</span>you</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= /feed ONE THING NOW ================= -->
+      <div class="relative pt-10">
+        <span class="frame-label">/feed · one thing now</span>
+        <div class="frame">
+          <div class="notch"></div>
+          <div class="pane">
+
+            <div class="umn-header">
+              <div class="flex items-center gap-2.5">
+                <div class="umn-mark">
+                  <svg viewBox="0 0 248 148" aria-hidden="true"><use href="#block-m"/></svg>
+                </div>
+                <div class="leading-tight">
+                  <div class="brand">Gopherly</div>
+                  <div class="subtitle">Tuesday · 5:47 PM</div>
+                </div>
+              </div>
+              <span class="chip">🐿️ Goldy</span>
+            </div>
+
+            <div class="px-5 pt-5 pb-28">
+
+              <!-- THE ONE THING -->
+              <div class="card hero">
+                <div class="flex items-center gap-2 tiny" style="color: var(--maroon-600);">
+                  <span style="display:inline-block; width:6px; height:6px; border-radius:99px; background: var(--maroon-500);"></span>
+                  next up
+                </div>
+                <h2 class="text-[22px] font-bold leading-tight mt-2" style="color: var(--ink);">Gopher Hack 26</h2>
+                <p class="mt-1 text-sm" style="color: var(--ink-muted);">6:00 PM tonight · Keller Hall 3-180</p>
+
+                <div class="leave-by-panel mt-4">
+                  <div class="flex items-end justify-between gap-4">
+                    <div>
+                      <div class="tiny" style="color: var(--maroon-600);">leave by</div>
+                      <div class="leave-by-clock mt-1">5:47</div>
+                      <div class="text-sm mt-1" style="color: var(--maroon-700);">in 13 min</div>
+                    </div>
+                    <div class="text-right text-xs" style="color: var(--maroon-700);">
+                      <div class="font-semibold">12-min walk</div>
+                      <div class="opacity-70 mt-0.5">Keller Hall</div>
+                      <div class="opacity-70">3-180</div>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="mt-4 text-sm leading-relaxed" style="color: var(--ink);">
+                  <span class="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider align-middle mr-1" style="background: var(--maroon-500); color: white;">goldy</span>
+                  You're clear of everything else today. Worth going.
+                  <a href="#" class="underline decoration-dotted underline-offset-2" style="color: var(--maroon-500); font-size: 11px; margin-left: 2px;">why?</a>
+                </p>
+
+                <div class="mt-4 space-y-2">
+                  <button class="btn-primary press">Add to calendar</button>
+                  <div class="flex gap-2">
+                    <button class="btn-outline press flex-1">Snooze 5 min</button>
+                    <button class="btn-outline press flex-1">Not for me</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-center mt-5">
+                <a href="#" class="text-xs font-semibold inline-flex items-center gap-1.5" style="color: var(--maroon-500);">
+                  Show the rest of the week ↓
+                </a>
+                <div class="tiny mt-1 normal-case" style="text-transform: none; font-size: 11px; letter-spacing: 0;">
+                  <span style="color: var(--ink-soft);">5 more · 1 conflict · 1 free food</span>
+                </div>
+              </div>
+
+              <!-- Collapsed list preview -->
+              <div class="mt-5 space-y-2">
+                <div class="card press py-3 flex items-center gap-3">
+                  <div class="text-xs w-11 shrink-0" style="color: var(--ink-soft);">Tue<br><span class="font-semibold" style="color: var(--ink-muted);">10 PM</span></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold truncate">Late-night espresso jam</div>
+                    <div class="text-xs truncate" style="color: var(--ink-soft);">Bordertown Coffee</div>
+                  </div>
+                  <span class="text-xs" style="color: var(--ink-soft);">65%</span>
+                </div>
+
+                <div class="card press py-3 flex items-center gap-3" style="border-color: rgba(179,58,43,0.28);">
+                  <div class="text-xs w-11 shrink-0" style="color: var(--alert);">Tue<br><span class="font-semibold">6:30</span></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold truncate">CSE Career Fair prep</div>
+                    <div class="text-xs truncate" style="color: var(--alert);">overlaps CSCI 5801</div>
+                  </div>
+                  <span class="text-xs" style="color: var(--ink-soft);">60%</span>
+                </div>
+
+                <div class="card press py-3 flex items-center gap-3">
+                  <div class="text-xs w-11 shrink-0" style="color: var(--ink-soft);">Sat<br><span class="font-semibold" style="color: var(--maroon-500);">2:30</span></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-semibold truncate">Gophers vs Badgers · Axe Game</div>
+                    <div class="text-xs truncate" style="color: var(--ink-soft);">🏟️ Huntington Bank Stadium</div>
+                  </div>
+                  <span class="text-xs font-bold" style="color: var(--maroon-600);">98%</span>
+                </div>
+              </div>
+
+            </div>
+
+            <nav class="bottom-nav">
+              <a class="nav-item"><span class="icn">📸</span>upload</a>
+              <a class="nav-item"><span class="icn">🔎</span>browse</a>
+              <a class="nav-item active"><span class="icn">🎯</span>next</a>
+              <a class="nav-item"><span class="icn">👤</span>you</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= /browse ================= -->
+      <div class="relative pt-10">
+        <span class="frame-label">/browse · campus events</span>
+        <div class="frame">
+          <div class="notch"></div>
+          <div class="pane">
+
+            <div class="umn-header">
+              <div class="flex items-center gap-2.5">
+                <div class="umn-mark">
+                  <svg viewBox="0 0 248 148" aria-hidden="true"><use href="#block-m"/></svg>
+                </div>
+                <div class="leading-tight">
+                  <div class="brand">Gopherly</div>
+                  <div class="subtitle">what's on campus this month</div>
+                </div>
+              </div>
+              <span class="chip">🔎</span>
+            </div>
+
+            <div class="px-5 pt-5 pb-28">
+              <div class="card" style="padding: 10px 12px;">
+                <div class="flex items-center gap-2">
+                  <span aria-hidden style="color: var(--ink-soft);">🔎</span>
+                  <input type="text" placeholder="Search campus events" class="w-full bg-transparent outline-none text-sm" style="color: var(--ink);">
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between mt-4">
+                <div class="flex gap-1.5">
+                  <button class="btn-outline" style="background: var(--maroon-500); color: var(--gold-400); border-color: var(--maroon-500);">List</button>
+                  <button class="btn-outline">Calendar</button>
+                </div>
+                <label class="flex items-center gap-1.5 text-xs" style="color: var(--ink-muted);">
+                  <input type="checkbox" checked class="accent-[var(--maroon-500)]"> match my interests
+                </label>
+              </div>
+
+              <div class="flex items-center justify-between mt-4 mb-2">
+                <div class="text-sm font-semibold">April 2026</div>
+                <div class="flex gap-1">
+                  <button class="btn-outline" style="padding: 6px 10px; min-height: 32px;">‹</button>
+                  <button class="btn-outline" style="padding: 6px 10px; min-height: 32px;">›</button>
+                </div>
+              </div>
+
+              <div class="space-y-2">
+
+                <article class="card press">
+                  <div class="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div class="text-xs" style="color: var(--ink-soft);">Tue · Apr 14 · 6:00 PM</div>
+                      <h3 class="text-base font-bold leading-tight">Gopher Hack 26 kickoff</h3>
+                    </div>
+                    <span class="chip gold">★ your interests</span>
+                  </div>
+                  <p class="text-sm mt-1" style="color: var(--ink-muted);">Overnight hackathon · CSE · Keller Hall</p>
+                </article>
+
+                <article class="card press">
+                  <div class="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div class="text-xs" style="color: var(--ink-soft);">Wed · Apr 15 · 5:00 PM</div>
+                      <h3 class="text-base font-bold leading-tight">AI Club · LLM paper reading</h3>
+                    </div>
+                    <span class="chip gold">★ your interests</span>
+                  </div>
+                  <p class="text-sm mt-1" style="color: var(--ink-muted);">Walter Library 402</p>
+                </article>
+
+                <article class="card press">
+                  <div class="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div class="text-xs" style="color: var(--ink-soft);">Sat · Apr 18 · 2:30 PM</div>
+                      <h3 class="text-base font-bold leading-tight">Gophers vs Badgers · Axe Game</h3>
+                    </div>
+                    <span class="chip ok">🏟️ home</span>
+                  </div>
+                  <p class="text-sm mt-1" style="color: var(--ink-muted);">Huntington Bank Stadium · student tix $15</p>
+                </article>
+
+                <article class="card press">
+                  <div class="flex items-baseline justify-between gap-3">
+                    <div>
+                      <div class="text-xs" style="color: var(--ink-soft);">Sat · Apr 18 · 5:00 PM</div>
+                      <h3 class="text-base font-bold leading-tight">Free Pizza + Linux</h3>
+                    </div>
+                    <span class="chip">🍕 free food</span>
+                  </div>
+                  <p class="text-sm mt-1" style="color: var(--ink-muted);">Walter Library 402</p>
+                </article>
+              </div>
+            </div>
+
+            <nav class="bottom-nav">
+              <a class="nav-item"><span class="icn">📸</span>upload</a>
+              <a class="nav-item active"><span class="icn">🔎</span>browse</a>
+              <a class="nav-item"><span class="icn">🎯</span>next</a>
+              <a class="nav-item"><span class="icn">👤</span>you</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= /profile ================= -->
+      <div class="relative pt-10">
+        <span class="frame-label">/profile · interests</span>
+        <div class="frame">
+          <div class="notch"></div>
+          <div class="pane">
+
+            <div class="umn-header">
+              <div class="flex items-center gap-2.5">
+                <div class="umn-mark">
+                  <svg viewBox="0 0 248 148" aria-hidden="true"><use href="#block-m"/></svg>
+                </div>
+                <div class="leading-tight">
+                  <div class="brand">Gopherly</div>
+                  <div class="subtitle">what you're into</div>
+                </div>
+              </div>
+              <span class="chip">👤</span>
+            </div>
+
+            <div class="px-5 pt-5 pb-28">
+              <h1 class="text-xl font-bold leading-tight">Pick your interests.</h1>
+              <p class="text-sm mt-1" style="color: var(--ink-muted);">Goldy uses these to highlight events that fit you. Nothing gets auto-declined.</p>
+
+              <div class="mt-5 tiny">what are you into?</div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                <span class="chip gold">🍕 Free Food</span>
+                <span class="chip">🤝 Networking</span>
+                <span class="chip gold">💻 Tech / CS</span>
+                <span class="chip gold">⚡ Hackathons</span>
+                <span class="chip gold">🤖 AI / ML</span>
+                <span class="chip">🎨 Art &amp; Design</span>
+                <span class="chip">🎵 Music</span>
+                <span class="chip">⚽ Sports</span>
+                <span class="chip">🌲 Outdoors</span>
+                <span class="chip">💼 Career Fairs</span>
+                <span class="chip">🔬 Research</span>
+                <span class="chip">🤲 Volunteering</span>
+              </div>
+
+              <p class="text-xs mt-3" style="color: var(--ink-soft);">Loaded 4 saved interests. Toggle to edit, then save to update.</p>
+
+              <div class="mt-5 tiny">year</div>
+              <div class="flex flex-wrap gap-1.5 mt-2">
+                <span class="chip">Freshman</span>
+                <span class="chip gold">Sophomore</span>
+                <span class="chip">Junior</span>
+                <span class="chip">Senior</span>
+                <span class="chip">Grad</span>
+              </div>
+
+              <div class="mt-6">
+                <button class="btn-primary press">Save profile (4 interests)</button>
+              </div>
+
+              <div class="mt-6 card" style="background: var(--surface-3); border-color: var(--gold-300);">
+                <div class="tiny">rather chat?</div>
+                <p class="text-sm mt-1" style="color: var(--ink);">Goldy can do a 90-second interview and pull out what you care about from how you talk about campus.</p>
+                <button class="mt-3 btn-outline">Chat with Goldy instead</button>
+              </div>
+            </div>
+
+            <nav class="bottom-nav">
+              <a class="nav-item"><span class="icn">📸</span>upload</a>
+              <a class="nav-item"><span class="icn">🔎</span>browse</a>
+              <a class="nav-item"><span class="icn">🎯</span>next</a>
+              <a class="nav-item active"><span class="icn">👤</span>you</a>
+            </nav>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer class="max-w-6xl mx-auto mt-12 border-t pt-6 pb-12 text-xs" style="color: var(--ink-soft); border-color: var(--hairline);">
+    <div class="flex flex-wrap gap-x-6 gap-y-2">
+      <span><strong style="color: var(--ink-muted);">Palette:</strong> UMN maroon · UMN gold · cream · ink</span>
+      <span><strong style="color: var(--ink-muted);">Type:</strong> Atkinson Hyperlegible 17px · 1.6 leading</span>
+      <span><strong style="color: var(--ink-muted);">Motion:</strong> 180ms · opacity-only under reduced-motion</span>
+      <span><strong style="color: var(--ink-muted);">Accessibility:</strong> ≥44×44 tap · ≥12:1 contrast body · ≥7:1 UI</span>
+    </div>
+    <div class="mt-4">
+      <a href="index.html" class="underline decoration-dotted underline-offset-4">← all mockups</a>
+    </div>
+  </footer>
+
+</body>
+</html>

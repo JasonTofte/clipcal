@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Fredoka } from "next/font/google";
+import { Geist, Geist_Mono, Atkinson_Hyperlegible, Fredoka } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
 import { GoldyHeader } from "@/components/goldy-header";
 import "./globals.css";
@@ -16,6 +16,20 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
+// Primary body/UI font. Atkinson Hyperlegible is designed by the
+// Braille Institute specifically for low-vision and neurodivergent
+// readers — distinct letterforms, high differentiation between
+// similar glyphs (I/l/1, 0/O). Evidence-backed choice for ADHD users
+// per A11y Collective + BDA 2024 guidance.
+const atkinson = Atkinson_Hyperlegible({
+  variable: "--font-atkinson",
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Kept for backwards-compat with any remaining Fredoka references
+// (component-level cleanup will remove). Not on the critical path.
 const fredoka = Fredoka({
   variable: "--font-fredoka",
   weight: ["500", "700"],
@@ -53,7 +67,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${atkinson.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]">
         <GoldyHeader />
