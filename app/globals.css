@@ -184,3 +184,13 @@
 /* Hide scrollbar on horizontal rails (camera roll). */
 .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Scroll-snap utilities for horizontal rails (camera roll).
+   Matches iOS momentum behavior with deliberate card alignment. */
+.goldy-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scroll-padding-inline: 1rem;
+}
+.goldy-snap-item { scroll-snap-align: start; }

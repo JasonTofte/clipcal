@@ -92,3 +92,4 @@ coverage/
 *.tmp
 .cache/
 .vercel
+lighthouse-feed*.{html,json}

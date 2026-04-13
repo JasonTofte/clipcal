@@ -1,5 +1,6 @@
 import type { Event } from '@/lib/schema';
 import { GoldyAvatar } from '@/components/goldy-avatar';
+import { formatEventWhen } from '@/lib/format';
 
 type Props = {
   event: Event;
@@ -9,21 +10,6 @@ type Props = {
   onAddToCalendar: () => void;
   onOpenMenu?: () => void;
 };
-
-function formatWhen(event: Event): string {
-  const d = new Date(event.start);
-  if (Number.isNaN(d.getTime())) return event.start;
-  const date = d.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-  });
-  const time = d.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-  return `${date} · ${time}`;
-}
 
 function flyerClass(event: Event): string {
   const t = event.title.toLowerCase();
@@ -92,7 +78,7 @@ export function GoldyEventCard({
             <div className="min-w-0">
               <h3 className="truncate font-bold text-stone-900">{event.title}</h3>
               <p className="mt-0.5 text-xs text-stone-500">
-                {formatWhen(event)}
+                {formatEventWhen(event.start)}
                 {event.location ? ` · ${event.location}` : ''}
               </p>
             </div>

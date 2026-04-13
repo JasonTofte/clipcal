@@ -22,7 +22,7 @@ export function BottomNav() {
   const pathname = usePathname();
   return (
     <nav
-      aria-label="Primary"
+      aria-label="Main navigation"
       className="fixed bottom-0 inset-x-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >

@@ -15,6 +15,8 @@ ClipCal is an AI-powered flyer → calendar web app with an ADHD-supportive desi
 5. **"Worth noticing" chips** surface the trade-offs (12-min walk · first open Sat · ends after your 8am class) so you can decide. No auto-decline. No nagging.
 6. **Leave-by clock** — concrete timestamp, targets time blindness.
 7. One tap → `.ics` download or Google/Outlook deeplink.
+8. **Goldy Sidekick feed** — `/feed` shows your extracted events with UMN Gopher mascot commentary. Goldy reacts to your schedule: "Tricky one — overlaps CSCI 5801, but your call", "Free pizza? Say less", "Ski-U-Mah! Home game energy — this is the one." Lines are chosen deterministically from a 120-variant hand-authored bank (8 context buckets × 15 variants). Zero runtime LLM, fully offline, calendar data never leaves the browser.
+9. **Browse UMN events** — `/browse` discovers campus events ahead of time (list + month calendar, interest-filtered).
 
 ## Design principle
 
@@ -36,19 +38,44 @@ See [`docs/brief.md`](docs/brief.md) for the full product brief and [`mockups/in
 
 ```
 clipcal/
-├── app/               # Next.js 16 App Router
-│   ├── api/extract/   # POST image → Claude Haiku 4.5 → ExtractionSchema JSON
-│   ├── layout.tsx     # Tailwind root
-│   └── page.tsx       # Session 1: minimal file input + JSON display
-├── components/ui/     # shadcn primitives (button, card, input, textarea, badge)
+├── app/                      # Next.js 16 App Router
+│   ├── api/                  # /extract · /campus-feed · /campus-match · /campus-orgs
+│   │                         # /campus-browse · /chat · /profile · /relevance
+│   ├── browse/page.tsx       # UMN events discovery (list + month calendar)
+│   ├── feed/page.tsx         # Goldy Sidekick feed (RSC shell)
+│   ├── profile/              # Interest interviewer
+│   ├── layout.tsx            # Tailwind root + next/font + BottomNav
+│   └── page.tsx              # Upload flow (snap / paste / drop)
+├── components/
+│   ├── bottom-nav.tsx        # Sticky tab bar (Upload · Browse · Feed · Profile)
+│   ├── goldy-*.tsx           # Goldy Sidekick UI (avatar, feed, cards, week-glance, FAB)
+│   ├── event-card.tsx        # Post-extraction editable card (home page)
+│   ├── campus-feed.tsx       # UMN events widget
+│   └── ui/                   # shadcn primitives
 ├── lib/
-│   ├── schema.ts      # Zod EventSchema + ExtractionSchema
-│   └── schema.test.ts # Vitest — 9 tests, all green
-├── docs/              # Product brief + full build plan
-├── mockups/           # Static HTML mockups (3 directions + index)
-├── public/            # Static assets
+│   ├── schema.ts             # Zod EventSchema + ExtractionSchema
+│   ├── goldy-commentary.ts   # Deterministic Goldy line selection per event
+│   ├── goldy-templates.json  # 120 mascot lines (8 buckets × 15 variants)
+│   ├── format.ts             # Centralized en-US date/time formatters
+│   ├── conflict.ts           # Calendar overlap detection
+│   ├── noticings.ts          # "Worth noticing" chip generator
+│   ├── leave-by.ts           # Leave-by clock
+│   ├── livewhale.ts          # UMN LiveWhale events client
+│   ├── calendar-grid.ts      # UTC-safe month-grid builder
+│   └── relevance.ts          # Interest matcher + relevance score schema
+├── docs/                     # Product brief + full build plan
+├── mockups/                  # Static HTML mockups (6 directions + index)
+├── public/                   # Static assets
 └── README.md
 ```
+
+## Scripts
+
+- `npm run dev` — Next dev server
+- `npm run build` — production build
+- `npm test` — Vitest (currently 166 tests)
+- `npm run analyze` — bundle analyzer (Turbopack-native `--experimental-analyze`). Open `.next/diagnostics/analyze/index.html` after the build.
+- `npm run lighthouse` — mobile Lighthouse report against a running `npm run dev`. Requires no pre-install (uses `npx -y lighthouse`); outputs `lighthouse-feed.html`.
 
 ## Hackathon timeline
 
