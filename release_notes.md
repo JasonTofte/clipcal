@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### Unified UI — one Goldy language across the whole app
+
+Until now `/feed` was the only page wearing the Goldy brand; `/`, `/browse`, and `/profile` ran on stock shadcn neutrals. The split fought the product's "Goldy as sidekick" promise — and worse, non-feed pages never inherited the ADHD decision-support chrome (conflict badges, interest chips, leave-by clock) that makes the feed trustworthy.
+
+**What changed:**
+
+- **Design tokens promoted to `:root`.** `--primary` is now UMN maroon, `--background` is warm cream, `--ring` is gold, `--font-sans` is Fredoka. Every shadcn primitive (`Button`, `Card`, `Input`, `Textarea`, `Badge`) picks up the Goldy palette for free. `.goldy-theme` stays additive — the radial gold→maroon gradient still applies only on `/feed` via the existing class.
+- **Three surface variants.** `--surface-vibrant` (feed's radial gradient), `--surface-calm` (cream, default for all task-heavy pages), `--surface-paper` (white, for cards and inputs). ADHD/neuro-inclusion research explicitly warns against busy backgrounds on data-dense pages — calendar grids and forms stay calm; feed keeps its warmth.
+- **Shared primitive library.** `LeaveByClock`, `NoticingChip`, `ConflictBadge`, `PrimaryCTA`, and a new `GoldyBubble` live in `components/shared/`. Extracted from `event-card.tsx` (−57 lines) so `/browse` can start reusing them.
+- **Browse enrichment.** Rows that match a saved interest now show a "★ your interests" chip, and list/calendar toggles are pill-style. (ConflictBadge wiring deferred — LiveWhale data lacks time-of-day, so conflict detection there would be speculative. Logged in pivot log.)
+- **Scoped mascot presence.** Upload and Profile each get one `<GoldyBubble>` invitation near the primary action. No page-wide mascot chrome — Goldy appears where it earns its keep.
+
+**Architecture decision (approved):** tokens-at-root + surface variants, not per-page theme classes. Single source of truth, one WCAG audit pass covers every page, and future primitives don't have to restate their colors.
+
+**Accessibility.** Contrast spot-checked: foreground on calm ≈17:1, white on maroon ≈12:1 — both exceed WCAG AAA. Gold is reserved for backgrounds, focus rings, and icons (fails AA as body copy by design).
+
+**Feed regression.** `/feed` renders byte-identically — the `.goldy-theme` wrapper class and all Goldy-specific components (camera roll, week glance, picks, commentary) are untouched.
+
 ### Goldy Sidekick feed
 
 `/feed` is no longer a generic list — it's a mascot-forward feed where Goldy Gopher reacts to your calendar. Three pieces:

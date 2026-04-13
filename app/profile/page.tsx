@@ -6,6 +6,7 @@ import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import { InterestPicker } from '@/components/interest-picker';
 import { Button } from '@/components/ui/button';
+import { GoldyBubble } from '@/components/shared';
 import { ProfileSchema, saveProfileToStorage } from '@/lib/profile';
 import { cn } from '@/lib/utils';
 
@@ -79,12 +80,18 @@ export default function ProfilePage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
       <header className="mb-6">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">Pick your interests</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Pick your interests</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Tap what you&rsquo;re into. ClipCal uses this to highlight events that fit you — never
           auto-declines anything. Prefer a chat? Toggle to interview mode below.
         </p>
       </header>
+
+      <GoldyBubble avatar tone="gold" className="mb-5 self-start max-w-md">
+        <p className="text-sm leading-snug">
+          The more I know what you&rsquo;re into, the better I can pick the picks.
+        </p>
+      </GoldyBubble>
 
       <div className="mb-5 flex gap-2">
         <button
