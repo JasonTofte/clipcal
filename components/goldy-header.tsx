@@ -4,11 +4,10 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 
-// Subtitle shown on the right side of the header, one line max.
-// Pathname-scoped so the mascot's "role" changes with context without
-// adding a per-page header component.
+// Small, muted contextual subtitle per page. Keeps the mascot
+// contextual without shouting.
 const SUBTITLE_BY_PATH: Array<[test: (p: string) => boolean, subtitle: string]> = [
-  [(p) => p === '/', 'Snap a flyer · I turn it into a decision'],
+  [(p) => p === '/', 'snap · decide · go'],
   [(p) => p === '/feed' || p.startsWith('/feed/'), 'your campus sidekick'],
   [(p) => p === '/browse' || p.startsWith('/browse/'), 'what\u2019s on campus this month'],
   [(p) => p === '/profile' || p.startsWith('/profile/'), 'what you\u2019re into'],
@@ -20,36 +19,42 @@ function subtitleFor(pathname: string | null): string {
   return hit?.[1] ?? 'your campus sidekick';
 }
 
-// Rendered at the top of every page via app/layout.tsx. The sticky
-// maroon band is the single strongest visual signal that every
-// ClipCal surface is the same app — it was previously scoped to /feed,
-// which made /, /browse, and /profile feel like separate products.
+// Redesigned for the One Thing Now direction (PR #35 final mockup):
+// paper surface with a small Block M tile + maroon wordmark. No
+// full-bleed maroon band — keeps visual weight to the content below.
 export function GoldyHeader() {
   const pathname = usePathname();
   const subtitle = subtitleFor(pathname);
   return (
     <header
-      className="sticky top-0 z-20 shadow-lg"
+      className="sticky top-0 z-20 border-b"
       style={{
-        background: 'var(--goldy-maroon-500)',
-        color: 'white',
+        background: 'var(--surface-calm)',
+        borderColor: 'var(--border)',
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
-      <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2.5">
         <Link
           href="/feed"
           aria-label="Gopherly home"
-          className="flex shrink-0 items-center gap-2.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--goldy-gold-300)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--goldy-maroon-500)] rounded-lg"
+          className="flex shrink-0 items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          style={{
+            // @ts-expect-error - custom property for focus ring
+            '--tw-ring-color': 'var(--goldy-gold-400)',
+          }}
         >
-          <GoldyAvatar size={40} />
+          <GoldyAvatar size={36} />
           <span className="flex flex-col leading-tight">
-            <span className="goldy-display text-base font-bold sm:text-lg">
+            <span
+              className="goldy-display text-base font-bold tracking-tight sm:text-lg"
+              style={{ color: 'var(--goldy-maroon-600)' }}
+            >
               Gopherly
             </span>
             <span
               className="text-[10px] sm:text-[11px]"
-              style={{ color: 'var(--goldy-gold-300)' }}
+              style={{ color: 'var(--muted-foreground)' }}
             >
               {subtitle}
             </span>

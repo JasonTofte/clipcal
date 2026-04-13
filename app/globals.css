@@ -149,7 +149,9 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+    font-family: var(--font-atkinson), 'Inter', ui-sans-serif, system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
   }
   html {
     @apply font-sans;
@@ -157,47 +159,62 @@
 }
 
 /* ------------------------------------------------------------------------
-   Goldy Sidekick utilities (scoped under .goldy-theme on /feed)
-   Keeps the rest of the app on the stock shadcn palette.
+   One Thing Now design system — post-PR #35 direction.
+   Muted cream canvas, paper cards, UMN maroon as single accent, gold
+   reserved for focus + the Block M mark. No gradients, no decorative
+   surfaces. .goldy-theme stays as the namespace for feed-only quirks
+   but no longer carries a vibrant background — all pages share the
+   same calm surface.
    ------------------------------------------------------------------------ */
 .goldy-theme {
-  font-family: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
-  background: radial-gradient(ellipse at top, var(--goldy-gold-50) 0%, var(--goldy-maroon-50) 70%);
+  font-family: var(--font-atkinson), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  background: var(--surface-calm);
   min-height: 100dvh;
 }
-/* Blocky, campus-yearbook feel from already-loaded system fonts.
-   Previously used Graduate (next/font), which added a woff2 on the LCP
-   render path for one wordmark. Fallback stack + uppercase + letter-
-   spacing gets us 90% of the visual weight at zero network cost. */
 .goldy-theme .goldy-display {
-  font-family: 'Georgia', 'Times New Roman', ui-serif, serif;
+  font-family: var(--font-atkinson), 'Inter', ui-sans-serif, system-ui, sans-serif;
   font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  text-transform: none;
 }
+
+/* Speech bubble — flat gold card with a small left tail. Kept for the
+   per-event "Goldy's take" panel. */
 .goldy-theme .goldy-bubble {
-  background: linear-gradient(135deg, var(--goldy-gold-400) 0%, var(--goldy-gold-200) 100%);
+  background: var(--goldy-gold-50);
+  border: 1px solid var(--goldy-gold-300);
   position: relative;
 }
 .goldy-theme .goldy-bubble::before {
   content: '';
   position: absolute;
-  left: -10px;
-  top: 16px;
-  border-right: 12px solid var(--goldy-gold-400);
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
+  left: -8px;
+  top: 14px;
+  border-right: 10px solid var(--goldy-gold-300);
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
 }
-.goldy-theme .flyer-hack { background: linear-gradient(135deg, var(--goldy-maroon-500) 0%, var(--goldy-maroon-700) 100%); }
-.goldy-theme .flyer-pizza { background: linear-gradient(135deg, var(--goldy-gold-400) 0%, var(--goldy-gold-500) 100%); color: var(--goldy-maroon-700); }
-.goldy-theme .flyer-career { background: linear-gradient(135deg, var(--goldy-maroon-600) 0%, var(--goldy-maroon-500) 60%, var(--goldy-gold-400) 150%); }
-.goldy-theme .flyer-fest { background: linear-gradient(135deg, var(--goldy-maroon-400) 0%, var(--goldy-gold-300) 140%); }
-.goldy-theme .flyer-game { background: linear-gradient(135deg, var(--goldy-maroon-700) 0%, var(--goldy-maroon-500) 100%); }
-.goldy-theme .flyer-default { background: linear-gradient(135deg, var(--goldy-maroon-500) 0%, var(--goldy-maroon-400) 100%); }
 
-/* Hover affordances only on real pointers — stops sticky-hover on tap. */
+/* Flyer thumbnail tiles — retained for the camera roll preview.
+   Muted one-color fills instead of gradients so they don't shout. */
+.goldy-theme .flyer-hack   { background: var(--goldy-maroon-500); }
+.goldy-theme .flyer-pizza  { background: var(--goldy-gold-400); color: var(--goldy-maroon-700); }
+.goldy-theme .flyer-career { background: var(--goldy-maroon-600); }
+.goldy-theme .flyer-fest   { background: var(--goldy-maroon-400); }
+.goldy-theme .flyer-game   { background: var(--goldy-maroon-700); }
+.goldy-theme .flyer-default{ background: var(--goldy-maroon-500); }
+
 @media (hover: hover) and (pointer: fine) {
-  .goldy-theme .goldy-hover\:brighten:hover { filter: brightness(1.05); }
+  .goldy-theme .goldy-hover\:brighten:hover { filter: brightness(1.04); }
+}
+
+/* prefers-reduced-motion — applies site-wide.  */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.001ms !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* Hide scrollbar on horizontal rails (camera roll). */

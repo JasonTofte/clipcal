@@ -4,14 +4,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { GoldyWeekGlance } from '@/components/goldy-week-glance';
-import { GoldyEventCard } from '@/components/goldy-event-card';
-import { GoldyDayOfBanner } from '@/components/goldy-day-of-banner';
+import { GoldyEventRow } from '@/components/goldy-event-row';
+import { OneThingHero } from '@/components/one-thing-hero';
 import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
-  appendBatch,
-  clearAllBatches,
   EVENT_STORE_KEY,
   loadBatches,
   markBatchCommitted,
@@ -23,7 +21,11 @@ import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
 import { parseNowOverride } from '@/lib/day-of-reminder';
 import { formatShortDate, formatWeekday } from '@/lib/format';
-import { buildDemoBatch, DEMO_SEED_ID, isDemoBatch } from '@/lib/demo-feed-seed';
+// Inlined: prior demo seed module (lib/demo-feed-seed.ts) was removed
+// when we dropped auto-seeded fake flyers. The legacy id prefix is
+// preserved here so this cleanup pass keeps stripping stale data
+// from existing localStorage state for one or two release cycles.
+const isDemoBatch = (id: string) => id.startsWith('demo_');
 import {
   hideEvent,
   loadHiddenIds,
@@ -34,7 +36,6 @@ import { detectDuplicates, siblingDatesLabel } from '@/lib/dedupe-events';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
-const DEMO_SEED_DISMISSED_KEY = 'clipcal_demo_seed_dismissed';
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const UNDO_WINDOW_MS = 5000;
 
@@ -121,50 +122,20 @@ export function GoldyFeedClient() {
   const undoTimerRef = useRef<number | null>(null);
   const flashTimerRef = useRef<number | null>(null);
 
-  // Initial hydration: load batches + profile + demo-mode, and auto-seed
-  // a demo batch on first visit if the user has no data yet. A
-  // `?demo=force` URL param wipes existing batches and reseeds — useful
-  // when a presenter lands on a device that already has stale data.
+  // Initial hydration: load user-uploaded batches + profile + demo-mode
+  // + hidden-events set. No auto-seed: if the user hasn't uploaded
+  // anything, the feed shows an empty state (with a LiveWhale fallback
+  // hero further down). Stale demo_goldy_v* batches from prior builds
+  // are stripped on first mount so they don't linger as fake "real"
+  // data.
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const forceDemo = params.get('demo') === 'force';
-    if (forceDemo) {
-      clearAllBatches();
-      window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
-    }
-
-    // Auto-upgrade: if there's any demo batch whose id isn't the
-    // current DEMO_SEED_ID, strip it out so the next seed pass installs
-    // the newer version. Real (non-demo) batches are left untouched.
     const rawLoaded = loadBatches();
-    const hasStaleDemo = rawLoaded.some(
-      (b) => isDemoBatch(b.id) && b.id !== DEMO_SEED_ID,
-    );
-    if (hasStaleDemo) {
+    const anyDemo = rawLoaded.some((b) => isDemoBatch(b.id));
+    if (anyDemo) {
       const kept = rawLoaded.filter((b) => !isDemoBatch(b.id));
       window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(kept));
-      window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
     }
-
-    const loaded = loadBatches();
-    const dismissed =
-      window.localStorage.getItem(DEMO_SEED_DISMISSED_KEY) === 'true';
-    // Seed if the user has no events, OR if they had only-stale demo
-    // data that we just stripped (now also empty) — same effect.
-    if (loaded.length === 0 && (!dismissed || forceDemo)) {
-      appendBatch(buildDemoBatch(new Date()).events, 'Demo events — first visit seed.');
-      // appendBatch creates a fresh batch with a non-demo id; rewrite the
-      // freshly-written batch to use the DEMO_SEED_ID so we can detect it.
-      const refetched = loadBatches();
-      const last = refetched[refetched.length - 1];
-      if (last) {
-        last.id = DEMO_SEED_ID;
-        window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(refetched));
-      }
-      setBatches(loadBatches());
-    } else {
-      setBatches(loaded);
-    }
+    setBatches(loadBatches());
     setProfile(loadProfileFromStorage());
     setHiddenIds(loadHiddenIds());
     const storedDemo = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
@@ -202,7 +173,6 @@ export function GoldyFeedClient() {
   );
   const interests = profile?.interests ?? [];
   const weekStart = useMemo(() => startOfWeekMonday(new Date()), []);
-  const hasDemoSeed = batches.some((b) => isDemoBatch(b.id));
 
   // Share the same `?now=` override the day-of banner uses so urgent
   // commentary + the banner stay in sync during demos.
@@ -391,24 +361,6 @@ export function GoldyFeedClient() {
     }, 1600);
   };
 
-  const handleResetDemo = () => {
-    clearAllBatches();
-    window.localStorage.setItem(DEMO_SEED_DISMISSED_KEY, 'true');
-    setBatches([]);
-  };
-
-  const handleLoadDemo = () => {
-    window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
-    appendBatch(buildDemoBatch(new Date()).events, 'Demo events — manually reloaded.');
-    const refetched = loadBatches();
-    const last = refetched[refetched.length - 1];
-    if (last) {
-      last.id = DEMO_SEED_ID;
-      window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(refetched));
-    }
-    setBatches(loadBatches());
-  };
-
   const registerCardRef = (key: string) => (el: HTMLElement | null) => {
     if (el) cardRefs.current.set(key, el);
     else cardRefs.current.delete(key);
@@ -441,14 +393,6 @@ export function GoldyFeedClient() {
           >
             Upload a flyer
           </Link>
-          <button
-            type="button"
-            onClick={handleLoadDemo}
-            className="mt-1 text-xs font-semibold underline decoration-dotted underline-offset-4"
-            style={{ color: 'var(--goldy-maroon-600)' }}
-          >
-            Or load demo events
-          </button>
         </div>
       </div>
     );
@@ -456,7 +400,22 @@ export function GoldyFeedClient() {
 
   return (
     <>
-      <GoldyDayOfBanner events={allEvents} />
+      <OneThingHero
+        events={allEvents}
+        ranked={visibleRanked.map(({ row, ctx, line }) => ({
+          event: row.event,
+          ctx,
+          line,
+        }))}
+        onAddToCalendar={(event) => {
+          const hit = visibleRanked.find((r) => r.row.event === event);
+          if (hit) handleAdd(hit.row);
+        }}
+        onHide={(event) => {
+          const hit = visibleRanked.find((r) => r.row.event === event);
+          if (hit) handleHide(hit.row);
+        }}
+      />
 
       <LeaveByNotifyToggle events={allEvents} />
 
@@ -494,62 +453,6 @@ export function GoldyFeedClient() {
         />
       )}
 
-      {!hasDemoSeed && (
-        <div
-          className="mb-4 flex items-center justify-between rounded-2xl border px-3 py-2 text-[11px]"
-          style={{
-            background: 'var(--goldy-maroon-50)',
-            borderColor: 'var(--goldy-maroon-200)',
-            color: 'var(--goldy-maroon-700)',
-          }}
-        >
-          <span>
-            Showing your real data.{' '}
-            <span className="text-stone-600">
-              Want to see Goldy with seeded demo events?
-            </span>
-          </span>
-          <button
-            type="button"
-            onClick={handleLoadDemo}
-            className="ml-3 shrink-0 rounded-full border px-2.5 py-1 font-semibold"
-            style={{
-              borderColor: 'var(--goldy-maroon-500)',
-              color: 'var(--goldy-maroon-600)',
-              background: 'white',
-            }}
-          >
-            Load demo
-          </button>
-        </div>
-      )}
-
-      {hasDemoSeed && (
-        <div
-          className="mb-4 flex items-center justify-between rounded-2xl border px-3 py-2 text-[11px]"
-          style={{
-            background: 'var(--goldy-gold-50)',
-            borderColor: 'var(--goldy-gold-200)',
-            color: 'var(--goldy-maroon-700)',
-          }}
-        >
-          <span>
-            <strong>Demo data loaded.</strong> These three events are here so Goldy has something to react to.
-          </span>
-          <button
-            type="button"
-            onClick={handleResetDemo}
-            className="ml-3 shrink-0 rounded-full border px-2.5 py-1 font-semibold"
-            style={{
-              borderColor: 'var(--goldy-maroon-500)',
-              color: 'var(--goldy-maroon-600)',
-              background: 'white',
-            }}
-          >
-            Clear demo
-          </button>
-        </div>
-      )}
 
       <GoldyWeekGlance
         events={allEvents}
@@ -672,35 +575,34 @@ export function GoldyFeedClient() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {visibleRanked.map(({ row, ctx, line, pct }, i) => {
+          <div className="space-y-2">
+            {/* Hero already surfaces index 0 when filters are off. Skip it in
+                the list so we don't double-promote the same event. When a
+                filter is active the hero still shows the ranked top of the
+                filtered view, so skipping index 0 is consistent. */}
+            {visibleRanked.slice(1).map(({ row, ctx, pct }) => {
               const key = `${row.batchId}-${row.eventIndex}`;
               const flashing = flashKey === key;
               return (
                 <div
                   key={key}
                   ref={registerCardRef(key)}
-                  className="rounded-3xl transition-shadow"
+                  className="rounded-2xl transition-shadow"
                   style={
                     flashing
                       ? {
                           boxShadow:
-                            '0 0 0 3px var(--goldy-gold-400), 0 10px 25px -8px rgba(0,0,0,0.2)',
+                            '0 0 0 3px var(--goldy-gold-400), 0 6px 18px -10px rgba(0,0,0,0.2)',
                         }
                       : undefined
                   }
                 >
-                  <GoldyEventCard
+                  <GoldyEventRow
                     event={row.event}
-                    goldyLine={line}
+                    ctx={ctx}
                     matchPct={pct}
-                    isTopPick={i === 0 && chipFilter === 'all' && selectedDayIdx === null}
-                    conflictTitle={
-                      ctx.bucket === 'conflict' ? ctx.slots.conflictTitle : null
-                    }
-                    goldyCtx={ctx}
                     duplicateLabel={siblingDatesLabel(key, duplicateIndex)}
-                    onAddToCalendar={() => handleAdd(row)}
+                    onClick={() => handleAdd(row)}
                     onHide={() => handleHide(row)}
                   />
                 </div>
