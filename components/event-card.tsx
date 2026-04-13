@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
 import type { LeaveByInfo } from '@/lib/leave-by';
@@ -82,6 +82,9 @@ export function EventCard({
   const patch = <K extends keyof Event>(key: K, value: Event[K]) =>
     onChange({ ...event, [key]: value });
 
+  const [descExpanded, setDescExpanded] = useState(false);
+  const shouldCollapseDesc = !readOnly && (event.description?.length ?? 0) > 80 && !descExpanded;
+
   return (
     <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
       {(conflict || relevance || orgMatch) && (
@@ -117,6 +120,21 @@ export function EventCard({
 
       <TemporalBar start={event.start} />
 
+      {leaveBy && (
+        <div className="flex items-center justify-between rounded-xl bg-primary/5 px-4 py-3 ring-1 ring-inset ring-primary/20">
+          <div className="flex items-center gap-3">
+            <span aria-hidden className="text-xl">🕒</span>
+            <div>
+              <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">leave by</div>
+              <div className="text-2xl font-bold tracking-tight leading-none">{leaveBy.displayText}</div>
+            </div>
+          </div>
+          <div className="text-right text-xs text-muted-foreground">
+            <div>{leaveBy.walkMinutes}-min walk</div>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-3">
         <LabeledField label="start">
           <input
@@ -148,14 +166,25 @@ export function EventCard({
       </LabeledField>
 
       <LabeledField label="description">
-        <textarea
-          value={event.description ?? ''}
-          readOnly={readOnly}
-          placeholder="—"
-          onChange={(e) => patch('description', e.target.value || null)}
-          rows={2}
-          className={cn(inputCls, 'resize-y text-sm', readOnly && 'pointer-events-none')}
-        />
+        {shouldCollapseDesc ? (
+          <button
+            type="button"
+            onClick={() => setDescExpanded(true)}
+            className="text-left text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {event.description!.slice(0, 80)}…{' '}
+            <span className="text-xs underline decoration-dotted underline-offset-2">show more</span>
+          </button>
+        ) : (
+          <textarea
+            value={event.description ?? ''}
+            readOnly={readOnly}
+            placeholder="—"
+            onChange={(e) => patch('description', e.target.value || null)}
+            rows={2}
+            className={cn(inputCls, 'resize-y text-sm', readOnly && 'pointer-events-none')}
+          />
+        )}
       </LabeledField>
 
       <div className="flex flex-wrap items-center gap-1.5">
@@ -184,10 +213,13 @@ export function EventCard({
       </div>
 
       {noticings.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 border-t border-border/40 pt-3">
-          {noticings.map((n, i) => (
-            <NoticingChip key={i} noticing={n} />
-          ))}
+        <div className="space-y-2 border-t border-border/40 pt-3">
+          <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">worth noticing</div>
+          <div className="flex flex-wrap gap-1.5">
+            {noticings.map((n, i) => (
+              <NoticingChip key={i} noticing={n} />
+            ))}
+          </div>
         </div>
       )}
 
@@ -197,27 +229,18 @@ export function EventCard({
 
       {campusMatch && <CampusMatchBadge match={campusMatch} />}
 
-      {leaveBy && (
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span aria-hidden>🕒</span>
-          <span>
-            leave by{' '}
-            <span className="font-semibold text-foreground">{leaveBy.displayText}</span>
-            {' '}· {leaveBy.walkMinutes}-min walk
-          </span>
-        </div>
-      )}
-
-      <div className="-mx-1 flex flex-wrap gap-2 border-t border-border/60 pt-3">
-        <Button size="sm" variant="default" disabled={readOnly} onClick={onDownloadIcs}>
+      <div className="-mx-1 flex flex-col gap-2 border-t border-border/60 pt-3">
+        <Button size="default" variant="default" disabled={readOnly} onClick={onDownloadIcs} className="w-full">
           📅 Add to Calendar
         </Button>
-        <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenGoogle}>
-          Google
-        </Button>
-        <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenOutlook}>
-          Outlook
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenGoogle} className="flex-1">
+            Google
+          </Button>
+          <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenOutlook} className="flex-1">
+            Outlook
+          </Button>
+        </div>
       </div>
     </div>
   );
