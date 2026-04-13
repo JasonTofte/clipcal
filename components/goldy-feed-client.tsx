@@ -263,9 +263,28 @@ export function GoldyFeedClient() {
     let out = ranked;
     if (chipFilter !== 'all') {
       out = out.filter(({ ctx, row }) => {
-        if (chipFilter === 'gameday') return ctx.bucket === 'top-pick-gameday';
-        if (chipFilter === 'free-food')
-          return ctx.bucket === 'free-food' || row.event.hasFreeFood;
+        const hay = `${row.event.title} ${row.event.description ?? ''} ${row.event.category}`.toLowerCase();
+        if (chipFilter === 'gameday') {
+          // Bucket alone misses when a higher-priority bucket (urgent,
+          // conflict) preempts gameday for the same event. Fall back to
+          // the same keyword signals the commentary lib uses so the
+          // chip matches human expectation.
+          return (
+            ctx.bucket === 'top-pick-gameday' ||
+            row.event.category === 'sports' ||
+            /\b(game|axe|stadium|gophers vs|huntington)\b/.test(hay)
+          );
+        }
+        if (chipFilter === 'free-food') {
+          // Extractor may not have set hasFreeFood reliably on
+          // user-uploaded events. Keyword scan on the title +
+          // description catches pizza/bagel/tacos/snacks/coffee/etc.
+          return (
+            ctx.bucket === 'free-food' ||
+            row.event.hasFreeFood ||
+            /\b(pizza|taco|donut|bagel|snack|coffee|food|lunch|brunch|dinner|treats)\b/.test(hay)
+          );
+        }
         return true;
       });
     }

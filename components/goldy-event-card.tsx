@@ -79,15 +79,23 @@ export function GoldyEventCard({
     >
       {isTopPick && (
         <div
-          className="flex items-center justify-between px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
+          className="flex items-center justify-between gap-2 px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-white"
           style={{
             background:
-              'linear-gradient(to right, var(--goldy-maroon-500), var(--goldy-maroon-500), var(--goldy-gold-400))',
+              'linear-gradient(to right, var(--goldy-maroon-500) 0%, var(--goldy-maroon-500) 65%, var(--goldy-maroon-600) 100%)',
           }}
         >
-          <span>🏆 Goldy&apos;s top pick · Ski-U-Mah!</span>
+          <span className="truncate">🏆 Goldy&apos;s top pick · Ski-U-Mah!</span>
           {typeof matchPct === 'number' && (
-            <span style={{ color: 'var(--goldy-gold-300)' }}>{matchPct}% match</span>
+            <span
+              className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold"
+              style={{
+                background: 'var(--goldy-gold-400)',
+                color: 'var(--goldy-maroon-700)',
+              }}
+            >
+              {matchPct}% match
+            </span>
           )}
         </div>
       )}
