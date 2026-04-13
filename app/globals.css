@@ -165,8 +165,15 @@
   background: radial-gradient(ellipse at top, var(--goldy-gold-50) 0%, var(--goldy-maroon-50) 70%);
   min-height: 100dvh;
 }
+/* Blocky, campus-yearbook feel from already-loaded system fonts.
+   Previously used Graduate (next/font), which added a woff2 on the LCP
+   render path for one wordmark. Fallback stack + uppercase + letter-
+   spacing gets us 90% of the visual weight at zero network cost. */
 .goldy-theme .goldy-display {
-  font-family: var(--font-graduate), Georgia, serif;
+  font-family: 'Georgia', 'Times New Roman', ui-serif, serif;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .goldy-theme .goldy-bubble {
   background: linear-gradient(135deg, var(--goldy-gold-400) 0%, var(--goldy-gold-200) 100%);
