@@ -46,9 +46,10 @@ const CSP_DIRECTIVES = [
 ].join('; ');
 
 const SECURITY_HEADERS = [
-  // Start in Report-Only so we catch violations without blocking real traffic.
-  // Flip to 'Content-Security-Policy' after a soak (search for CSP_ENFORCE).
-  { key: 'Content-Security-Policy-Report-Only', value: CSP_DIRECTIVES },
+  // CSP is enforced. `unsafe-inline` remains on script-src/style-src for
+  // Next hydration + Tailwind runtime styles — migrate to nonce/hash-based
+  // CSP is tracked as a follow-up (see CHANGELOG).
+  { key: 'Content-Security-Policy', value: CSP_DIRECTIVES },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

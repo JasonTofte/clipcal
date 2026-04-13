@@ -19,7 +19,6 @@ import { useSwipeReveal } from '@/lib/use-swipe-reveal';
 type Props = {
   event: Event;
   ctx: GoldyContext;
-  matchPct?: number | null;
   duplicateLabel?: string | null;
   onClick?: () => void;
   onHide?: () => void;
@@ -47,7 +46,6 @@ function timeShort(iso: string): string {
 export function GoldyEventRow({
   event,
   ctx,
-  matchPct,
   duplicateLabel,
   onClick,
   onHide,
@@ -199,20 +197,6 @@ export function GoldyEventRow({
             <span aria-hidden>🔗</span>
             Sign up
           </a>
-        )}
-
-        {typeof matchPct === 'number' && (
-          <div
-            className={`shrink-0 text-xs ${isTopPick || isUrgent ? 'font-bold' : ''}`}
-            style={{
-              color:
-                isTopPick || isUrgent
-                  ? 'var(--goldy-maroon-600)'
-                  : 'var(--muted-foreground)',
-            }}
-          >
-            {matchPct}%
-          </div>
         )}
 
         {onHide && (

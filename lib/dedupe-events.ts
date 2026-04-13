@@ -44,7 +44,12 @@ export function detectDuplicates(rows: DetectInput[]): DuplicateIndex {
     else byTitle.set(key, [row]);
   }
 
-  // For each title bucket, partition into 7-day clusters by start time.
+  // For each title bucket, partition into 7-day sliding-window clusters
+  // keyed by start time. A new row joins the active cluster if it is
+  // within the window of the *previous* member (not the first) — this
+  // is the correct sliding-window behavior: events at days {0, 5, 11}
+  // all belong in the same cluster even though 0 and 11 are >7 days
+  // apart, because 5 bridges them.
   const byRowKey = new Map<string, DuplicateCluster>();
   for (const [title, bucket] of byTitle.entries()) {
     if (bucket.length < 2) continue;
@@ -55,9 +60,9 @@ export function detectDuplicates(rows: DetectInput[]): DuplicateIndex {
         active.push(row);
         continue;
       }
-      const firstMs = new Date(active[0].event.start).getTime();
+      const prevMs = new Date(active[active.length - 1].event.start).getTime();
       const rowMs = new Date(row.event.start).getTime();
-      if (Math.abs(rowMs - firstMs) <= DUPLICATE_WINDOW_MS) {
+      if (rowMs - prevMs <= DUPLICATE_WINDOW_MS) {
         active.push(row);
       } else {
         flushCluster(title, active, byRowKey);

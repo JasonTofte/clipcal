@@ -6,6 +6,11 @@ export function sanitizeField(value: string | null | undefined, max = MAX_BODY):
   return value
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '')
     .replace(/```/g, "'''")
+    // Neutralize tag-like substrings so untrusted content cannot close the
+    // fence we render around it (e.g. a title containing `</transcript>`).
+    // The model sees the brackets as literals, which is what we want.
+    .replace(/</g, '\u2039')
+    .replace(/>/g, '\u203a')
     .slice(0, max);
 }
 

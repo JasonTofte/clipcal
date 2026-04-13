@@ -61,6 +61,8 @@ export function OneThingHero({
 
   // Trigger the live fetch only when local data is exhausted. Avoids a
   // wasteful network call for the common case of users with uploads.
+  // `tick` is intentionally NOT in deps — otherwise this re-fires every
+  // 30s for the empty-local branch and hammers /api/campus-feed.
   useEffect(() => {
     const now = nowOverride ?? new Date();
     const haveLocal =
@@ -99,7 +101,7 @@ export function OneThingHero({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [events, ranked, nowOverride, tick]);
+  }, [events, ranked, nowOverride]);
 
   const payload = useMemo(() => {
     const now = nowOverride ?? new Date();

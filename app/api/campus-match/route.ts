@@ -5,6 +5,7 @@ import {
   dateWindow,
   type LiveWhaleEvent,
 } from '@/lib/livewhale';
+import { campusLimiter, extractClientIp } from '@/lib/rate-limit';
 
 const RequestSchema = z.object({
   title: z.string().min(1),
@@ -18,6 +19,17 @@ export type CampusMatchResponse = {
 };
 
 export async function POST(req: Request): Promise<Response> {
+  const limit = campusLimiter.check(extractClientIp(req.headers));
+  if (!limit.allowed) {
+    return Response.json(
+      { error: 'rate limited, try again in a moment' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(limit.retryAfterSec) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

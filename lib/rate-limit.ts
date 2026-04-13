@@ -96,13 +96,24 @@ export const abbreviateLimiter = createRateLimiter({
   windowMs: 60_000,
 });
 
+// Campus-* endpoints hit upstream LiveWhale / GopherLink. Cache TTL is
+// 10-15min; these buckets bound cache-busting and upstream fan-out.
+export const campusLimiter = createRateLimiter({
+  perKeyLimit: 30,
+  globalLimit: 120,
+  windowMs: 60_000,
+});
+
 export function extractClientIp(headers: Headers): string {
+  // Vercel's trusted header — set by the edge and not forwardable by the
+  // client, so it resists spoofing when the app runs behind Vercel's proxy.
+  const vercel = headers.get('x-vercel-forwarded-for');
+  if (vercel) return vercel.split(',')[0].trim();
+  // Self-host / other proxies: x-forwarded-for is spoofable when the app
+  // is reachable directly, but useful when a trusted reverse proxy sets it.
+  // We accept it as a fallback; the global limiter bounds abuse.
   const forwarded = headers.get('x-forwarded-for');
-  if (forwarded) {
-    // x-forwarded-for may contain a comma-separated list; the first entry
-    // is the original client per the de-facto convention Vercel follows.
-    return forwarded.split(',')[0].trim();
-  }
+  if (forwarded) return forwarded.split(',')[0].trim();
   const realIp = headers.get('x-real-ip');
   if (realIp) return realIp;
   // No identifying header: generate a fresh token per request so unknown-IP

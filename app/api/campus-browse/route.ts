@@ -1,4 +1,5 @@
 import { fetchBrowse, type LiveWhaleEvent } from '@/lib/livewhale';
+import { campusLimiter, extractClientIp } from '@/lib/rate-limit';
 
 export type CampusBrowseResponse = {
   events: LiveWhaleEvent[];
@@ -9,6 +10,7 @@ export type CampusBrowseResponse = {
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 50;
 const MAX_ALLOWED = 200;
+const MAX_Q_LENGTH = 200;
 const YYYY_MM_DD = /^\d{4}-\d{2}-\d{2}$/;
 
 type CacheEntry = { events: LiveWhaleEvent[]; fetchedAt: number };
@@ -27,10 +29,21 @@ function trimCache(): void {
 }
 
 export async function GET(request: Request): Promise<Response> {
+  const limit = campusLimiter.check(extractClientIp(request.headers));
+  if (!limit.allowed) {
+    return Response.json(
+      { error: 'rate limited, try again in a moment' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(limit.retryAfterSec) },
+      },
+    );
+  }
+
   const url = new URL(request.url);
   const startDate = url.searchParams.get('startDate') ?? '';
   const endDate = url.searchParams.get('endDate') ?? '';
-  const q = url.searchParams.get('q') ?? '';
+  const q = (url.searchParams.get('q') ?? '').slice(0, MAX_Q_LENGTH);
   const maxParam = url.searchParams.get('max');
 
   if (!YYYY_MM_DD.test(startDate) || !YYYY_MM_DD.test(endDate)) {
