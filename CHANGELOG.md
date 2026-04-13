@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Browse page** (`/browse`) for discovering UMN campus events by keyword, date range, and interest match. List view (default) and 7-column Sunday-first month calendar view (collapses to agenda under `sm`). Profile-interest filter is opt-in and runs client-side via a new `matchesInterests` helper (word-boundary match, no LLM call). Prev/next month navigation with per-month fresh fetch.
+- **`/api/campus-browse`** endpoint wrapping LiveWhale's date-range + keyword search. In-memory LRU cache (50 entries, 10-min TTL) keyed on `(startDate, endDate, max, q)` with `encodeURIComponent(q)` to prevent separator collisions. `max` validated as a positive integer and capped at 200 to prevent cache pollution.
+- **`lib/livewhale.ts`** `fetchBrowse` helper — validates `YYYY-MM-DD`, empty `q` uses a date-range-only path to avoid a stray `/search/` segment.
+- **`lib/calendar-grid.ts`** pure month-grid builder (UTC-safe) powering the calendar view.
+- **`vitest.config.ts`** with `@/` alias so route-level tests match the `@/lib/*` import style used elsewhere.
+
 ## [1.0.2] - 2026-04-12
 
 ### Security

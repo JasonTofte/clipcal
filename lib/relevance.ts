@@ -21,3 +21,26 @@ export function scoreTone(score: number): 'high' | 'medium' | 'low' {
   if (score >= 40) return 'medium';
   return 'low';
 }
+
+export function matchesInterests(
+  event: { title: string; group_title: string | null; event_types: string[] },
+  interests: string[],
+): boolean {
+  if (interests.length === 0) return false;
+
+  const fields = [
+    event.title,
+    event.group_title ?? '',
+    ...event.event_types,
+  ].map((f) => f.toLowerCase());
+
+  for (const interest of interests) {
+    const token = interest.trim().toLowerCase();
+    if (!token) continue;
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const boundary = new RegExp(`\\b${escaped}`);
+    if (fields.some((f) => boundary.test(f))) return true;
+  }
+
+  return false;
+}
