@@ -1,27 +1,15 @@
 import { anthropic } from '@ai-sdk/anthropic';
 import { convertToModelMessages, streamText, type UIMessage } from 'ai';
 import { INTERVIEWER_SYSTEM_PROMPT } from '@/lib/chat-prompt';
-import { chatLimiter, extractClientIp } from '@/lib/rate-limit';
+import { chatLimiter } from '@/lib/rate-limit';
 import { MODEL_HAIKU } from '@/lib/models';
+import { requireAnthropic, logError } from '@/lib/api-utils';
 
 const MAX_TOTAL_CHARS = 20_000;
 
 export async function POST(req: Request): Promise<Response> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json({ error: 'missing api key' }, { status: 500 });
-  }
-
-  const clientIp = extractClientIp(req.headers);
-  const limit = chatLimiter.check(clientIp);
-  if (!limit.allowed) {
-    return Response.json(
-      { error: 'rate limited, try again in a moment' },
-      {
-        status: 429,
-        headers: { 'Retry-After': String(limit.retryAfterSec) },
-      },
-    );
-  }
+  const gate = requireAnthropic(req, chatLimiter);
+  if (!gate.ok) return gate.response;
 
   let body: { messages?: UIMessage[] };
   try {
@@ -52,8 +40,7 @@ export async function POST(req: Request): Promise<Response> {
     });
     return result.toUIMessageStreamResponse();
   } catch (error) {
-    const e = error as { name?: string; message?: string };
-    console.error('[chat]', e?.name ?? 'Error', e?.message ?? 'unknown');
+    logError('chat', error);
     return Response.json({ error: 'chat failed' }, { status: 500 });
   }
 }

@@ -19,7 +19,7 @@ type ExtractState =
   | { status: 'error'; message: string }
   | { status: 'saved' };
 
-export default function InterviewPage() {
+export default function ProfilePage() {
   const router = useRouter();
   const [mode, setMode] = useState<ProfileMode>('pick');
   const transport = useMemo(
