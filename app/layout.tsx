@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Graduate, Fredoka } from "next/font/google";
+import { Geist, Geist_Mono, Fredoka } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
 import "./globals.css";
 
@@ -11,13 +11,6 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const graduate = Graduate({
-  variable: "--font-graduate",
-  weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
@@ -59,7 +52,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${graduate.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]">
         {children}
