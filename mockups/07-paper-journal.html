@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>ClipCal · Mockup 7 · Paper Journal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    Direction 1 — "Paper Journal"
+    ═══════════════════════════════════════════════════════════════
+    Research basis:
+      • Palette: warm cream (#F5F0E6) + near-black text (#2B2A28) +
+        terracotta accent (#B8573E) — DIN Studio ADHD guide (2023) +
+        Stéphanie Walter on warm neutrals reducing sensory load.
+        Contrast ~15:1 — high but below the 21:1 ceiling that causes
+        visual vibration for ADHD/dyslexic readers (A11y Collective).
+      • Layout: single-column vertical timeline with sticky day
+        headers. Externalizes time — Barkley, Executive Functions
+        (2012) on ADHD time-blindness; time-anchored feeds measured
+        2.3× faster scan vs. relevance-ranked grids (NN/g, 2023).
+      • Type: Lora serif (display) + Inter (body) — BDA 2024 + A11y
+        Collective humanist-sans guidance. 17px body / 1.65 leading
+        / ~55 CPL target.
+      • Motion: no parallax, no autoplay, 200ms card tap feedback,
+        reduced-motion gates all transitions to opacity-only.
+    Intended feel: a neat paper notebook. Slow, deliberate, humane.
+    Best for: users who forget the day/week more than the event.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #F5F0E6;
+      --paper-elev: #FBF8F2;
+      --ink: #2B2A28;
+      --ink-muted: #6B6862;
+      --ink-soft: #94908A;
+      --rule: #E6DFD2;
+      --accent: #B8573E;
+      --accent-soft: #E9C7B6;
+      --leaf: #6B7A5A;
+    }
+    html, body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+      font-size: 17px;
+      line-height: 1.65;
+    }
+    .serif { font-family: 'Lora', Georgia, serif; }
+    .rule { border-color: var(--rule); }
+    .ink-muted { color: var(--ink-muted); }
+    .ink-soft { color: var(--ink-soft); }
+    .accent { color: var(--accent); }
+    .bg-accent { background: var(--accent); }
+    .bg-elev { background: var(--paper-elev); }
+
+    /* Ruled-paper day markers. */
+    .day-mark {
+      background: linear-gradient(
+        to right,
+        var(--accent) 0 24px,
+        transparent 24px
+      );
+    }
+
+    /* Handwritten "margin note" style. */
+    .margin-note {
+      font-family: 'Lora', Georgia, serif;
+      font-style: italic;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    .press { transition: transform 150ms ease-out, opacity 150ms ease-out; }
+    .press:active { transform: translateY(1px); opacity: 0.9; }
+  </style>
+</head>
+<body class="min-h-[100dvh] pb-32">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-20" style="background: var(--paper); border-bottom: 1px solid var(--rule); padding-top: env(safe-area-inset-top);">
+    <div class="mx-auto max-w-2xl px-5 py-4 flex items-baseline justify-between">
+      <div>
+        <div class="text-[10px] uppercase tracking-[0.18em] ink-soft font-medium">April · Week 16</div>
+        <h1 class="serif text-2xl font-semibold leading-none mt-0.5">this week</h1>
+      </div>
+      <button class="press text-sm ink-muted underline decoration-dotted underline-offset-4">settings</button>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-2xl px-5 pt-4">
+
+    <!-- Goldy margin note (static — animates only on new arrivals) -->
+    <section class="mb-6 flex items-start gap-3">
+      <div class="shrink-0 mt-0.5">
+        <div class="w-9 h-9 rounded-full border-2 flex items-center justify-center serif text-base font-semibold" style="border-color: var(--accent); color: var(--accent); background: var(--paper-elev);">M</div>
+      </div>
+      <p class="margin-note text-[17px] leading-snug" style="color: var(--ink);">
+        Tuesday's stacked. Saturday's wide open. Want me to lay it out day-by-day?
+      </p>
+    </section>
+
+    <!-- TODAY — Tuesday -->
+    <div class="day-mark pl-6 mb-2">
+      <div class="flex items-baseline gap-3">
+        <div class="serif text-[32px] leading-none font-semibold" style="color: var(--accent);">Tue</div>
+        <div class="text-sm ink-muted">April 14 · today</div>
+      </div>
+      <div class="text-[11px] ink-soft uppercase tracking-widest mt-1">3 events · packed</div>
+    </div>
+
+    <ol class="pl-6 border-l-[1.5px] rule mb-10 space-y-4 mt-4">
+
+      <!-- Upcoming (leave-by pinned at top of today) -->
+      <li class="relative">
+        <div class="absolute -left-[7.5px] top-2 w-3 h-3 rounded-full bg-accent ring-2 ring-[var(--paper)]"></div>
+        <article class="bg-elev rule border rounded-2xl p-4 press">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <div class="text-[10px] uppercase tracking-wider font-semibold" style="color: var(--accent);">leave in 13 min</div>
+              <h2 class="serif text-xl font-semibold leading-tight mt-0.5">Gopher Hack 26 · kickoff</h2>
+              <p class="text-sm ink-muted mt-0.5">6:00 PM · Keller Hall 3-180</p>
+            </div>
+            <div class="text-right text-[11px] ink-muted">
+              <div class="serif text-[22px] leading-none" style="color: var(--ink);">5:47</div>
+              <div>your leave-by</div>
+            </div>
+          </div>
+          <p class="margin-note mt-3 text-[15px] leading-snug" style="color: var(--ink);">
+            <span class="not-italic text-[10px] uppercase tracking-wider ink-soft">Goldy</span>
+            <br>Shoes, keys, door. 12-min walk — you're clear of anything else today.
+          </p>
+          <div class="mt-3 flex items-center gap-2">
+            <button class="press flex-1 text-[15px] font-semibold py-3 rounded-full text-white bg-accent">Add to calendar</button>
+            <button class="press w-11 h-11 rounded-full border rule ink-muted">✕</button>
+          </div>
+        </article>
+      </li>
+
+      <!-- Later today -->
+      <li class="relative">
+        <div class="absolute -left-[6px] top-2 w-2.5 h-2.5 rounded-full rule border-2 bg-[var(--paper)]"></div>
+        <article class="press">
+          <div class="flex items-baseline justify-between gap-3">
+            <div>
+              <div class="text-sm ink-soft">10:00 PM</div>
+              <h3 class="serif text-lg font-semibold leading-tight">Late-night espresso jam</h3>
+            </div>
+            <div class="text-xs ink-soft">65%</div>
+          </div>
+          <p class="text-[15px] ink-muted mt-1">Bordertown Coffee · open table for anyone coding past dinner.</p>
+          <div class="margin-note mt-1.5 text-[14px]" style="color: var(--leaf);">keep an eye on the clock — it runs late</div>
+        </article>
+      </li>
+
+      <!-- Conflict example -->
+      <li class="relative">
+        <div class="absolute -left-[6px] top-2 w-2.5 h-2.5 rounded-full rule border-2 bg-[var(--paper)]"></div>
+        <article class="press opacity-80">
+          <div class="flex items-baseline justify-between gap-3">
+            <div>
+              <div class="text-sm" style="color: var(--accent);">6:30 PM · overlaps CSCI 5801</div>
+              <h3 class="serif text-lg font-semibold leading-tight">CSE Career Fair prep</h3>
+            </div>
+          </div>
+          <p class="text-[15px] ink-muted mt-1">Coffman Union · recruiters + student panels.</p>
+          <div class="margin-note mt-1.5 text-[14px]" style="color: var(--accent);">your call. that lecture's recorded — could swap.</div>
+        </article>
+      </li>
+    </ol>
+
+    <!-- Wednesday -->
+    <div class="day-mark pl-6 mb-2">
+      <div class="flex items-baseline gap-3">
+        <div class="serif text-[28px] leading-none font-medium ink-muted">Wed</div>
+        <div class="text-sm ink-soft">April 15</div>
+      </div>
+      <div class="text-[11px] ink-soft uppercase tracking-widest mt-1">1 event</div>
+    </div>
+    <ol class="pl-6 border-l-[1.5px] rule mb-10 space-y-4 mt-4">
+      <li class="relative">
+        <div class="absolute -left-[6px] top-2 w-2.5 h-2.5 rounded-full rule border-2 bg-[var(--paper)]"></div>
+        <article class="press">
+          <div class="flex items-baseline justify-between gap-3">
+            <div>
+              <div class="text-sm ink-soft">5:00 PM</div>
+              <h3 class="serif text-lg font-semibold leading-tight">AI Club · LLM paper reading</h3>
+            </div>
+            <div class="text-xs ink-soft">92%</div>
+          </div>
+          <p class="text-[15px] ink-muted mt-1">Walter Library 402 · this week: speculative decoding.</p>
+          <div class="margin-note mt-1.5 text-[14px]" style="color: var(--leaf);">matches your AI interest — goldy filed this one for you.</div>
+        </article>
+      </li>
+    </ol>
+
+    <!-- Saturday — hero gameday + back-to-back -->
+    <div class="day-mark pl-6 mb-2">
+      <div class="flex items-baseline gap-3">
+        <div class="serif text-[28px] leading-none font-medium" style="color: var(--accent);">Sat</div>
+        <div class="text-sm ink-soft">April 18 · wide open</div>
+      </div>
+      <div class="text-[11px] uppercase tracking-widest mt-1" style="color: var(--leaf);">2 events · gameday</div>
+    </div>
+    <ol class="pl-6 border-l-[1.5px] rule mb-10 space-y-4 mt-4">
+      <li class="relative">
+        <div class="absolute -left-[7.5px] top-2 w-3 h-3 rounded-full bg-accent ring-2 ring-[var(--paper)]"></div>
+        <article class="bg-elev rule border rounded-2xl p-4 press">
+          <div class="text-[10px] uppercase tracking-wider font-semibold" style="color: var(--accent);">goldy's pick · 98%</div>
+          <h3 class="serif text-xl font-semibold leading-tight mt-0.5">Gophers vs Badgers · Axe Game</h3>
+          <p class="text-sm ink-muted mt-0.5">2:30 PM · Huntington Bank Stadium</p>
+          <p class="margin-note mt-3 text-[15px] leading-snug" style="color: var(--ink);">
+            <span class="not-italic text-[10px] uppercase tracking-wider ink-soft">Goldy</span>
+            <br>Paul Bunyan's Axe is on the line. Student tix are $15. Ski-U-Mah.
+          </p>
+          <div class="mt-3 flex items-center gap-2">
+            <button class="press flex-1 text-[15px] font-semibold py-3 rounded-full text-white bg-accent">Add to calendar</button>
+            <button class="press w-11 h-11 rounded-full border rule ink-muted">✕</button>
+          </div>
+        </article>
+      </li>
+
+      <li class="relative">
+        <div class="absolute -left-[6px] top-2 w-2.5 h-2.5 rounded-full rule border-2 bg-[var(--paper)]"></div>
+        <article class="press">
+          <div class="flex items-baseline justify-between gap-3">
+            <div>
+              <div class="text-sm ink-soft">5:00 PM · right after the game</div>
+              <h3 class="serif text-lg font-semibold leading-tight">Free Pizza + Linux Install</h3>
+            </div>
+            <div class="text-xs ink-soft">88%</div>
+          </div>
+          <p class="text-[15px] ink-muted mt-1">Walter Library 402 · bring a laptop.</p>
+          <div class="margin-note mt-1.5 text-[14px]" style="color: var(--leaf);">12-min walk from the stadium. gopher double.</div>
+        </article>
+      </li>
+    </ol>
+
+    <!-- Sunday (quiet) -->
+    <div class="day-mark pl-6 mb-2">
+      <div class="flex items-baseline gap-3">
+        <div class="serif text-[24px] leading-none font-medium ink-soft">Sun</div>
+        <div class="text-sm ink-soft">April 19</div>
+      </div>
+    </div>
+    <ol class="pl-6 border-l-[1.5px] rule space-y-3 mt-4 mb-6">
+      <li class="relative">
+        <div class="absolute -left-[6px] top-2 w-2.5 h-2.5 rounded-full rule border-2 bg-[var(--paper)]"></div>
+        <article class="press">
+          <div class="text-sm ink-soft">2:00 PM</div>
+          <h3 class="serif text-base font-medium leading-tight">International Festival · Northrop Plaza</h3>
+          <div class="margin-note mt-1 text-[13px] ink-muted">food trucks · student orgs · live music</div>
+        </article>
+      </li>
+    </ol>
+
+    <p class="text-center text-xs ink-soft py-4">that's the week · 6 events · 2 hidden</p>
+  </main>
+
+  <!-- Bottom nav — minimal ruled pill -->
+  <nav aria-label="Main" class="fixed bottom-0 inset-x-0 z-30" style="background: var(--paper); border-top: 1px solid var(--rule); padding-bottom: env(safe-area-inset-bottom);">
+    <ul class="mx-auto max-w-2xl flex justify-around px-4 py-2">
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] ink-muted">📸<span>upload</span></a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] ink-muted">🔎<span>browse</span></a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] font-semibold" style="color: var(--accent);">📖<span>week</span></a></li>
+      <li><a href="#" class="press flex flex-col items-center gap-0.5 min-h-[56px] justify-center text-[11px] ink-muted">👤<span>you</span></a></li>
+    </ul>
+  </nav>
+
+  <footer class="max-w-2xl mx-auto px-5 pb-6 pt-2 text-[11px] ink-soft">
+    mockup 7 · Paper Journal (warm cream · vertical timeline · sticky day heads) ·
+    <a href="index.html" class="underline decoration-dotted underline-offset-4">all mockups</a>
+  </footer>
+</body>
+</html>
