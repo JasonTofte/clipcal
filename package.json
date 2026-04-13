@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "analyze": "next build --experimental-analyze",
+    "lighthouse": "npx -y lighthouse http://localhost:3000/feed --preset=perf --form-factor=mobile --throttling-method=simulate --chrome-flags='--headless' --output=html --output-path=./lighthouse-feed.html"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.69",

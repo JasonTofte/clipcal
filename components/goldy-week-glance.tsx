@@ -1,4 +1,5 @@
 import type { Event } from '@/lib/schema';
+import { formatWeekRange } from '@/lib/format';
 
 type Props = {
   events: Event[];
@@ -16,13 +17,6 @@ function startOfWeekMonday(d: Date): Date {
   const diff = day === 0 ? -6 : 1 - day;
   copy.setDate(copy.getDate() + diff);
   return copy;
-}
-
-function formatDayRange(weekStart: Date): string {
-  const end = new Date(weekStart.getTime() + 6 * MS_PER_DAY);
-  const fmt = (d: Date) =>
-    d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return `${fmt(weekStart)} – ${fmt(end)}`;
 }
 
 export function GoldyWeekGlance({ events, weekStart }: Props) {
@@ -64,7 +58,7 @@ export function GoldyWeekGlance({ events, weekStart }: Props) {
             I&apos;m not scoring you. Just laying it out.
           </p>
         </div>
-        <span className="text-[10px] text-stone-400">{formatDayRange(start)}</span>
+        <span className="text-[10px] text-stone-400">{formatWeekRange(start)}</span>
       </div>
 
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
