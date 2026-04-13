@@ -29,6 +29,19 @@ const AbbreviatedEventSchema = z.object({
   ),
 });
 
+function truncate(s: string, n: number): string {
+  return s.length <= n ? s : s.slice(0, n - 1) + '\u2026';
+}
+
+function localFallback(events: Event[]) {
+  return {
+    events: events.map((e) => ({
+      shortTitle: truncate(e.title, 20),
+      shortLoc: e.location ? truncate(e.location, 14) : null,
+    })),
+  };
+}
+
 export async function POST(req: Request): Promise<Response> {
   const guard = requireAnthropic(req, abbreviateLimiter);
   if (!guard.ok) return guard.response;
@@ -88,9 +101,21 @@ Rules:
         },
       ],
     });
+    // Length invariant: the model must return exactly one abbreviation per
+    // input event in the same order. If Haiku drops/reorders/adds, fall
+    // back to a deterministic local truncation so the e-ink display never
+    // shows a mis-mapped event label.
+    if (result.object.events.length !== events.length) {
+      logError('abbreviate', new Error(
+        `length mismatch: in=${events.length} out=${result.object.events.length}`,
+      ));
+      return Response.json(localFallback(events));
+    }
     return Response.json(result.object);
   } catch (error) {
     logError('abbreviate', error);
-    return Response.json({ error: 'abbreviation failed' }, { status: 500 });
+    // Model call failed entirely — fall back locally so the sync still
+    // produces a valid payload.
+    return Response.json(localFallback(events));
   }
 }

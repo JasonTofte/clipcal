@@ -13,7 +13,6 @@ import type { GoldyContext } from '@/lib/goldy-commentary';
 type Props = {
   event: Event;
   ctx: GoldyContext;
-  matchPct?: number | null;
   duplicateLabel?: string | null;
   onClick?: () => void;
   onHide?: () => void;
@@ -39,20 +38,19 @@ function timeShort(iso: string): string {
 export function GoldyEventRow({
   event,
   ctx,
-  matchPct,
   duplicateLabel,
   onClick,
   onHide,
 }: Props) {
   const isConflict = ctx.bucket === 'conflict';
   const isUrgent = ctx.bucket === 'urgent';
-  const isTopPick = ctx.bucket === 'top-pick-gameday';
 
   const borderColor = isConflict
     ? 'rgba(179, 58, 43, 0.28)'
     : isUrgent
       ? 'var(--goldy-maroon-500)'
       : 'var(--border)';
+  const isTopPick = ctx.bucket === 'top-pick-gameday';
   const timeColor = isConflict
     ? '#B33A2B'
     : isUrgent
@@ -132,20 +130,6 @@ export function GoldyEventRow({
           <span aria-hidden>🔗</span>
           Sign up
         </a>
-      )}
-
-      {typeof matchPct === 'number' && (
-        <div
-          className={`shrink-0 text-xs ${isTopPick || isUrgent ? 'font-bold' : ''}`}
-          style={{
-            color:
-              isTopPick || isUrgent
-                ? 'var(--goldy-maroon-600)'
-                : 'var(--muted-foreground)',
-          }}
-        >
-          {matchPct}%
-        </div>
       )}
 
       {onHide && (

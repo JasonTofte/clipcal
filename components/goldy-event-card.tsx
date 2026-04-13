@@ -5,12 +5,12 @@ import type { Event } from '@/lib/schema';
 import type { GoldyBucket, GoldyContext } from '@/lib/goldy-commentary';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { buildGoldyWhy, bucketLabel } from '@/lib/goldy-why';
+import { flyerClass } from '@/lib/flyer-class';
 import { formatEventWhen } from '@/lib/format';
 
 type Props = {
   event: Event;
   goldyLine: string;
-  matchPct?: number | null;
   isTopPick?: boolean;
   // When present, the event overlaps a known busy slot. Rendering the
   // Add button switches to a two-tap "arm → commit" flow so users don't
@@ -29,20 +29,9 @@ type Props = {
   onHide?: () => void;
 };
 
-function flyerClass(event: Event): string {
-  const t = event.title.toLowerCase();
-  if (event.category === 'sports' || /stadium|gophers|axe/.test(t)) return 'flyer-game';
-  if (event.category === 'hackathon' || t.includes('hack')) return 'flyer-hack';
-  if (event.hasFreeFood || /pizza|taco|donut|food/.test(t)) return 'flyer-pizza';
-  if (event.category === 'career' || event.category === 'networking') return 'flyer-career';
-  if (event.category === 'culture' || event.category === 'social') return 'flyer-fest';
-  return 'flyer-default';
-}
-
 export function GoldyEventCard({
   event,
   goldyLine,
-  matchPct,
   isTopPick = false,
   conflictTitle,
   goldyCtx,
@@ -92,17 +81,6 @@ export function GoldyEventCard({
           }}
         >
           <span className="truncate">🏆 Goldy&apos;s top pick · Ski-U-Mah!</span>
-          {typeof matchPct === 'number' && (
-            <span
-              className="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold"
-              style={{
-                background: 'var(--goldy-gold-400)',
-                color: 'var(--goldy-maroon-700)',
-              }}
-            >
-              {matchPct}% match
-            </span>
-          )}
         </div>
       )}
 
@@ -146,16 +124,6 @@ export function GoldyEventCard({
                 </span>
               )}
             </div>
-            {!isTopPick && typeof matchPct === 'number' && (
-              <div className="shrink-0 text-right">
-                <div
-                  className="text-sm font-bold"
-                  style={{ color: 'var(--goldy-maroon-500)' }}
-                >
-                  {matchPct}%
-                </div>
-              </div>
-            )}
           </div>
 
           <div

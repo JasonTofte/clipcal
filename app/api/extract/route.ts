@@ -13,8 +13,39 @@ const ALLOWED_MEDIA_TYPES = new Set([
   'image/webp',
 ]);
 
+// Magic-byte signatures for the allowlisted formats. Client-provided MIME
+// alone is not trusted (Security Rule 7 — file upload). A mismatch between
+// the claimed type and the actual bytes is a hard 400.
+function sniffImageType(bytes: Uint8Array): string | null {
+  if (bytes.length < 12) return null;
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47 &&
+    bytes[4] === 0x0d && bytes[5] === 0x0a && bytes[6] === 0x1a && bytes[7] === 0x0a
+  ) return 'image/png';
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+  // WEBP: 'RIFF' .... 'WEBP'
+  if (
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) return 'image/webp';
+  return null;
+}
+
+function todayInChicago(): string {
+  // en-CA yields YYYY-MM-DD; time zone pins it to the flyer audience clock,
+  // not the serverless region's UTC.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+}
+
 function buildSystemPrompt(): string {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayInChicago();
   return `You are extracting structured event information from a flyer image.
 
 Today is ${today}, timezone America/Chicago.
@@ -87,6 +118,22 @@ export async function POST(req: Request): Promise<Response> {
 
   const bytes = new Uint8Array(await imageEntry.arrayBuffer());
 
+  const sniffedType = sniffImageType(bytes);
+  if (!sniffedType) {
+    return Response.json(
+      { error: 'image content does not match any supported format' },
+      { status: 400 },
+    );
+  }
+  // image/jpg is a common client alias for image/jpeg — treat as equivalent.
+  const claimedType = imageEntry.type === 'image/jpg' ? 'image/jpeg' : imageEntry.type;
+  if (sniffedType !== claimedType) {
+    return Response.json(
+      { error: 'image content does not match declared type' },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await generateObject({
       model: anthropic(modelId),
@@ -99,7 +146,7 @@ export async function POST(req: Request): Promise<Response> {
             {
               type: 'image',
               image: bytes,
-              mediaType: imageEntry.type,
+              mediaType: sniffedType,
             },
             {
               type: 'text',

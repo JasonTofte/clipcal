@@ -97,6 +97,10 @@ class BleServer:
             return
 
         raw = bytes(value) if not isinstance(value, (bytes, bytearray)) else value
+        if len(raw) > 4096:
+            log.warning("BLE write: payload too large (%d bytes)", len(raw))
+            self.send_status("error:size")
+            return
         try:
             payload = json.loads(raw.decode("utf-8"))
         except (json.JSONDecodeError, UnicodeDecodeError) as exc:

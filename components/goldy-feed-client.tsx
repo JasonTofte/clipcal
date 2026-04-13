@@ -34,6 +34,7 @@ import {
   clearHiddenEvents,
 } from '@/lib/hidden-events';
 import { detectDuplicates, siblingDatesLabel } from '@/lib/dedupe-events';
+import { flyerClass, FOOD_RX, GAMEDAY_RX } from '@/lib/flyer-class';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
@@ -54,26 +55,21 @@ type FeedRow = {
   icsCommitted: boolean;
 };
 
-function bucketMatchPct(bucket: string): number {
+// Ranking key used only to sort the picks list. Not shown to users as a
+// percentage because it isn't a real affinity score — the bucket already
+// encodes the signal ("urgent" > "top-pick-gameday" > "interest-match"
+// etc.) and presenting it as "92% match" would overclaim.
+function bucketRank(bucket: string): number {
   switch (bucket) {
-    case 'urgent':
-      return 99;
-    case 'conflict':
-      return 60;
-    case 'top-pick-gameday':
-      return 98;
-    case 'interest-match':
-      return 92;
-    case 'free-food':
-      return 88;
-    case 'back-to-back':
-      return 78;
-    case 'late-night':
-      return 55;
-    case 'weekend-open':
-      return 70;
-    default:
-      return 50;
+    case 'urgent': return 100;
+    case 'top-pick-gameday': return 90;
+    case 'interest-match': return 80;
+    case 'free-food': return 70;
+    case 'back-to-back': return 60;
+    case 'conflict': return 50;
+    case 'weekend-open': return 40;
+    case 'late-night': return 30;
+    default: return 20;
   }
 }
 
@@ -188,10 +184,10 @@ export function GoldyFeedClient() {
       .map((row) => {
         const ctx = buildContext(row.event, calendar, allEvents, interests, now);
         const line = pickGoldyLine(row.event, ctx);
-        const pct = bucketMatchPct(ctx.bucket);
-        return { row, ctx, line, pct };
+        const rank = bucketRank(ctx.bucket);
+        return { row, ctx, line, rank };
       })
-      .sort((a, b) => b.pct - a.pct);
+      .sort((a, b) => b.rank - a.rank);
   }, [rows, demoMode, interests, allEvents, nowOverride]);
 
   const recentClips = rows
@@ -254,22 +250,21 @@ export function GoldyFeedClient() {
         if (chipFilter === 'gameday') {
           // Bucket alone misses when a higher-priority bucket (urgent,
           // conflict) preempts gameday for the same event. Fall back to
-          // the same keyword signals the commentary lib uses so the
-          // chip matches human expectation.
+          // the shared keyword signals so the chip matches human
+          // expectation.
           return (
             ctx.bucket === 'top-pick-gameday' ||
             row.event.category === 'sports' ||
-            /\b(game|axe|stadium|gophers vs|huntington)\b/.test(hay)
+            GAMEDAY_RX.test(hay)
           );
         }
         if (chipFilter === 'free-food') {
           // Extractor may not have set hasFreeFood reliably on
-          // user-uploaded events. Keyword scan on the title +
-          // description catches pizza/bagel/tacos/snacks/coffee/etc.
+          // user-uploaded events. Keyword scan catches pizza/bagel/etc.
           return (
             ctx.bucket === 'free-food' ||
             row.event.hasFreeFood ||
-            /\b(pizza|taco|donut|bagel|snack|coffee|food|lunch|brunch|dinner|treats)\b/.test(hay)
+            FOOD_RX.test(hay)
           );
         }
         return true;
@@ -487,17 +482,7 @@ export function GoldyFeedClient() {
           <div className="scrollbar-hide goldy-snap-x -mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
             {recentClips.map(({ batchId, eventIndex, event }) => {
               const key = `${batchId}-${eventIndex}`;
-              const t = event.title.toLowerCase();
-              const flyer =
-                event.category === 'sports' || /stadium|gophers|axe/.test(t)
-                  ? 'flyer-game'
-                  : event.category === 'hackathon' || t.includes('hack')
-                    ? 'flyer-hack'
-                    : event.hasFreeFood || /pizza|taco|donut|food/.test(t)
-                      ? 'flyer-pizza'
-                      : event.category === 'career' || event.category === 'networking'
-                        ? 'flyer-career'
-                        : 'flyer-default';
+              const flyer = flyerClass(event);
               const onPizza = flyer === 'flyer-pizza';
               return (
                 <button
@@ -587,7 +572,7 @@ export function GoldyFeedClient() {
                 the list so we don't double-promote the same event. When a
                 filter is active the hero still shows the ranked top of the
                 filtered view, so skipping index 0 is consistent. */}
-            {visibleRanked.slice(1).map(({ row, ctx, pct }) => {
+            {visibleRanked.slice(1).map(({ row, ctx }) => {
               const key = `${row.batchId}-${row.eventIndex}`;
               const flashing = flashKey === key;
               return (
@@ -607,7 +592,6 @@ export function GoldyFeedClient() {
                   <GoldyEventRow
                     event={row.event}
                     ctx={ctx}
-                    matchPct={pct}
                     duplicateLabel={siblingDatesLabel(key, duplicateIndex)}
                     onClick={() => handleAdd(row)}
                     onHide={() => handleHide(row)}

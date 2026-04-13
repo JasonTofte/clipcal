@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { parseIcs, type IcsEvent } from '@/lib/ics-parse';
+import { campusLimiter, extractClientIp } from '@/lib/rate-limit';
 
 const GOPHERLINK_ICS_URL =
   'https://gopherlink.umn.edu/ical/twincitiesumn/ical_twincitiesumn.ics';
@@ -8,6 +9,10 @@ const GOPHERLINK_ICS_URL =
 // GopherLink on every request.
 let icsCache: { events: IcsEvent[]; fetchedAt: number } | null = null;
 const CACHE_TTL_MS = 15 * 60 * 1000;
+// Hard cap on ICS body size (2 MB). GopherLink's feed is ~200 KB today;
+// the cap is defense-in-depth against an unbounded upstream response
+// OOM-ing the server when parseIcs is invoked on raw text.
+const MAX_ICS_BYTES = 2 * 1024 * 1024;
 
 export type OrgMatch = {
   summary: string;
@@ -58,13 +63,46 @@ async function fetchAndCacheIcs(): Promise<IcsEvent[]> {
 
   if (!res.ok) return [];
 
-  const text = await res.text();
+  // Stream into a capped buffer so an unbounded response never OOMs us.
+  const reader = res.body?.getReader();
+  if (!reader) return [];
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_ICS_BYTES) {
+      await reader.cancel().catch(() => {});
+      console.warn('[campus-orgs] ICS body exceeded', MAX_ICS_BYTES, 'bytes');
+      return [];
+    }
+    chunks.push(value);
+  }
+  const buf = new Uint8Array(total);
+  let offset = 0;
+  for (const c of chunks) {
+    buf.set(c, offset);
+    offset += c.byteLength;
+  }
+  const text = new TextDecoder('utf-8').decode(buf);
   const events = parseIcs(text);
   icsCache = { events, fetchedAt: Date.now() };
   return events;
 }
 
 export async function POST(req: Request): Promise<Response> {
+  const limit = campusLimiter.check(extractClientIp(req.headers));
+  if (!limit.allowed) {
+    return Response.json(
+      { error: 'rate limited, try again in a moment' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(limit.retryAfterSec) },
+      },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();

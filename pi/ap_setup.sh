@@ -57,7 +57,6 @@ ignore_broadcast_ssid=0
 wpa=2
 wpa_passphrase=${PASSPHRASE}
 wpa_key_mgmt=WPA-PSK
-wpa_pairwise=TKIP
 rsn_pairwise=CCMP
 EOF
 
@@ -73,7 +72,17 @@ dhcp-range=10.42.0.10,10.42.0.50,12h
 address=/#/${PI_IP}
 EOF
 
-# 6. Enable and start
+# 6. Provision sync token — /sync endpoints require this in X-Sync-Token.
+#    Token is baked into a root-only file read by pi/main.py at startup.
+SYNC_TOKEN_FILE="/etc/clipcal/sync_token"
+if [[ ! -s "${SYNC_TOKEN_FILE}" ]]; then
+  sudo mkdir -p /etc/clipcal
+  sudo sh -c "head -c 24 /dev/urandom | base64 | tr -d '=+/\n' > '${SYNC_TOKEN_FILE}'"
+  sudo chmod 600 "${SYNC_TOKEN_FILE}"
+fi
+echo "Sync token saved to ${SYNC_TOKEN_FILE} (show with: sudo cat ${SYNC_TOKEN_FILE})"
+
+# 7. Enable and start
 sudo systemctl unmask hostapd
 sudo systemctl enable hostapd dnsmasq
 sudo systemctl restart dnsmasq

@@ -16,6 +16,9 @@
 import type { Event } from '@/lib/schema';
 
 const PI_URL = process.env.NEXT_PUBLIC_EINK_PI_URL ?? '';
+// Shared-secret header required by pi/http_server.py /sync. Baked at build
+// time — the Pi's isolated-AP origin is the only place this value is sent.
+const PI_SYNC_TOKEN = process.env.NEXT_PUBLIC_EINK_SYNC_TOKEN ?? '';
 
 export const BLE_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const WRITE_CHAR_UUID         = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -78,8 +81,15 @@ export async function buildPayload(events: Event[]): Promise<EinkPayload> {
     ts: Math.floor(Date.now() / 1000),
   };
 
-  // Trim until it fits one BLE write / URL paste.
-  while (JSON.stringify(payload).length > 510 && payload.e.length > 0) {
+  // Trim until it fits one BLE write / URL paste. Measure in UTF-8 bytes,
+  // not JS string length — multi-byte characters (em-dashes, emoji in
+  // abbreviations, accented venue names) otherwise let us overflow the
+  // 510-byte BLE target.
+  const encoder = new TextEncoder();
+  while (
+    encoder.encode(JSON.stringify(payload)).length > 510 &&
+    payload.e.length > 0
+  ) {
     payload.e.pop();
   }
 
@@ -167,11 +177,20 @@ export async function syncToEinkWifi(events: Event[]): Promise<void> {
   }
 
   const payload = await buildPayload(events);
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (PI_SYNC_TOKEN) headers['X-Sync-Token'] = PI_SYNC_TOKEN;
   const res = await fetch(`${PI_URL}/sync`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   });
+  if (res.status === 401) {
+    throw new Error(
+      'Pi rejected sync (unauthorized). Set NEXT_PUBLIC_EINK_SYNC_TOKEN to the value on the Pi (/etc/clipcal/sync_token).',
+    );
+  }
   if (!res.ok) throw new Error(`Pi returned ${res.status}`);
 }
 
