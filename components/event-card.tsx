@@ -13,7 +13,7 @@ import type { BusySlot } from '@/lib/demo-calendar';
 import { DayShape } from '@/components/day-shape';
 import { TemporalBar } from '@/components/temporal-bar';
 import { Button } from '@/components/ui/button';
-import { ConflictBadge, LeaveByClock, NoticingChip } from '@/components/shared';
+import { ConflictBadge, LeaveByClock, NoticingChip, TimezoneBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
@@ -189,9 +189,23 @@ export function EventCard({
             👥 ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
           </span>
         )}
-        <span className="ml-auto font-mono text-[10px] text-muted-foreground/70">
-          {event.timezone}
-        </span>
+        {event.dressCode && (
+          <span
+            className="inline-flex h-5 items-center gap-1 rounded-full bg-violet-500/10 px-2 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 dark:text-violet-400"
+            title={`Dress code: ${event.dressCode}`}
+          >
+            👔 {event.dressCode}
+          </span>
+        )}
+        {event.room && (
+          <span
+            className="inline-flex h-5 items-center gap-1 rounded-full bg-sky-500/10 px-2 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-500/30 dark:text-sky-400"
+            title={event.room}
+          >
+            🚪 {event.room}
+          </span>
+        )}
+        <TimezoneBadge timezone={event.timezone} className="ml-auto" />
       </div>
 
       {noticings.length > 0 && (

@@ -6,6 +6,7 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { GoldyWeekGlance } from '@/components/goldy-week-glance';
 import { GoldyEventCard } from '@/components/goldy-event-card';
 import { GoldyDayOfBanner } from '@/components/goldy-day-of-banner';
+import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
@@ -292,17 +293,18 @@ export function GoldyFeedClient() {
     return (
       <div className="mt-4">
         <GoldyGreeting
-          blurb="Hey! Your feed is clear. Snap a flyer and I'll keep it from getting lost in your camera roll."
+          blurb="Snap a flyer. I'll pull it out of your camera roll so it doesn't live there forever."
         />
         <div
           className="mt-8 flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed bg-white/60 p-10 text-center"
           style={{ borderColor: 'var(--goldy-maroon-200)' }}
         >
           <div className="text-4xl" aria-hidden>
-            📭
+            📸
           </div>
           <p className="text-sm text-stone-600">
-            No flyers extracted yet. Head back to the upload page.
+            Your camera roll is full of flyers you meant to go to. Feed me one and I&rsquo;ll
+            turn it into a decision you can actually act on.
           </p>
           <Link
             href="/"
@@ -330,6 +332,8 @@ export function GoldyFeedClient() {
   return (
     <>
       <GoldyDayOfBanner events={allEvents} />
+
+      <LeaveByNotifyToggle events={allEvents} />
 
       {greetingBlurb && (
         <GoldyGreeting

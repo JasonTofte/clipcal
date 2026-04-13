@@ -29,6 +29,8 @@ export const EventSchema = z.object({
   confidence: Confidence,
   venueSetting: VenueSetting.optional(),
   crowdSize: CrowdSize.optional(),
+  dressCode: z.string().nullable().optional(),
+  room: z.string().nullable().optional(),
 });
 
 export const ExtractionSchema = z.object({

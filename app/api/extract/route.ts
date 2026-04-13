@@ -31,6 +31,8 @@ For every event shown on the flyer, extract:
 - confidence: "high" if everything is clearly legible, "medium" if some fields required inference, "low" if the flyer is ambiguous
 - venueSetting: "indoor", "outdoor", "hybrid", or null if unknown — infer from venue name, photos, or event type
 - crowdSize: "small" (< 30), "medium" (30-100), "large" (100+), or null — infer from venue, event type, or any capacity hints
+- dressCode: short phrase from the flyer if stated (e.g. "business casual", "cocktail attire", "costume encouraged"), or null. Do NOT infer — only include if printed.
+- room: specific room or floor hint beyond the venue building (e.g. "Room 3-180, 2nd floor", "Basement ballroom"), or null. Only include if the flyer states it.
 
 If multiple events appear on the flyer, return ALL of them. Never skip an event.
 Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
