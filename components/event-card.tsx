@@ -13,7 +13,7 @@ import type { BusySlot } from '@/lib/demo-calendar';
 import { DayShape } from '@/components/day-shape';
 import { TemporalBar } from '@/components/temporal-bar';
 import { Button } from '@/components/ui/button';
-import { ConflictBadge, LeaveByClock, NoticingChip } from '@/components/shared';
+import { ConflictBadge, LeaveByClock, NoticingChip, TimezoneBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
@@ -189,9 +189,7 @@ export function EventCard({
             👥 ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
           </span>
         )}
-        <span className="ml-auto font-mono text-[10px] text-muted-foreground/70">
-          {event.timezone}
-        </span>
+        <TimezoneBadge timezone={event.timezone} className="ml-auto" />
       </div>
 
       {noticings.length > 0 && (
