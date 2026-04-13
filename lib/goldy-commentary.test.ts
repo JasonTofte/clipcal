@@ -560,6 +560,68 @@ describe('pickGoldyLine — slot substitution across buckets', () => {
   });
 });
 
+describe('urgent bucket — wins over everything when within 30 min of leave-by', () => {
+  // Event in 20 min at a location with default 12-min walk → leave-by ~8 min away.
+  const urgentNow = new Date('2026-04-14T14:40:00Z');
+  const urgentEvent = makeEvent({
+    start: '2026-04-14T15:00:00Z',
+    location: 'Walter Library',
+    title: 'About to happen',
+    hasFreeFood: true, // would normally be free-food
+  });
+
+  it('returns urgent bucket with minutesToLeaveBy populated', () => {
+    const ctx = buildContext(urgentEvent, [], [urgentEvent], [], urgentNow);
+    expect(ctx.bucket).toBe('urgent');
+    expect(ctx.slots.minutesToLeaveBy).toBeGreaterThanOrEqual(0);
+    expect(ctx.slots.minutesToLeaveBy).toBeLessThanOrEqual(30);
+  });
+
+  it('urgent wins over conflict', () => {
+    const busy = makeSlot(
+      'CSCI 5801',
+      '2026-04-14T14:55:00Z',
+      '2026-04-14T15:30:00Z',
+    );
+    const ctx = buildContext(urgentEvent, [busy], [urgentEvent], [], urgentNow);
+    expect(ctx.bucket).toBe('urgent');
+  });
+
+  it('urgent does NOT fire without a now argument', () => {
+    const ctx = buildContext(urgentEvent, [], [urgentEvent], []);
+    expect(ctx.bucket).not.toBe('urgent');
+  });
+
+  it('urgent does NOT fire when leave-by is more than 30 min away', () => {
+    const earlyNow = new Date('2026-04-14T13:00:00Z'); // 2h before start
+    const ctx = buildContext(urgentEvent, [], [urgentEvent], [], earlyNow);
+    expect(ctx.bucket).not.toBe('urgent');
+  });
+
+  it('urgent does NOT fire once the event has started', () => {
+    const afterStart = new Date('2026-04-14T15:05:00Z');
+    const ctx = buildContext(urgentEvent, [], [urgentEvent], [], afterStart);
+    expect(ctx.bucket).not.toBe('urgent');
+  });
+
+  it('urgent does NOT fire for events with no location (no leave-by computable)', () => {
+    const noLoc = makeEvent({
+      start: '2026-04-14T15:00:00Z',
+      location: null,
+      title: 'Mystery',
+    });
+    const ctx = buildContext(noLoc, [], [noLoc], [], urgentNow);
+    expect(ctx.bucket).not.toBe('urgent');
+  });
+
+  it('pickGoldyLine returns a valid urgent line (no placeholder leakage)', () => {
+    const ctx = buildContext(urgentEvent, [], [urgentEvent], [], urgentNow);
+    const line = pickGoldyLine(urgentEvent, ctx);
+    expect(line.length).toBeGreaterThan(0);
+    expect(line).not.toContain('{{');
+  });
+});
+
 describe('matchesAnyInterest — no spurious short-prefix hits', () => {
   it('short interest "art" does not match "Update your resume" (no 4-char false positive)', () => {
     const event = makeEvent({

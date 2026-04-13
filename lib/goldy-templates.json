@@ -1,4 +1,21 @@
 {
+  "urgent": [
+    "Time to move. {{minutesToLeaveBy}} min to your leave-by.",
+    "Pack up — leaving in {{minutesToLeaveBy}}. Door's on the clock.",
+    "That's your cue. {{walkMinutes}}-min walk, {{minutesToLeaveBy}} min window.",
+    "Grab your stuff. This is the one.",
+    "Heads up, Gopher — {{minutesToLeaveBy}} min until you should be walking.",
+    "Leave now-ish. You've got {{minutesToLeaveBy}} before you're late.",
+    "This is the part where you stand up.",
+    "Countdown's on: {{minutesToLeaveBy}} min to move.",
+    "Don't sit down again. {{minutesToLeaveBy}} min to walk out.",
+    "You said you'd go — it's time.",
+    "Shoes, keys, door. {{minutesToLeaveBy}} min left on the clock.",
+    "Now or never-ish. {{minutesToLeaveBy}} min buffer.",
+    "Goldy's pointing at the door.",
+    "Window's open: {{minutesToLeaveBy}} min until leave-by closes it.",
+    "Quit scrolling. {{minutesToLeaveBy}} min to head out."
+  ],
   "conflict": [
     "Tricky one — overlaps {{conflictTitle}}, but that lecture's usually recorded. Your call.",
     "Heads up: this runs into {{conflictTitle}}. Worth it?",

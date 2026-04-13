@@ -20,6 +20,7 @@ import {
 import { triggerIcsDownload } from '@/lib/ics';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
+import { parseNowOverride } from '@/lib/day-of-reminder';
 import { formatShortDate, formatWeekday } from '@/lib/format';
 import { buildDemoBatch, DEMO_SEED_ID, isDemoBatch } from '@/lib/demo-feed-seed';
 import type { Event } from '@/lib/schema';
@@ -41,6 +42,8 @@ type FeedRow = {
 
 function bucketMatchPct(bucket: string): number {
   switch (bucket) {
+    case 'urgent':
+      return 99;
     case 'conflict':
       return 60;
     case 'top-pick-gameday':
@@ -159,16 +162,24 @@ export function GoldyFeedClient() {
   const weekStart = useMemo(() => startOfWeekMonday(new Date()), []);
   const hasDemoSeed = batches.some((b) => isDemoBatch(b.id));
 
+  // Share the same `?now=` override the day-of banner uses so urgent
+  // commentary + the banner stay in sync during demos.
+  const nowOverride = useMemo(() => {
+    if (typeof window === 'undefined') return null;
+    return parseNowOverride(window.location.search);
+  }, []);
+
   const ranked = useMemo(() => {
+    const now = nowOverride ?? new Date();
     return rows
       .map((row) => {
-        const ctx = buildContext(row.event, calendar, allEvents, interests);
+        const ctx = buildContext(row.event, calendar, allEvents, interests, now);
         const line = pickGoldyLine(row.event, ctx);
         const pct = bucketMatchPct(ctx.bucket);
         return { row, ctx, line, pct };
       })
       .sort((a, b) => b.pct - a.pct);
-  }, [rows, demoMode, interests, allEvents]);
+  }, [rows, demoMode, interests, allEvents, nowOverride]);
 
   const recentClips = rows
     .slice()
@@ -465,7 +476,7 @@ export function GoldyFeedClient() {
           </div>
         ) : (
           <div className="space-y-4">
-            {visibleRanked.map(({ row, line, pct }, i) => {
+            {visibleRanked.map(({ row, ctx, line, pct }, i) => {
               const key = `${row.batchId}-${row.eventIndex}`;
               const flashing = flashKey === key;
               return (
@@ -487,6 +498,9 @@ export function GoldyFeedClient() {
                     goldyLine={line}
                     matchPct={pct}
                     isTopPick={i === 0 && chipFilter === 'all' && selectedDayIdx === null}
+                    conflictTitle={
+                      ctx.bucket === 'conflict' ? ctx.slots.conflictTitle : null
+                    }
                     onAddToCalendar={() => handleAdd(row)}
                   />
                 </div>

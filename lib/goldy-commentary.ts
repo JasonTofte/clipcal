@@ -1,9 +1,11 @@
 import type { Event } from '@/lib/schema';
 import type { BusySlot } from '@/lib/demo-calendar';
 import { checkConflict } from '@/lib/conflict';
+import { computeLeaveBy } from '@/lib/leave-by';
 import templates from '@/lib/goldy-templates.json';
 
 export type GoldyBucket =
+  | 'urgent'
   | 'conflict'
   | 'top-pick-gameday'
   | 'interest-match'
@@ -22,8 +24,14 @@ export type GoldyContext = {
     nextEventTitle?: string;
     foodHint?: string;
     interestHit?: string;
+    // For the `urgent` bucket: whole-minute countdown to leave-by.
+    minutesToLeaveBy?: number;
   };
 };
+
+// Mirror of URGENT_WINDOW_MS in lib/day-of-reminder (30 min). Duplicated
+// here to keep goldy-commentary free of a day-of-reminder import cycle.
+const URGENT_LEAVEBY_WINDOW_MS = 30 * 60 * 1000;
 
 // djb2 hash — small, pure, no external deps
 function djb2(str: string): number {
@@ -140,7 +148,34 @@ export function buildContext(
   calendar: BusySlot[],
   allEventsSortedByStart: Event[],
   interests?: string[],
+  now?: Date,
 ): GoldyContext {
+  // Priority 0: urgent — event is ≤30 min from its leave-by. Wins over
+  // everything else (including conflict) because day-of execution is the
+  // narrowest window for the user to act.
+  if (now) {
+    const leaveBy = computeLeaveBy(event);
+    if (leaveBy) {
+      const msToLeaveBy = leaveBy.leaveByDate.getTime() - now.getTime();
+      const msToStart = new Date(event.start).getTime() - now.getTime();
+      // Only surface urgent while the event hasn't started AND leave-by
+      // is in (or very recently passed) the window.
+      if (
+        msToStart > 0 &&
+        msToLeaveBy <= URGENT_LEAVEBY_WINDOW_MS &&
+        msToLeaveBy > -URGENT_LEAVEBY_WINDOW_MS
+      ) {
+        return {
+          bucket: 'urgent',
+          slots: {
+            minutesToLeaveBy: Math.max(0, Math.round(msToLeaveBy / (60 * 1000))),
+            walkMinutes: leaveBy.walkMinutes,
+          },
+        };
+      }
+    }
+  }
+
   // Priority 1: conflict
   const conflictResult = checkConflict(event, calendar);
   if (conflictResult.status === 'overlaps') {
