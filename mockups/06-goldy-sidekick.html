@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gopherly · Mockup 6 · Goldy as Sidekick</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            maroon: { 50:'#FBF2F3', 100:'#F4DCDE', 200:'#E3A9AE', 400:'#9E2F3A', 500:'#7A0019', 600:'#5B0013', 700:'#40000D' },
+            gold:   { 50:'#FFF8E1', 100:'#FFEDB3', 200:'#FFDE7A', 300:'#FFD24D', 400:'#FFCC33', 500:'#E6B422' }
+          },
+          fontFamily: { display: ['Graduate','Georgia','serif'], round: ['Fredoka','ui-rounded','system-ui'] }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Graduate&family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Fredoka', ui-rounded, system-ui, sans-serif; background: radial-gradient(ellipse at top, #FFF8E1 0%, #FBF2F3 70%); }
+    .goldy-bubble {
+      background: linear-gradient(135deg, #FFCC33 0%, #FFDE7A 100%);
+      position: relative;
+    }
+    .goldy-bubble::before {
+      content: ''; position: absolute; left: -10px; top: 16px;
+      border-right: 12px solid #FFCC33; border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+    }
+    .flyer-hack   { background: linear-gradient(135deg, #7A0019 0%, #40000D 100%); }
+    .flyer-pizza  { background: linear-gradient(135deg, #FFCC33 0%, #E6B422 100%); color: #40000D; }
+    .flyer-career { background: linear-gradient(135deg, #5B0013 0%, #7A0019 60%, #FFCC33 150%); }
+    .flyer-fest   { background: linear-gradient(135deg, #9E2F3A 0%, #FFD24D 140%); }
+    .flyer-game   { background: linear-gradient(135deg, #40000D 0%, #7A0019 100%); }
+    .paw {
+      background-image: radial-gradient(circle, #7A0019 1.5px, transparent 2px);
+      background-size: 24px 24px;
+      background-position: 0 0;
+    }
+  </style>
+</head>
+<body class="text-stone-900 min-h-screen pb-24">
+
+  <header class="bg-maroon-500 text-white sticky top-0 z-20 shadow-xl">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="w-11 h-11 rounded-lg bg-white flex items-center justify-center shadow-lg border-2 border-gold-400 p-1 relative">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="UMN Block M" class="w-full h-full object-contain" />
+          <span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-400 border-2 border-maroon-500"></span>
+        </div>
+        <div>
+          <div class="font-bold leading-tight text-lg" style="font-family:'Graduate',serif">Gopherly</div>
+          <div class="text-[11px] text-gold-300 leading-tight">Goldy · your campus sidekick</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button class="p-2 rounded-full hover:bg-maroon-400">
+          <svg class="w-5 h-5 text-gold-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </button>
+        <button class="w-9 h-9 rounded-full bg-gold-400 text-maroon-600 text-xs font-bold flex items-center justify-center">JT</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-5">
+
+    <!-- Goldy greeting -->
+    <section class="mb-6 flex items-start gap-3">
+      <div class="w-16 h-16 rounded-full bg-gold-400 flex items-center justify-center shrink-0 shadow-lg border-[3px] border-white overflow-hidden">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="Goldy Gopher" class="w-full h-full object-contain p-1.5" />
+      </div>
+      <div class="goldy-bubble rounded-2xl rounded-tl-sm px-4 py-3 max-w-md shadow-md">
+        <div class="text-[10px] uppercase tracking-wider text-maroon-600 font-bold mb-0.5">Goldy Gopher · just now</div>
+        <p class="text-sm text-stone-900 leading-snug">
+          Hey Jason! 👋 I peeked at your week — <strong class="text-maroon-600">Tuesday's stacked</strong>, but <strong class="text-maroon-600">Saturday is wide open</strong>, and there's a home game. 🏟️ Wanna see what fits?
+        </p>
+        <div class="mt-2 flex gap-1.5 flex-wrap">
+          <button class="text-[11px] px-2.5 py-1 rounded-full bg-maroon-500 text-gold-400 font-semibold">Yes, show me</button>
+          <button class="text-[11px] px-2.5 py-1 rounded-full bg-white text-maroon-600 border border-maroon-500 font-semibold">Just gameday</button>
+          <button class="text-[11px] px-2.5 py-1 rounded-full bg-white text-stone-600 border border-stone-300">Free food only</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Week glance — as a "Goldy tip card" -->
+    <section class="mb-6 bg-white rounded-3xl p-4 sm:p-5 shadow-md border-2 border-gold-400 relative overflow-hidden">
+      <div class="absolute -top-6 -right-6 w-32 h-32 paw opacity-10 rotate-12"></div>
+      <div class="flex items-start justify-between mb-3 relative">
+        <div>
+          <h2 class="text-sm font-bold text-maroon-600 flex items-center gap-1.5"><span class="text-base">🗓️</span> Your week at a glance</h2>
+          <p class="text-[11px] text-stone-500 mt-0.5">I'm not scoring you. Just laying it out.</p>
+        </div>
+        <span class="text-[10px] text-stone-400 shrink-0">Apr 13 – 19</span>
+      </div>
+      <div class="grid grid-cols-7 gap-1.5 sm:gap-2 relative">
+        <div class="text-center"><div class="text-[9px] font-medium text-stone-400 mb-1">Mon</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-maroon-300" style="height: 60%"></div></div><div class="text-[9px] text-stone-400 mt-1">3</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-maroon-500 mb-1">Tue</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden ring-2 ring-maroon-400"><div class="absolute inset-x-0 bottom-0 bg-maroon-500" style="height: 85%"></div></div><div class="text-[9px] text-maroon-500 mt-1 font-bold">packed</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-stone-400 mb-1">Wed</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-maroon-300" style="height: 35%"></div></div><div class="text-[9px] text-stone-400 mt-1">2</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-stone-400 mb-1">Thu</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-maroon-300" style="height: 40%"></div></div><div class="text-[9px] text-stone-400 mt-1">2</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-stone-400 mb-1">Fri</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-maroon-300" style="height: 20%"></div></div><div class="text-[9px] text-stone-400 mt-1">1</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-gold-600 mb-1">Sat</div><div class="h-12 rounded-xl bg-gold-50 relative overflow-hidden ring-2 ring-gold-500"><div class="absolute inset-x-0 bottom-0 bg-gold-400" style="height: 25%"></div><div class="absolute top-1 inset-x-0 text-center text-[10px]">🏟️</div></div><div class="text-[9px] text-gold-600 mt-1 font-bold">OPEN</div></div>
+        <div class="text-center"><div class="text-[9px] font-medium text-stone-400 mb-1">Sun</div><div class="h-12 rounded-xl bg-stone-100 relative overflow-hidden"><div class="absolute inset-x-0 bottom-0 bg-maroon-300" style="height: 15%"></div></div><div class="text-[9px] text-stone-400 mt-1">1</div></div>
+      </div>
+    </section>
+
+    <!-- Camera roll -->
+    <section class="mb-8">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+          <span class="text-base">📸</span> You screenshotted these
+        </h2>
+        <span class="text-xs text-stone-500">3 snapped</span>
+      </div>
+      <p class="text-xs text-stone-500 mb-3">I'll remember, so you don't have to.</p>
+
+      <div class="flex gap-3 overflow-x-auto scrollbar-hide -mx-4 px-4 pb-2">
+        <div class="shrink-0 w-40">
+          <div class="flyer-hack aspect-[3/4] rounded-2xl relative overflow-hidden shadow-lg">
+            <div class="absolute inset-0 p-3 flex flex-col text-white">
+              <div class="text-[9px] uppercase tracking-widest text-gold-300">Hackathon · CSE</div>
+              <div class="text-lg font-bold leading-tight mt-1" style="font-family:'Graduate',serif">Gopher Hack '26</div>
+              <div class="text-[10px] text-gold-200 mt-auto">Apr 12 · Keller</div>
+            </div>
+            <div class="absolute top-2 right-2 bg-gold-400 text-maroon-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">92%</div>
+          </div>
+        </div>
+        <div class="shrink-0 w-40">
+          <div class="flyer-pizza aspect-[3/4] rounded-2xl relative overflow-hidden shadow-lg">
+            <div class="absolute inset-0 p-3 flex flex-col">
+              <div class="text-[9px] uppercase tracking-widest opacity-70 font-bold">Workshop</div>
+              <div class="text-lg font-bold leading-tight mt-1">Pizza + Linux</div>
+              <div class="text-[10px] font-semibold mt-auto">Apr 18 · Walter</div>
+            </div>
+            <div class="absolute top-2 right-2 bg-maroon-500 text-gold-400 text-[9px] font-bold px-1.5 py-0.5 rounded-full">95%</div>
+            <div class="absolute top-2 left-2 text-sm">🍕</div>
+          </div>
+        </div>
+        <div class="shrink-0 w-40">
+          <div class="flyer-career aspect-[3/4] rounded-2xl relative overflow-hidden shadow-lg">
+            <div class="absolute inset-0 p-3 flex flex-col text-white">
+              <div class="text-[9px] uppercase tracking-widest text-gold-300">Networking</div>
+              <div class="text-lg font-bold leading-tight mt-1">Pitch Night</div>
+              <div class="text-[10px] text-gold-200 mt-auto">Apr 16 · Holmes</div>
+            </div>
+            <div class="absolute top-2 right-2 bg-gold-400 text-maroon-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">76%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Ranked feed with Goldy "speech bubble" callouts -->
+    <section class="mb-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-bold text-stone-900 flex items-center gap-1.5">
+          <span class="text-base">🐿️</span> Goldy's picks for you
+        </h2>
+        <button class="text-xs text-stone-500">Sort: match ↓</button>
+      </div>
+
+      <div class="space-y-4">
+
+        <!-- #1 Gameday -->
+        <article class="bg-white rounded-3xl overflow-hidden shadow-lg ring-2 ring-gold-400">
+          <div class="bg-gradient-to-r from-maroon-500 via-maroon-500 to-gold-400 text-white text-[10px] font-bold tracking-wider uppercase px-4 py-1.5 flex items-center justify-between">
+            <span>🏆 Goldy's top pick · Ski-U-Mah!</span>
+            <span class="text-gold-300">98% match</span>
+          </div>
+          <div class="flex">
+            <div class="flyer-game w-24 sm:w-32 shrink-0 relative">
+              <div class="absolute inset-0 p-2 flex flex-col text-white">
+                <div class="text-[8px] uppercase tracking-widest text-gold-300">Home Game</div>
+                <div class="text-xs font-bold leading-tight mt-1" style="font-family:'Graduate',serif">Gophers vs Badgers</div>
+              </div>
+            </div>
+            <div class="flex-1 p-4 min-w-0">
+              <h3 class="font-bold text-stone-900">Gophers vs Badgers · Axe Game</h3>
+              <p class="text-xs text-stone-500 mt-0.5">Sat Apr 18 · 2:30 PM · Huntington Bank Stadium</p>
+              <div class="mt-2 goldy-bubble rounded-xl rounded-tl-sm px-3 py-2 text-[11px] text-stone-900 leading-snug">
+                <strong class="text-maroon-600"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="" class="inline-block w-4 h-4 align-middle mr-0.5" />Goldy:</strong> "Paul Bunyan's Axe is on the line. You're free. Student tix are $15. If you go, I'll quietly block 4:30–6 so you don't double-book."
+              </div>
+              <div class="mt-3 flex gap-1.5">
+                <button class="flex-1 text-xs font-bold py-2 rounded-full bg-maroon-500 text-gold-400">🚣 Add to Calendar</button>
+                <button class="px-3 py-2 text-xs rounded-full bg-stone-100 text-stone-700">⋯</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- #2 Pizza + Linux -->
+        <article class="bg-white rounded-3xl overflow-hidden shadow-md">
+          <div class="flex">
+            <div class="flyer-pizza w-24 sm:w-32 shrink-0 relative">
+              <div class="absolute inset-0 p-2 flex flex-col">
+                <div class="text-[8px] uppercase tracking-widest opacity-70 font-bold">Workshop</div>
+                <div class="text-xs font-bold leading-tight mt-1">Pizza + Linux</div>
+              </div>
+              <div class="absolute bottom-1.5 left-1.5 text-base">🍕</div>
+            </div>
+            <div class="flex-1 p-4 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-bold text-stone-900 truncate">Free Pizza + Linux Install Party</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Sat Apr 18 · 5:00 PM · Walter Library 402</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-sm font-bold text-maroon-500">95%</div>
+                </div>
+              </div>
+              <div class="mt-2 goldy-bubble rounded-xl rounded-tl-sm px-3 py-2 text-[11px] text-stone-900 leading-snug">
+                <strong class="text-maroon-600"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="" class="inline-block w-4 h-4 align-middle mr-0.5" />Goldy:</strong> "12-min walk across the Wash Ave Bridge right after the game. You get free pizza AND an install. I'd call that a Gopher double."
+              </div>
+              <div class="mt-3 flex gap-1.5">
+                <button class="flex-1 text-xs font-bold py-2 rounded-full bg-maroon-500 text-gold-400">Add to Calendar</button>
+                <button class="px-3 py-2 text-xs rounded-full bg-stone-100 text-stone-700">⋯</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- #3 Career prep — with gentle Goldy conflict warning -->
+        <article class="bg-white rounded-3xl overflow-hidden shadow-md">
+          <div class="flex">
+            <div class="flyer-career w-24 sm:w-32 shrink-0 relative">
+              <div class="absolute inset-0 p-2 flex flex-col text-white">
+                <div class="text-[8px] uppercase tracking-widest text-gold-300">Career</div>
+                <div class="text-xs font-bold leading-tight mt-1">CSE Prep Night</div>
+              </div>
+            </div>
+            <div class="flex-1 p-4 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-bold text-stone-900 truncate">CSE Career Fair Prep Night</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Tue Apr 14 · 6:00 PM · Coffman Union</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-sm font-bold text-gold-600">88%</div>
+                </div>
+              </div>
+              <div class="mt-2 goldy-bubble rounded-xl rounded-tl-sm px-3 py-2 text-[11px] text-stone-900 leading-snug">
+                <strong class="text-maroon-600"><img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="" class="inline-block w-4 h-4 align-middle mr-0.5" />Goldy:</strong> "Tricky one — overlaps CSCI 5801, but that lecture's usually recorded on Canvas. Your call. I won't judge."
+              </div>
+              <div class="mt-3 flex gap-1.5">
+                <button class="flex-1 text-xs font-semibold py-2 rounded-full bg-white text-maroon-600 border-2 border-maroon-500">Add anyway · you decide</button>
+                <button class="px-3 py-2 text-xs rounded-full bg-stone-100 text-stone-700">⋯</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- #4 Fest -->
+        <article class="bg-white rounded-3xl overflow-hidden shadow-md">
+          <div class="flex">
+            <div class="flyer-fest w-24 sm:w-32 shrink-0 relative">
+              <div class="absolute inset-0 p-2 flex flex-col text-white">
+                <div class="text-[8px] uppercase tracking-widest">Culture</div>
+                <div class="text-xs font-bold leading-tight mt-1">Intl Fest</div>
+              </div>
+            </div>
+            <div class="flex-1 p-4 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <div class="min-w-0">
+                  <h3 class="font-bold text-stone-900 truncate">International Fest · Northrop Plaza</h3>
+                  <p class="text-xs text-stone-500 mt-0.5">Sun Apr 19 · 2:00 PM</p>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="text-sm font-bold text-stone-400">45%</div>
+                </div>
+              </div>
+              <div class="mt-2 flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-gold-50 text-gold-700 border border-gold-200">🍕 free food</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-maroon-50 text-maroon-600 border border-maroon-200">✨ expand horizons</span>
+              </div>
+              <div class="mt-3 flex gap-1.5">
+                <button class="flex-1 text-xs font-bold py-2 rounded-full bg-maroon-500 text-gold-400">Add to Calendar</button>
+                <button class="px-3 py-2 text-xs rounded-full bg-stone-100 text-stone-700">⋯</button>
+              </div>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+    <button class="bg-maroon-500 text-gold-400 rounded-full shadow-2xl px-5 py-3.5 flex items-center gap-2 hover:bg-maroon-600 transition">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Minnesota_Golden_Gophers_logo.svg" alt="" class="w-6 h-6" />
+      <span class="text-sm font-bold">Hey Goldy, I snapped a flyer</span>
+      <span class="text-[10px] opacity-70 border-l border-gold-400/30 pl-2 ml-1">⌘V</span>
+    </button>
+  </div>
+
+  <footer class="max-w-4xl mx-auto px-4 py-4 text-[11px] text-stone-500 flex items-center justify-between">
+    <span>mockup 6 · Goldy as Sidekick (mascot-forward, conversational)</span>
+    <a href="index.html" class="hover:text-maroon-600 underline">← back to all mockups</a>
+  </footer>
+</body>
+</html>
