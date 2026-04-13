@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Fredoka } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
+import { GoldyHeader } from "@/components/goldy-header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,6 +56,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${fredoka.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]">
+        <GoldyHeader />
         {children}
         <BottomNav />
       </body>

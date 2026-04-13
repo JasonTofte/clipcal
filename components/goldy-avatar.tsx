@@ -2,23 +2,15 @@ type Props = {
   size?: number;
   showStatus?: boolean;
   className?: string;
-  // Mark decorative when this avatar is already inside a labeled region
-  // (e.g. an event-card speech bubble with role="note"). Screen readers
-  // skip it rather than reading "Goldy Gopher image" mid-sentence.
+  // Mark decorative when this avatar sits inside an already-labeled
+  // region (e.g. an event-card speech bubble with role="note"). Screen
+  // readers skip it rather than reading "Goldy Gopher image" mid-sentence.
   decorative?: boolean;
 };
 
-// Stylized UMN-style filled Block M. Rendered inline as SVG to avoid
-// external image hops (CSP stays 'self', no Wikipedia dependency). The
-// shape is a solid silhouette:
-//   - Full-width top bar
-//   - Deep inverted-V notch down the middle (inner peak at 70% depth)
-//   - Thick outer legs (20% of width each)
-//   - Flat bottom
-// Not the official UMN mark — a simplified visual stand-in that reads
-// as a Block M at avatar sizes (18px up to 128px).
-const BLOCK_M_PATH = 'M 10 10 H 90 V 90 H 72 V 34 L 50 72 L 28 34 V 90 H 10 Z';
-
+// Uses the real UMN Block M asset at /goldy-block-m.svg (self-hosted in
+// /public). Two-tone maroon + gold, matches UMN brand identity. Falls
+// back gracefully if the asset ever 404s (alt text + empty box).
 export function GoldyAvatar({
   size = 44,
   showStatus = false,
@@ -26,9 +18,10 @@ export function GoldyAvatar({
   decorative = false,
 }: Props) {
   // Outer wrapper is positioned (for the status dot) but NOT overflow-
-  // hidden, so the dot can sit on the edge without being clipped. Inner
-  // shell owns overflow-hidden + border + bg so the SVG fills the frame.
-  const svgInset = Math.max(2, Math.round(size * 0.08));
+  // hidden so the dot can sit on the edge without being clipped. Inner
+  // shell owns the rounded corners, border, bg, and shadow so the SVG
+  // reads as a badge.
+  const svgInset = Math.max(4, Math.round(size * 0.12));
   return (
     <span
       role={decorative ? undefined : 'img'}
@@ -38,24 +31,29 @@ export function GoldyAvatar({
       style={{ width: size, height: size }}
     >
       <span
-        className="relative block overflow-hidden rounded-xl border-2 bg-white shadow-md"
+        className="relative flex items-center justify-center overflow-hidden rounded-xl border-2 bg-white shadow-md"
         style={{
           width: size,
           height: size,
           borderColor: 'var(--goldy-gold-400)',
+          padding: svgInset,
         }}
       >
-        <svg
-          viewBox="0 0 100 100"
-          width={size}
-          height={size}
-          fill="var(--goldy-maroon-500)"
-          aria-hidden="true"
-          preserveAspectRatio="xMidYMid meet"
-          style={{ padding: svgInset }}
-        >
-          <path d={BLOCK_M_PATH} />
-        </svg>
+        {/* Plain <img> — next/image's intrinsic-dimension handling adds
+            extra wrapper markup that can crush the asset at small sizes
+            inside flex parents. A naked img at width/height 100% + object-
+            contain is both simpler and more reliable here. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/goldy-block-m.svg"
+          alt=""
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            display: 'block',
+          }}
+        />
       </span>
       {showStatus && (
         <span
