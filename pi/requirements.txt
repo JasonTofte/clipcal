@@ -1,0 +1,6 @@
+bless>=0.2.7
+Pillow>=10.0.0
+RPi.GPIO>=0.7.0
+spidev>=3.6
+flask>=3.0.0
+flask-cors>=4.0.0

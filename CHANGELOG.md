@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **QR code decode** (`lib/qr-decode.ts`) — extracts a signup URL from any uploaded flyer image. Uses the native `BarcodeDetector` API on Chrome/Edge/Android (zero bundle cost) and falls back to `qr-scanner` (nimiq, dynamically imported) on iOS Safari/Firefox. Result is filtered to `http(s)` only — `javascript:`, `data:`, `file:` URLs are rejected to prevent XSS via `<a href={signupUrl}>`. New `signupUrl` field on `EventSchema` is also URL-validated at the schema level.
+- **E-ink display sync infra** (`lib/ble-sync.ts`, `components/eink-sync-button.tsx`) — sync the next batch of upcoming events to a Pi Zero e-ink display worn on a phone case. Two transports: WiFi (HTTPS POST to the Pi's local IP — Chrome/Edge/Firefox; iOS Safari falls back to the Pi's captive-portal paste page) and BLE (Web Bluetooth, Chrome/Edge/Android). BLE writes are properly chunked into 20-byte ATT-MTU-safe slices with a notifications handshake on the TX characteristic — fixes a silent-truncation bug where 510-byte payloads were sent as a single write. Pi sync URL is env-gated via `NEXT_PUBLIC_EINK_PI_URL`; CSP `connect-src` is appended only when that env var is set, so the security headers stay tight by default.
+- **`/api/abbreviate`** LLM endpoint — Claude Haiku 4.5 shortens event titles (≤20 chars) and locations (≤14 chars) for the 250×122px e-ink display. Wrapped in the standard `requireAnthropic` guard + dedicated `abbreviateLimiter` bucket (6/min per-key, 30/min global), 10 KB body cap, 50-event ceiling. All untrusted titles + locations pass through `prompt-safety` fencing (`<title>`, `<location>` tags + `UNTRUSTED_PREAMBLE`) so a malicious flyer can't slip a fresh instruction into the prompt.
+- **Pi server stack** (`pi/`) — Flask HTTP server with iOS captive-portal paste fallback, BLE GATT server, e-ink renderer, and AP setup script. Self-contained; not part of the Next build.
+- 14 new tests (208 total): qr-decode URL filter, BLE chunker boundary cases.
+
+### Changed
+
+- `components/event-card.tsx` delegates to the shared primitives; DOM output on `/feed` is unchanged.
+
+### Co-authored
+
+- QR + e-ink feature originally proposed by **Sittikone Keopraseuth** (PR #39); split + re-hardened to land cleanly on current main.
+
+### Added (continued)
+
 - **Unified UI design language** — All pages (`/`, `/browse`, `/profile`) now inherit the Goldy brand tokens that previously lived only on `/feed`. `app/globals.css` rebinds shadcn tokens (`--primary` → maroon, `--background` → warm cream, `--ring` → gold) at `:root` and adds three surface variants (`--surface-vibrant` for feed, `--surface-calm` default, `--surface-paper` for cards/inputs). `--font-sans` + `--font-heading` both resolve to Fredoka. `.goldy-theme` stays additive (radial gradient stays feed-only).
 - **Shared primitive library** (`components/shared/`): `LeaveByClock`, `NoticingChip`, `ConflictBadge`, `PrimaryCTA`, `GoldyBubble`. Extracted from `event-card.tsx` (−57 lines) so browse/upload/profile can reuse ADHD decision-support chrome without duplication.
 - **Browse page restyle** — paper cards with gold-ring hover, pill-style list/calendar toggle, "★ your interests" chip on rows matching the saved profile.
