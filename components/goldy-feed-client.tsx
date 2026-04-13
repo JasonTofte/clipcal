@@ -102,6 +102,7 @@ export function GoldyFeedClient() {
   const [undo, setUndo] = useState<{ batchId: string; title: string } | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const picksSectionRef = useRef<HTMLElement | null>(null);
   const undoTimerRef = useRef<number | null>(null);
   const flashTimerRef = useRef<number | null>(null);
 
@@ -116,9 +117,25 @@ export function GoldyFeedClient() {
       clearAllBatches();
       window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
     }
+
+    // Auto-upgrade: if there's any demo batch whose id isn't the
+    // current DEMO_SEED_ID, strip it out so the next seed pass installs
+    // the newer version. Real (non-demo) batches are left untouched.
+    const rawLoaded = loadBatches();
+    const hasStaleDemo = rawLoaded.some(
+      (b) => isDemoBatch(b.id) && b.id !== DEMO_SEED_ID,
+    );
+    if (hasStaleDemo) {
+      const kept = rawLoaded.filter((b) => !isDemoBatch(b.id));
+      window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(kept));
+      window.localStorage.removeItem(DEMO_SEED_DISMISSED_KEY);
+    }
+
     const loaded = loadBatches();
     const dismissed =
       window.localStorage.getItem(DEMO_SEED_DISMISSED_KEY) === 'true';
+    // Seed if the user has no events, OR if they had only-stale demo
+    // data that we just stripped (now also empty) — same effect.
     if (loaded.length === 0 && (!dismissed || forceDemo)) {
       appendBatch(buildDemoBatch(new Date()).events, 'Demo events — first visit seed.');
       // appendBatch creates a fresh batch with a non-demo id; rewrite the
@@ -373,7 +390,33 @@ export function GoldyFeedClient() {
         <GoldyGreeting
           blurb={greetingBlurb}
           chipFilter={chipFilter}
-          onChipFilter={setChipFilter}
+          onChipFilter={(next) => {
+            setChipFilter(next);
+            // Always clear any day filter so chip intent reads clearly.
+            setSelectedDayIdx(null);
+            // Scroll the picks into view so tapping a chip produces a
+            // visible response even when the filter was already applied.
+            window.requestAnimationFrame(() => {
+              picksSectionRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            });
+          }}
+          onScrollToToday={() => {
+            // Filter picks to today.
+            const todayIdx = new Date().getDay();
+            // Convert JS getDay (0=Sun..6=Sat) to our Mon=0 system.
+            const monIdx = todayIdx === 0 ? 6 : todayIdx - 1;
+            setSelectedDayIdx(monIdx);
+            setChipFilter('all');
+            window.requestAnimationFrame(() => {
+              picksSectionRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+              });
+            });
+          }}
         />
       )}
 
@@ -516,7 +559,11 @@ export function GoldyFeedClient() {
         </section>
       )}
 
-      <section className="mb-6" aria-labelledby="goldy-picks-heading">
+      <section
+        ref={picksSectionRef}
+        className="mb-6 scroll-mt-20"
+        aria-labelledby="goldy-picks-heading"
+      >
         <div className="mb-3 flex items-center justify-between">
           <h2
             id="goldy-picks-heading"
@@ -632,10 +679,12 @@ function GoldyGreeting({
   blurb,
   chipFilter,
   onChipFilter,
+  onScrollToToday,
 }: {
   blurb: string;
   chipFilter?: ChipFilter;
   onChipFilter?: (next: ChipFilter) => void;
+  onScrollToToday?: () => void;
 }) {
   const showChips = chipFilter !== undefined && onChipFilter !== undefined;
   return (
@@ -658,14 +707,21 @@ function GoldyGreeting({
         {showChips && (
           <div
             role="group"
-            aria-label="Filter Goldy's picks"
+            aria-label="Jump into Goldy's picks"
             className="mt-2 flex flex-wrap gap-1.5"
           >
             <GreetingChip
-              label="Yes, show me"
+              label="Show me the picks ↓"
               active={chipFilter === 'all'}
               onClick={() => onChipFilter('all')}
             />
+            {onScrollToToday && (
+              <GreetingChip
+                label="Just today"
+                active={false}
+                onClick={onScrollToToday}
+              />
+            )}
             <GreetingChip
               label="Just gameday"
               active={chipFilter === 'gameday'}
