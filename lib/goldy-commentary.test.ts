@@ -13,8 +13,7 @@ function makeEvent(
 ): Event {
   return {
     title: 'Test Event',
-    start: overrides.start,
-    end: overrides.end ?? null,
+    end: null,
     location: null,
     description: null,
     category: 'other',
@@ -324,7 +323,7 @@ describe('pickGoldyLine', () => {
       // Arrange
       const ctx: GoldyContext = {
         // @ts-expect-error — intentionally passing an invalid bucket to test fallback
-        bucket: 'totally-made-up-bucket' as GoldyBucket,
+        bucket: 'totally-made-up-bucket',
         slots: {},
       };
 
@@ -336,7 +335,7 @@ describe('pickGoldyLine', () => {
       // Arrange
       const ctx: GoldyContext = {
         // @ts-expect-error — intentionally passing an invalid bucket to test fallback
-        bucket: 'totally-made-up-bucket' as GoldyBucket,
+        bucket: 'totally-made-up-bucket',
         slots: {},
       };
 
