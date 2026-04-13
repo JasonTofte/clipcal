@@ -44,3 +44,32 @@ export function matchesInterests(
 
   return false;
 }
+
+type ScoreableEvent = {
+  title: string;
+  group_title: string | null;
+  event_types: string[];
+  cost?: string | null;
+};
+
+export function scoreEvent(event: ScoreableEvent, interests: string[]): number | null {
+  const tokens = interests.map((i) => i.trim().toLowerCase()).filter(Boolean);
+  if (tokens.length === 0) return null;
+
+  const title = event.title.toLowerCase();
+  const group = (event.group_title ?? '').toLowerCase();
+  const types = event.event_types.map((t) => t.toLowerCase());
+
+  let score = 10;
+  for (const token of tokens) {
+    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const boundary = new RegExp(`\\b${escaped}`);
+    if (boundary.test(title)) score += 30;
+    else if (boundary.test(group)) score += 20;
+    else if (types.some((t) => boundary.test(t))) score += 20;
+  }
+
+  if (event.cost && event.cost.toLowerCase() === 'free') score += 5;
+
+  return Math.min(score, 99);
+}

@@ -2,10 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import type { CampusFeedEvent, CampusFeedResponse } from '@/app/api/campus-feed/route';
+import { loadProfileFromStorage } from '@/lib/profile';
+import { scoreEvent, scoreTone, formatScoreBadge } from '@/lib/relevance';
+
+const TONE_STYLES: Record<'high' | 'medium' | 'low', { bg: string; fg: string }> = {
+  high: { bg: 'var(--goldy-gold-100)', fg: 'var(--goldy-maroon-700)' },
+  medium: { bg: 'var(--surface-calm)', fg: 'var(--muted-foreground)' },
+  low: { bg: 'transparent', fg: 'var(--muted-foreground)' },
+};
 
 export function CampusFeed() {
   const [events, setEvents] = useState<CampusFeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [interests, setInterests] = useState<string[]>([]);
+
+  useEffect(() => {
+    const profile = loadProfileFromStorage();
+    if (profile?.interests?.length) setInterests(profile.interests);
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -50,7 +64,10 @@ export function CampusFeed() {
       </div>
 
       <ul className="space-y-2">
-        {events.map((event) => (
+        {events.map((event) => {
+          const score = scoreEvent(event, interests);
+          const tone = score === null ? null : scoreTone(score);
+          return (
           <li key={event.id}>
             <a
               href={event.url}
@@ -66,9 +83,23 @@ export function CampusFeed() {
                 />
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium group-hover:text-primary">
-                  {event.title}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="truncate text-sm font-medium group-hover:text-primary">
+                    {event.title}
+                  </p>
+                  {score !== null && tone && (
+                    <span
+                      title="Match confidence based on your interests"
+                      className="inline-flex h-5 shrink-0 items-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
+                      style={{
+                        background: TONE_STYLES[tone].bg,
+                        color: TONE_STYLES[tone].fg,
+                      }}
+                    >
+                      {formatScoreBadge(score)}
+                    </span>
+                  )}
+                </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                   <span>{event.date_display}</span>
                   {event.location && (
@@ -92,7 +123,8 @@ export function CampusFeed() {
               </div>
             </a>
           </li>
-        ))}
+          );
+        })}
       </ul>
     </div>
   );
