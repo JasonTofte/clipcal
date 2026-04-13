@@ -73,8 +73,8 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
       className={cn(
         'group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors',
         'border-border bg-card',
-        !disabled && 'cursor-pointer hover:bg-muted/50',
-        dragActive && 'border-primary bg-primary/5',
+        !disabled && 'cursor-pointer hover:border-primary/40 hover:bg-primary/5',
+        dragActive && 'border-primary bg-primary/5 scale-[1.01]',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
@@ -91,18 +91,18 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
         }}
         disabled={disabled}
       />
-      <div className="text-4xl" aria-hidden>
-        📸
+      <div className="text-4xl transition-transform group-hover:scale-110" aria-hidden>
+        {dragActive ? '🎯' : '📸'}
       </div>
       <div className="space-y-1">
         <p className="font-heading text-base font-medium">
-          {dragActive ? 'Drop it — Claude will read it' : 'Snap, paste, or drop a flyer'}
+          {dragActive ? 'Drop it! Claude will take it from here' : 'Snap, paste, or drop a flyer'}
         </p>
         <p className="text-sm text-muted-foreground">
-          JPG · PNG · WEBP · up to 5 MB
+          Any flyer works — photos, screenshots, posters
         </p>
         <p className="text-xs text-muted-foreground/70">
-          or press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">⌘V</kbd> to paste
+          or press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">⌘V</kbd> to paste from clipboard
         </p>
       </div>
     </div>

@@ -325,8 +325,13 @@ export default function Home() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-3xl font-semibold tracking-tight">ClipCal</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 text-lg shadow-sm">
+              📅
+            </div>
+            <h1 className="font-heading text-3xl font-semibold tracking-tight">ClipCal</h1>
+          </div>
+          <p className="mt-1.5 text-sm text-muted-foreground">
             Your campus copilot. Snap a flyer, know if you should go.
           </p>
         </div>
@@ -391,27 +396,31 @@ export default function Home() {
 
         {state.status === 'error' && (
           <div className="flex flex-col gap-4">
-            <div className="rounded-xl bg-destructive/10 p-4 text-sm text-destructive ring-1 ring-destructive/20">
-              Something went wrong: {state.message}
+            <div className="rounded-xl bg-destructive/10 p-4 ring-1 ring-destructive/20">
+              <p className="text-sm font-medium text-destructive">Hmm, couldn&rsquo;t read that one</p>
+              <p className="mt-0.5 text-xs text-destructive/70">{state.message}</p>
             </div>
             <Button onClick={reset} variant="outline" className="w-fit">
-              Try another flyer
+              Try a different flyer
             </Button>
           </div>
         )}
 
         {state.status === 'success' && (
           <div className="flex flex-col gap-4">
-            {state.events.length > 1 && (
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {state.events.length} events found on this flyer
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-sm">
+                <span className="text-emerald-500" aria-hidden>✓</span>
+                <span className="font-medium">
+                  {state.events.length === 1 ? 'Found an event!' : `${state.events.length} events found`}
+                </span>
+              </div>
+              {state.events.length > 1 && (
                 <Button size="sm" variant="default" onClick={handleDownloadAll}>
                   + Add all
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
             {state.events.map((event, idx) => (
               <EventCard
                 key={idx}
@@ -475,12 +484,12 @@ export default function Home() {
 
 function LoadingPanel({ message }: { message: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-card p-10">
-      <div
-        className="size-10 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary"
-        aria-hidden
-      />
-      <p className="text-sm text-muted-foreground">{message}</p>
+    <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-border bg-card p-10 text-center">
+      <div className="text-4xl animate-bounce" aria-hidden>🔍</div>
+      <div className="space-y-1">
+        <p className="text-sm font-medium">{message}</p>
+        <p className="text-xs text-muted-foreground">Usually takes about 5 seconds</p>
+      </div>
     </div>
   );
 }
