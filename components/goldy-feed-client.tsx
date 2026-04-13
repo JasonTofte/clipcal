@@ -7,6 +7,7 @@ import { GoldyWeekGlance } from '@/components/goldy-week-glance';
 import { GoldyEventRow } from '@/components/goldy-event-row';
 import { OneThingHero } from '@/components/one-thing-hero';
 import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
+import { EinkSyncButton } from '@/components/eink-sync-button';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
@@ -418,6 +419,12 @@ export function GoldyFeedClient() {
       />
 
       <LeaveByNotifyToggle events={allEvents} />
+
+      {/* Hidden when NEXT_PUBLIC_EINK_PI_URL is unset, or when the user
+          has nothing upcoming. Component handles both gates internally. */}
+      <div className="mb-3 flex justify-end">
+        <EinkSyncButton events={allEvents} />
+      </div>
 
       {greetingBlurb && (
         <GoldyGreeting

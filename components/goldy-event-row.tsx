@@ -114,6 +114,26 @@ export function GoldyEventRow({
         </div>
       </button>
 
+      {event.signupUrl && (
+        <a
+          href={event.signupUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open signup link in new tab"
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold"
+          style={{
+            background: 'var(--goldy-gold-50)',
+            borderColor: 'var(--goldy-gold-300)',
+            color: 'var(--goldy-maroon-700)',
+            minHeight: 32,
+          }}
+        >
+          <span aria-hidden>🔗</span>
+          Sign up
+        </a>
+      )}
+
       {typeof matchPct === 'number' && (
         <div
           className={`shrink-0 text-xs ${isTopPick || isUrgent ? 'font-bold' : ''}`}

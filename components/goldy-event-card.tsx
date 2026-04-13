@@ -268,6 +268,24 @@ export function GoldyEventCard({
                 </button>
               )}
             </div>
+            {event.signupUrl && (
+              <a
+                href={event.signupUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open signup link in new tab"
+                className="mt-1 inline-flex items-center gap-1 self-start rounded-full border px-3 py-1 text-xs font-semibold"
+                style={{
+                  background: 'var(--goldy-gold-50)',
+                  borderColor: 'var(--goldy-gold-300)',
+                  color: 'var(--goldy-maroon-700)',
+                  minHeight: 32,
+                }}
+              >
+                <span aria-hidden>🔗</span>
+                Sign up via flyer QR
+              </a>
+            )}
           </div>
         </div>
       </div>
