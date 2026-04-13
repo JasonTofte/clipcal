@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Unified UI design language** — All pages (`/`, `/browse`, `/profile`) now inherit the Goldy brand tokens that previously lived only on `/feed`. `app/globals.css` rebinds shadcn tokens (`--primary` → maroon, `--background` → warm cream, `--ring` → gold) at `:root` and adds three surface variants (`--surface-vibrant` for feed, `--surface-calm` default, `--surface-paper` for cards/inputs). `--font-sans` + `--font-heading` both resolve to Fredoka. `.goldy-theme` stays additive (radial gradient stays feed-only).
+- **Shared primitive library** (`components/shared/`): `LeaveByClock`, `NoticingChip`, `ConflictBadge`, `PrimaryCTA`, `GoldyBubble`. Extracted from `event-card.tsx` (−57 lines) so browse/upload/profile can reuse ADHD decision-support chrome without duplication.
+- **Browse page restyle** — paper cards with gold-ring hover, pill-style list/calendar toggle, "★ your interests" chip on rows matching the saved profile.
+- **Upload + Profile Goldy invitations** — a scoped `<GoldyBubble>` speech bubble introduces each non-feed surface without turning the mascot into persistent chrome.
+- **Architecture decision**: tokens-at-root + surface variants (single source of truth, easier WCAG audits) instead of per-page theme classes. Rejected alternative: per-page `.goldy-theme`-style classes.
+
+### Changed
+
+- `components/event-card.tsx` delegates to the shared primitives; DOM output on `/feed` is unchanged.
+
+## [1.0.3] - 2026-04-13
+
+### Added
+
 - **Goldy Sidekick feed** — `/feed` redesigned as a mascot-forward UI with UMN maroon + gold branding, Graduate + Fredoka fonts, a Goldy greeting bubble, week-at-a-glance day bar, camera-roll of recent clips, and ranked event cards each carrying a contextual Goldy speech bubble + match percentage. Replaces the previous shadcn-styled feed.
 - **Deterministic Goldy commentary** (`lib/goldy-commentary.ts` + `lib/goldy-templates.json`): 120 hand-authored lines across 8 context buckets (conflict · top-pick-gameday · interest-match · free-food · back-to-back · late-night · weekend-open · default). djb2 hash picks a deterministic variant per event; slot substitution with fallthrough for missing slots. No runtime LLM, fully offline. Timezone-aware late-night/weekend detection (Intl.DateTimeFormat on `event.timezone`).
 - **Bottom tab bar** (`components/bottom-nav.tsx`) — sticky `Upload · Browse · Feed · Profile` nav with safe-area padding, `aria-current="page"` on the active tab. Mounted globally in `app/layout.tsx`.

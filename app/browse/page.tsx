@@ -102,7 +102,7 @@ export default function BrowsePage() {
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col px-4 py-10">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Browse</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Browse</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Campus events from events.tc.umn.edu. Search or browse by month.
           </p>
@@ -168,7 +168,7 @@ export default function BrowsePage() {
       )}
 
       {view === 'list' && visibleEvents.length > 0 && (
-        <EventList events={visibleEvents} />
+        <EventList events={visibleEvents} interests={interests} />
       )}
 
       {view === 'calendar' && visibleEvents.length > 0 && (
@@ -190,7 +190,7 @@ export default function BrowsePage() {
             <p className="mb-2 text-[11px] text-muted-foreground">
               Agenda view (calendar grid hidden on narrow screens)
             </p>
-            <EventList events={visibleEvents} />
+            <EventList events={visibleEvents} interests={interests} />
           </div>
         </>
       )}
@@ -207,7 +207,7 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
     <div
       role="radiogroup"
       aria-label="View mode"
-      className="inline-flex rounded-md ring-1 ring-inset ring-border"
+      className="inline-flex gap-1 rounded-full bg-muted p-1 ring-1 ring-inset ring-border"
     >
       {(['list', 'calendar'] as ViewMode[]).map((v) => (
         <button
@@ -217,10 +217,10 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
           aria-checked={view === v}
           onClick={() => onChange(v)}
           className={cn(
-            'px-3 py-1 text-xs font-medium transition-colors',
+            'rounded-full px-3 py-1 text-xs font-semibold capitalize transition-colors',
             view === v
-              ? 'bg-primary text-primary-foreground'
-              : 'text-muted-foreground hover:bg-muted/50',
+              ? 'bg-primary text-primary-foreground shadow-sm'
+              : 'text-muted-foreground hover:text-foreground',
           )}
         >
           {v}
@@ -230,55 +230,70 @@ function ViewToggle({ view, onChange }: { view: ViewMode; onChange: (v: ViewMode
   );
 }
 
-function EventList({ events }: { events: LiveWhaleEvent[] }) {
+function EventList({ events, interests }: { events: LiveWhaleEvent[]; interests: string[] }) {
   const sorted = [...events].sort((a, b) => a.date_iso.localeCompare(b.date_iso));
   return (
-    <ul className="flex flex-col gap-2">
-      {sorted.map((e) => (
-        <li key={e.id}>
-          <a
-            href={e.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group flex items-start gap-3 rounded-lg p-3 ring-1 ring-border transition-colors hover:bg-muted/50"
-          >
-            {e.thumbnail && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={e.thumbnail}
-                alt=""
-                className="mt-0.5 size-10 shrink-0 rounded object-cover"
-                onError={(ev) => {
-                  ev.currentTarget.style.display = 'none';
-                }}
-              />
-            )}
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium group-hover:text-primary">{e.title}</p>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                <span>{e.date_display}</span>
-                {e.location && (
-                  <>
-                    <span className="text-border">·</span>
-                    <span className="truncate">{e.location}</span>
-                  </>
-                )}
-                {e.cost?.toLowerCase() === 'free' && (
-                  <>
-                    <span className="text-border">·</span>
-                    <span className="text-emerald-600 dark:text-emerald-400">Free</span>
-                  </>
+    <ul className="flex flex-col gap-2.5">
+      {sorted.map((e) => {
+        const isMatch =
+          interests.length > 0 &&
+          matchesInterests(
+            { title: e.title, group_title: e.group_title, event_types: e.event_types },
+            interests,
+          );
+        return (
+          <li key={e.id}>
+            <a
+              href={e.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-start gap-3 rounded-2xl bg-card p-4 ring-1 ring-border shadow-sm transition-colors hover:ring-primary/40"
+            >
+              {e.thumbnail && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={e.thumbnail}
+                  alt=""
+                  className="mt-0.5 size-12 shrink-0 rounded-xl object-cover"
+                  onError={(ev) => {
+                    ev.currentTarget.style.display = 'none';
+                  }}
+                />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="truncate text-sm font-semibold text-foreground group-hover:text-primary">{e.title}</p>
+                  {isMatch && (
+                    <span className="inline-flex h-5 shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 text-[10px] font-semibold uppercase tracking-wide text-primary ring-1 ring-inset ring-primary/20">
+                      <span aria-hidden>★</span> your interests
+                    </span>
+                  )}
+                </div>
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
+                  <span>{e.date_display}</span>
+                  {e.location && (
+                    <>
+                      <span className="text-border">·</span>
+                      <span className="truncate">{e.location}</span>
+                    </>
+                  )}
+                  {e.cost?.toLowerCase() === 'free' && (
+                    <>
+                      <span className="text-border">·</span>
+                      <span className="text-emerald-600 dark:text-emerald-400">Free</span>
+                    </>
+                  )}
+                </div>
+                {e.group_title && (
+                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground/70">
+                    {e.group_title}
+                  </p>
                 )}
               </div>
-              {e.group_title && (
-                <p className="mt-0.5 truncate text-[10px] text-muted-foreground/60">
-                  {e.group_title}
-                </p>
-              )}
-            </div>
-          </a>
-        </li>
-      ))}
+            </a>
+          </li>
+        );
+      })}
     </ul>
   );
 }

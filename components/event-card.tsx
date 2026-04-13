@@ -4,7 +4,7 @@ import { useState, type ReactNode } from 'react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
 import type { LeaveByInfo } from '@/lib/leave-by';
-import type { Noticing, NoticingTone } from '@/lib/noticings';
+import type { Noticing } from '@/lib/noticings';
 import type { RelevanceScore } from '@/lib/relevance';
 import { formatScoreBadge, scoreTone } from '@/lib/relevance';
 import type { CampusMatch } from '@/app/api/campus-match/route';
@@ -13,6 +13,7 @@ import type { BusySlot } from '@/lib/demo-calendar';
 import { DayShape } from '@/components/day-shape';
 import { TemporalBar } from '@/components/temporal-bar';
 import { Button } from '@/components/ui/button';
+import { ConflictBadge, LeaveByClock, NoticingChip } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
@@ -29,12 +30,6 @@ type EventCardProps = {
   onDownloadIcs: () => void;
   onOpenGoogle: () => void;
   onOpenOutlook: () => void;
-};
-
-const NOTICING_STYLES: Record<NoticingTone, string> = {
-  info: 'bg-muted/60 text-foreground/80 ring-border',
-  'heads-up': 'bg-amber-500/10 text-amber-700 ring-amber-500/30 dark:text-amber-400',
-  delight: 'bg-violet-500/10 text-violet-700 ring-violet-500/30 dark:text-violet-400',
 };
 
 const RELEVANCE_STYLES: Record<'high' | 'medium' | 'low', string> = {
@@ -120,20 +115,7 @@ export function EventCard({
 
       <TemporalBar start={event.start} />
 
-      {leaveBy && (
-        <div className="flex items-center justify-between rounded-xl bg-primary/5 px-4 py-3 ring-1 ring-inset ring-primary/20">
-          <div className="flex items-center gap-3">
-            <span aria-hidden className="text-xl">🕒</span>
-            <div>
-              <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">leave by</div>
-              <div className="text-2xl font-bold tracking-tight leading-none">{leaveBy.displayText}</div>
-            </div>
-          </div>
-          <div className="text-right text-xs text-muted-foreground">
-            <div>{leaveBy.walkMinutes}-min walk</div>
-          </div>
-        </div>
-      )}
+      {leaveBy && <LeaveByClock info={leaveBy} />}
 
       <div className="grid grid-cols-2 gap-3">
         <LabeledField label="start">
@@ -246,20 +228,6 @@ export function EventCard({
   );
 }
 
-function NoticingChip({ noticing }: { noticing: Noticing }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset',
-        NOTICING_STYLES[noticing.tone],
-      )}
-    >
-      <span aria-hidden>{noticing.icon}</span>
-      <span>{noticing.text}</span>
-    </span>
-  );
-}
-
 function RelevanceBadge({ relevance }: { relevance: RelevanceScore }) {
   const tone = scoreTone(relevance.score);
   return (
@@ -273,25 +241,6 @@ function RelevanceBadge({ relevance }: { relevance: RelevanceScore }) {
       <span className="font-semibold">{formatScoreBadge(relevance.score)}</span>
       <span className="opacity-80">match</span>
       <span className="hidden sm:inline opacity-60">· {relevance.reason}</span>
-    </div>
-  );
-}
-
-function ConflictBadge({ conflict }: { conflict: ConflictResult }) {
-  if (conflict.status === 'free') {
-    return (
-      <div className="flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-500/30 dark:text-emerald-400">
-        <span aria-hidden>✓</span>
-        <span>you&rsquo;re free</span>
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-1.5 rounded-md bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-500/30 dark:text-rose-400">
-      <span aria-hidden>⚠</span>
-      <span>
-        overlaps <span className="font-semibold">{conflict.conflictTitle}</span>
-      </span>
     </div>
   );
 }
