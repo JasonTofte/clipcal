@@ -4,9 +4,10 @@ import { ProfileSchema, type Profile } from '@/lib/profile';
 import { RelevanceBatchSchema } from '@/lib/relevance';
 import { EventSchema, type Event } from '@/lib/schema';
 import { relevanceLimiter, extractClientIp } from '@/lib/rate-limit';
+import { MODEL_HAIKU } from '@/lib/models';
+import { sanitizeField, UNTRUSTED_PREAMBLE } from '@/lib/prompt-safety';
 import { z } from 'zod';
 
-const MODEL_ID = 'claude-haiku-4-5-20251001';
 const MAX_EVENTS = 8;
 
 const RelevanceRequestSchema = z.object({
@@ -15,6 +16,8 @@ const RelevanceRequestSchema = z.object({
 });
 
 const SCORING_SYSTEM_PROMPT = `You score how well a list of campus events matches a student's profile. Return one score per event in the same order.
+
+${UNTRUSTED_PREAMBLE}
 
 SCORE
 - 0 to 100 integer. 100 = this is exactly what they care about. 50 = ambient interest. 0 = zero fit.
@@ -60,28 +63,31 @@ export async function POST(req: Request): Promise<Response> {
 
   try {
     const result = await generateObject({
-      model: anthropic(MODEL_ID),
+      model: anthropic(MODEL_HAIKU),
       schema: RelevanceBatchSchema,
       system: SCORING_SYSTEM_PROMPT,
       prompt: buildScoringPrompt(events, profile),
     });
 
-    // Align with input length defensively — if Claude returns fewer, pad with
-    // neutral middling scores so the UI can still render.
     const aligned = alignScores(result.object.scores, events.length);
     return Response.json({ scores: aligned });
   } catch (error) {
-    console.error('[relevance] generateObject failed', error);
+    const e = error as { name?: string; message?: string };
+    console.error('[relevance]', e?.name ?? 'Error', e?.message ?? 'unknown');
     return Response.json({ error: 'relevance scoring failed' }, { status: 500 });
   }
 }
 
 function buildScoringPrompt(events: Event[], profile: Profile): string {
+  // Profile fields are user-authored; event fields may be LLM-extracted from
+  // flyers OR sourced from external feeds (LiveWhale). Fence all untrusted
+  // strings so content can't inject instructions into the scoring prompt.
   const profileBlob = [
-    profile.major && `major: ${profile.major}`,
+    profile.major && `major: ${sanitizeField(profile.major, 100)}`,
     profile.stage && `stage: ${profile.stage}`,
-    profile.interests.length > 0 && `interests: ${profile.interests.join(', ')}`,
-    profile.vibe && `vibe: ${profile.vibe}`,
+    profile.interests.length > 0 &&
+      `interests: ${profile.interests.map((i) => sanitizeField(i, 80)).join(', ')}`,
+    profile.vibe && `vibe: ${sanitizeField(profile.vibe, 100)}`,
     `prefers tradeoff language: ${profile.preferences.showTradeoffs}`,
     `wants ambient noticings: ${profile.preferences.surfaceNoticings}`,
   ]
@@ -91,10 +97,10 @@ function buildScoringPrompt(events: Event[], profile: Profile): string {
   const eventsBlob = events
     .map((e, i) => {
       const parts = [
-        `${i + 1}. ${e.title}`,
-        `   category: ${e.category}`,
-        e.location ? `   where: ${e.location}` : null,
-        e.description ? `   about: ${e.description}` : null,
+        `${i + 1}. <event_title>${sanitizeField(e.title, 200)}</event_title>`,
+        `   <event_category>${sanitizeField(e.category, 40)}</event_category>`,
+        e.location ? `   <event_location>${sanitizeField(e.location, 200)}</event_location>` : null,
+        e.description ? `   <event_description>${sanitizeField(e.description, 500)}</event_description>` : null,
         e.hasFreeFood ? '   has free food' : null,
       ].filter(Boolean);
       return parts.join('\n');
@@ -109,6 +115,9 @@ function alignScores(
   expectedLength: number,
 ) {
   if (scores.length === expectedLength) return scores;
+  console.warn(
+    `[relevance] model returned ${scores.length} scores for ${expectedLength} events — padding`,
+  );
   const padded = scores.slice(0, expectedLength);
   while (padded.length < expectedLength) {
     padded.push({ score: 50, reason: 'no strong signal either way' });

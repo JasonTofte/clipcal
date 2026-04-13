@@ -80,8 +80,14 @@ describe('extractClientIp', () => {
     expect(extractClientIp(h)).toBe('198.51.100.7');
   });
 
-  it('returns "unknown" when no client IP headers are present', () => {
+  it('returns a per-request anon token when no client IP headers are present', () => {
+    // Unique tokens per call so unknown-IP clients don't share one rate-limit
+    // bucket — prevents a header-stripping actor from blocking all anons.
     const h = new Headers();
-    expect(extractClientIp(h)).toBe('unknown');
+    const a = extractClientIp(h);
+    const b = extractClientIp(h);
+    expect(a).toMatch(/^anon-/);
+    expect(b).toMatch(/^anon-/);
+    expect(a).not.toBe(b);
   });
 });

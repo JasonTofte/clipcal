@@ -264,9 +264,9 @@ export default function Home() {
         const response = await cache.match('/shared-media/latest');
         if (!response) return;
         const blob = await response.blob();
-        const file = new File([blob], response.headers.get('X-Filename') || 'shared.jpg', {
-          type: blob.type,
-        });
+        const rawName = response.headers.get('X-Filename') || 'shared.jpg';
+        const safeName = rawName.replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 120) || 'shared.jpg';
+        const file = new File([blob], safeName, { type: blob.type });
         await cache.delete('/shared-media/latest');
         handleFiles([file]);
       } catch {
