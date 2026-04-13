@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { GoldyWeekGlance } from '@/components/goldy-week-glance';
-import { GoldyEventCard } from '@/components/goldy-event-card';
-import { GoldyDayOfBanner } from '@/components/goldy-day-of-banner';
+import { GoldyEventRow } from '@/components/goldy-event-row';
+import { OneThingHero } from '@/components/one-thing-hero';
 import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
 import { CampusFeed } from '@/components/campus-feed';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
@@ -456,7 +456,22 @@ export function GoldyFeedClient() {
 
   return (
     <>
-      <GoldyDayOfBanner events={allEvents} />
+      <OneThingHero
+        events={allEvents}
+        ranked={visibleRanked.map(({ row, ctx, line }) => ({
+          event: row.event,
+          ctx,
+          line,
+        }))}
+        onAddToCalendar={(event) => {
+          const hit = visibleRanked.find((r) => r.row.event === event);
+          if (hit) handleAdd(hit.row);
+        }}
+        onHide={(event) => {
+          const hit = visibleRanked.find((r) => r.row.event === event);
+          if (hit) handleHide(hit.row);
+        }}
+      />
 
       <LeaveByNotifyToggle events={allEvents} />
 
@@ -672,35 +687,34 @@ export function GoldyFeedClient() {
             )}
           </div>
         ) : (
-          <div className="space-y-4">
-            {visibleRanked.map(({ row, ctx, line, pct }, i) => {
+          <div className="space-y-2">
+            {/* Hero already surfaces index 0 when filters are off. Skip it in
+                the list so we don't double-promote the same event. When a
+                filter is active the hero still shows the ranked top of the
+                filtered view, so skipping index 0 is consistent. */}
+            {visibleRanked.slice(1).map(({ row, ctx, pct }) => {
               const key = `${row.batchId}-${row.eventIndex}`;
               const flashing = flashKey === key;
               return (
                 <div
                   key={key}
                   ref={registerCardRef(key)}
-                  className="rounded-3xl transition-shadow"
+                  className="rounded-2xl transition-shadow"
                   style={
                     flashing
                       ? {
                           boxShadow:
-                            '0 0 0 3px var(--goldy-gold-400), 0 10px 25px -8px rgba(0,0,0,0.2)',
+                            '0 0 0 3px var(--goldy-gold-400), 0 6px 18px -10px rgba(0,0,0,0.2)',
                         }
                       : undefined
                   }
                 >
-                  <GoldyEventCard
+                  <GoldyEventRow
                     event={row.event}
-                    goldyLine={line}
+                    ctx={ctx}
                     matchPct={pct}
-                    isTopPick={i === 0 && chipFilter === 'all' && selectedDayIdx === null}
-                    conflictTitle={
-                      ctx.bucket === 'conflict' ? ctx.slots.conflictTitle : null
-                    }
-                    goldyCtx={ctx}
                     duplicateLabel={siblingDatesLabel(key, duplicateIndex)}
-                    onAddToCalendar={() => handleAdd(row)}
+                    onClick={() => handleAdd(row)}
                     onHide={() => handleHide(row)}
                   />
                 </div>
