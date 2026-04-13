@@ -161,6 +161,16 @@ export function EventCard({
         <Button size="sm" variant="outline" onClick={onOpenOutlook}>
           Outlook
         </Button>
+        {event.signupUrl && (
+          <a
+            href={event.signupUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border px-3 text-xs font-medium hover:bg-muted transition-colors"
+          >
+            🔗 Sign up
+          </a>
+        )}
       </div>
     </div>
   );

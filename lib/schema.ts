@@ -24,6 +24,7 @@ export const EventSchema = z.object({
   hasFreeFood: z.boolean(),
   timezone: z.string(),
   confidence: Confidence,
+  signupUrl: z.string().nullable().optional(),
 });
 
 export const ExtractionSchema = z.object({

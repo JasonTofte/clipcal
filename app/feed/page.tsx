@@ -12,6 +12,7 @@ import {
   markBatchCommitted,
   type StoredEventBatch,
 } from '@/lib/event-store';
+import { EinkSyncButton } from '@/components/eink-sync-button';
 import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings } from '@/lib/noticings';
@@ -116,12 +117,15 @@ export default function FeedPage() {
             Everything you&rsquo;ve extracted. Filter by what matters.
           </p>
         </div>
-        <Link
-          href="/"
-          className="shrink-0 text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
-        >
-          back to upload
-        </Link>
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <EinkSyncButton events={rows.map((r) => r.event)} />
+          <Link
+            href="/"
+            className="text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+          >
+            back to upload
+          </Link>
+        </div>
       </header>
 
       <div className="mb-4 flex flex-wrap gap-2">

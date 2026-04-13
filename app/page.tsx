@@ -14,6 +14,7 @@ import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings } from '@/lib/noticings';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
+import { decodeQRFromFile } from '@/lib/qr-decode';
 import { RelevanceBatchSchema, type RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
 
@@ -76,8 +77,10 @@ export default function Home() {
     const file = files[0];
     setState({ status: 'loading', message: LOADING_MESSAGE });
 
-    const formData = new FormData();
-    formData.append('image', file);
+    const [formData, qrUrl] = await Promise.all([
+      Promise.resolve((() => { const fd = new FormData(); fd.append('image', file); return fd; })()),
+      decodeQRFromFile(file),
+    ]);
 
     try {
       const response = await fetch('/api/extract', { method: 'POST', body: formData });
@@ -96,6 +99,9 @@ export default function Home() {
       }
 
       const extraction = json as Extraction;
+      if (qrUrl) {
+        extraction.events = extraction.events.map((e) => ({ ...e, signupUrl: qrUrl }));
+      }
       const saved = appendBatch(extraction.events, extraction.sourceNotes);
       setState({
         status: 'success',
