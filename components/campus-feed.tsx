@@ -248,7 +248,7 @@ export function CampusFeed() {
   const [interests, setInterests] = useState<string[]>([]);
   const [listMode, setListMode] = useState(false);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   useEffect(() => {
     const profile = loadProfileFromStorage();
