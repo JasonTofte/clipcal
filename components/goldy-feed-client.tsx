@@ -374,7 +374,7 @@ export function GoldyFeedClient() {
               id="goldy-recent-heading"
               className="flex items-center gap-1.5 text-sm font-bold text-stone-900"
             >
-              <Camera aria-hidden size={14} /> You screenshotted these
+              <Camera aria-hidden size={14} /> You saved these
             </h2>
             <span className="text-xs text-stone-500">
               {recentClips.length} snapped · tap to jump
