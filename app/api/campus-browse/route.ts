@@ -74,8 +74,14 @@ export async function GET(request: Request): Promise<Response> {
 
   try {
     const events = await fetchBrowse({ q, startDate, endDate, max });
-    cache.set(key, { events, fetchedAt: Date.now() });
-    trimCache();
+    // Never cache empty results. fetchBrowse swallows upstream timeouts and
+    // errors by returning []; caching that for 10 minutes poisons the view
+    // for the full TTL even though the next call would succeed. Re-fetching
+    // on empty is cheap and correctly self-heals a transient upstream blip.
+    if (events.length > 0) {
+      cache.set(key, { events, fetchedAt: Date.now() });
+      trimCache();
+    }
     return Response.json({
       events,
       cached: false,
