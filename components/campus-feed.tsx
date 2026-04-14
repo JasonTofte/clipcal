@@ -6,7 +6,7 @@ import type { CampusFeedEvent, CampusFeedResponse } from '@/app/api/campus-feed/
 import { loadProfileFromStorage } from '@/lib/profile';
 import { scoreEvent, scoreTone, formatScoreBadge } from '@/lib/relevance';
 import { useSwipeReveal } from '@/lib/use-swipe-reveal';
-import { appendBatch, loadBatches, EVENT_STORE_KEY } from '@/lib/event-store';
+import { appendBatch, removeBatch } from '@/lib/event-store';
 import type { Event } from '@/lib/schema';
 
 function toEvent(ev: CampusFeedEvent): Event {
@@ -319,8 +319,7 @@ export function CampusFeed() {
 
   const undoSave = () => {
     if (!savedToast) return;
-    const kept = loadBatches().filter((b) => b.id !== savedToast.batchId);
-    window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(kept));
+    removeBatch(savedToast.batchId);
     setSavedToast(null);
   };
 
