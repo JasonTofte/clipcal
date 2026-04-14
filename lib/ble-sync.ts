@@ -60,8 +60,16 @@ export function chunkBytes(bytes: Uint8Array, chunkSize = BLE_CHUNK_SIZE): Uint8
 // ─── payload builder (shared by both transports) ────────────────────────────
 
 export async function buildPayload(events: Event[]): Promise<EinkPayload> {
-  const todayEvents = filterUpcoming(events);
-  if (todayEvents.length === 0) throw new Error('No upcoming events to sync.');
+  const upcoming = filterUpcoming(events);
+  if (upcoming.length === 0) throw new Error('No upcoming events to sync.');
+
+  // If the user starred an upcoming event, promote it to the priority slot;
+  // otherwise fall back to chronological first. Remaining events keep their
+  // original order — abbreviated[i] must stay aligned with todayEvents[i].
+  const starIdx = upcoming.findIndex((e) => e.starred);
+  const todayEvents = starIdx > 0
+    ? [upcoming[starIdx], ...upcoming.slice(0, starIdx), ...upcoming.slice(starIdx + 1)]
+    : upcoming;
 
   const abbreviated = await abbreviateEvents(todayEvents);
   const priorityEvent = todayEvents[0];
