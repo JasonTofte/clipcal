@@ -171,7 +171,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] max-w-2xl flex-col px-4 pt-4 pb-24">
+    <main className="mx-auto flex min-h-[100dvh] w-full min-w-0 max-w-2xl flex-col px-4 pt-4 pb-24">
       <header className="mb-4">
         <h1
           className="text-2xl font-bold tracking-tight"

@@ -220,7 +220,7 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div />
         <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-muted-foreground">
