@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState, type DragEvent } from 'react';
+import { Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ACCEPT = 'image/png,image/jpeg,image/jpg,image/webp';
@@ -77,9 +78,7 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
           onChange={handleFileInput}
           disabled={disabled}
         />
-        <div className="text-4xl" aria-hidden>
-          📸
-        </div>
+        <Camera aria-hidden size={40} strokeWidth={1.5} className="text-muted-foreground" />
         <div className="space-y-1">
           <p className="font-heading text-base font-medium">
             {dragActive ? 'Drop it — Claude will read it' : 'Snap, paste, or drop a flyer'}
@@ -109,7 +108,7 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
             onChange={handleFileInput}
             disabled={disabled}
           />
-          <span aria-hidden>📷</span>
+          <Camera aria-hidden size={16} strokeWidth={1.75} />
           <span>Take photo</span>
         </label>
       </div>

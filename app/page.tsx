@@ -1,12 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
 import { decodeQRFromFile } from '@/lib/qr-decode';
-import { WeekStrip } from '@/components/week-strip';
+import { downscaleIfNeeded } from '@/lib/image-downscale';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { appendBatch, markBatchCommitted } from '@/lib/event-store';
@@ -59,13 +58,14 @@ export default function Home() {
 
   const handleFiles = useCallback(async (files: File[], model?: 'sonnet') => {
     if (files.length === 0) return;
-    const file = files[0];
-    lastFileRef.current = file;
+    const originalFile = files[0];
+    lastFileRef.current = originalFile;
     setState({
       status: 'loading',
       message: model === 'sonnet' ? 'Retrying with Claude Sonnet…' : LOADING_MESSAGE,
     });
 
+    const file = await downscaleIfNeeded(originalFile);
     const formData = new FormData();
     formData.append('image', file);
     if (model) formData.append('model', model);
@@ -77,7 +77,7 @@ export default function Home() {
       // as `signupUrl` — surfaced as a link chip in the event card.
       const [response, qrUrl] = await Promise.all([
         fetch('/api/extract', { method: 'POST', body: formData }),
-        decodeQRFromFile(file).catch(() => null),
+        decodeQRFromFile(originalFile).catch(() => null),
       ]);
       const json: unknown = await response.json().catch(() => null);
 
@@ -88,7 +88,9 @@ export default function Home() {
           'error' in json &&
           typeof (json as { error: unknown }).error === 'string'
             ? (json as { error: string }).error
-            : `HTTP ${response.status}`;
+            : response.status === 413
+              ? 'Image too large — try a smaller photo'
+              : `HTTP ${response.status}`;
         setState({ status: 'error', message: errMsg });
         return;
       }
@@ -220,30 +222,17 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
-        <div />
-        <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-muted-foreground">
-          <Link
-            href="/profile"
-            className="underline decoration-dotted underline-offset-4 hover:text-foreground"
-          >
-            {profile ? 'edit interests' : 'pick your interests'}
-          </Link>
-          <Link
-            href="/feed"
-            className="underline decoration-dotted underline-offset-4 hover:text-foreground"
-          >
-            feed
-          </Link>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your campus copilot. Snap a flyer, know if you should go.
+          </p>
         </div>
       </header>
 
-      {demoMode && (
-        <div className="mb-4">
-          <WeekStrip mode={{ source: 'busy', busySlots: DEMO_CALENDAR }} />
-        </div>
-      )}
+      {demoMode && <TodaySnapshot busySlots={DEMO_CALENDAR} />}
 
       <div className="flex-1">
         {state.status === 'idle' && <HomeIdleView onFiles={handleFiles} />}
@@ -301,6 +290,63 @@ export default function Home() {
         <span className="font-mono text-[10px]">inform · don&rsquo;t decide</span>
       </footer>
     </main>
+  );
+}
+
+function TodaySnapshot({ busySlots }: { busySlots: typeof DEMO_CALENDAR }) {
+  const now = new Date();
+  const dayStart = new Date(now);
+  dayStart.setHours(0, 0, 0, 0);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+
+  const count = busySlots.filter(
+    (s) => s.start < dayEnd && s.end > dayStart,
+  ).length;
+
+  const dayLabel = now.toLocaleDateString('en-US', { weekday: 'short' });
+  const dateLabel = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const fillPct = Math.min(100, count * 20);
+  const busy = count > 0;
+
+  return (
+    <div className="mb-4 flex items-center gap-3 rounded-2xl border bg-card px-4 py-3" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex flex-col items-center">
+        <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
+          {dayLabel}
+        </span>
+        <span className="text-lg font-bold leading-tight" style={{ color: 'var(--goldy-maroon-600)' }}>
+          {dateLabel.split(' ')[1]}
+        </span>
+        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
+          {dateLabel.split(' ')[0]}
+        </span>
+      </div>
+
+      <div
+        className="relative h-10 w-3 shrink-0 overflow-hidden rounded-full"
+        style={{
+          background: busy ? 'var(--surface-calm)' : 'transparent',
+          border: busy ? '1px solid var(--border)' : '1.5px solid var(--goldy-gold-400)',
+        }}
+      >
+        {busy && (
+          <div
+            className="absolute inset-x-0 bottom-0 rounded-full"
+            style={{ height: `${fillPct}%`, background: 'var(--goldy-maroon-500)' }}
+          />
+        )}
+        {!busy && (
+          <span className="absolute inset-0 flex items-center justify-center">
+            <span className="block size-1.5 rounded-full" style={{ background: 'var(--goldy-gold-400)' }} />
+          </span>
+        )}
+      </div>
+
+      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
+        {count === 0 ? 'Open day' : `${count} event${count === 1 ? '' : 's'} today`}
+      </span>
+    </div>
   );
 }
 

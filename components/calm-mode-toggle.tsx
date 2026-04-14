@@ -1,5 +1,6 @@
 'use client';
 
+import { Moon } from 'lucide-react';
 import { useCalmMode } from '@/lib/calm-mode';
 
 type Props = {
@@ -24,7 +25,7 @@ export function CalmModeToggle({ compact = false }: Props) {
         color: calmMode ? 'var(--goldy-maroon-600)' : 'var(--muted-foreground)',
       }}
     >
-      <span aria-hidden>{compact ? '' : '🌙'}</span>
+      {!compact && <Moon aria-hidden size={14} />}
       <span>{label}</span>
       <span
         className="relative inline-block h-5 w-9 rounded-full"

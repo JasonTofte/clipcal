@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { CalendarPlus, GraduationCap, Building2, Utensils, MapPin, Users, Shirt, DoorOpen, ExternalLink } from 'lucide-react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
 import type { LeaveByInfo } from '@/lib/leave-by';
@@ -46,17 +47,6 @@ const CONFIDENCE_STYLES: Record<Event['confidence'], string> = {
   low: 'bg-rose-500/10 text-rose-700 ring-rose-500/30 dark:text-rose-400',
 };
 
-const CATEGORY_EMOJI: Record<Event['category'], string> = {
-  workshop: '🛠️',
-  networking: '🤝',
-  social: '🎉',
-  cs: '💻',
-  career: '💼',
-  culture: '🎭',
-  sports: '⚽',
-  hackathon: '⚡',
-  other: '📌',
-};
 
 const inputCls =
   'w-full bg-transparent outline-none rounded-sm focus:ring-2 focus:ring-ring/40 focus:bg-muted/30 hover:bg-muted/20 transition-colors px-1 -mx-1';
@@ -95,9 +85,6 @@ export function EventCard({
 
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-1 items-center gap-2">
-          <span className="text-xl" aria-hidden>
-            {CATEGORY_EMOJI[event.category]}
-          </span>
           <input
             value={event.title}
             readOnly={readOnly}
@@ -178,18 +165,17 @@ export function EventCard({
         </span>
         {event.hasFreeFood && (
           <span className="inline-flex h-5 items-center gap-1 rounded-full bg-amber-500/10 px-2 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-500/30 dark:text-amber-400">
-            🍕 free food
+            <Utensils aria-hidden size={10} /> free food
           </span>
         )}
         {event.venueSetting && (
           <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
-            {event.venueSetting === 'outdoor' ? '🌳' : event.venueSetting === 'hybrid' ? '🔄' : '🏢'}{' '}
-            {event.venueSetting}
+            <MapPin aria-hidden size={10} /> {event.venueSetting}
           </span>
         )}
         {event.crowdSize && (
           <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
-            👥 ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
+            <Users aria-hidden size={10} /> ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
           </span>
         )}
         {event.dressCode && (
@@ -197,7 +183,7 @@ export function EventCard({
             className="inline-flex h-5 items-center gap-1 rounded-full bg-violet-500/10 px-2 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 dark:text-violet-400"
             title={`Dress code: ${event.dressCode}`}
           >
-            👔 {event.dressCode}
+            <Shirt aria-hidden size={10} /> {event.dressCode}
           </span>
         )}
         {event.room && (
@@ -205,7 +191,7 @@ export function EventCard({
             className="inline-flex h-5 items-center gap-1 rounded-full bg-sky-500/10 px-2 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-500/30 dark:text-sky-400"
             title={event.room}
           >
-            🚪 {event.room}
+            <DoorOpen aria-hidden size={10} /> {event.room}
           </span>
         )}
         <TimezoneBadge timezone={event.timezone} className="ml-auto" />
@@ -251,7 +237,7 @@ export function EventCard({
 
       <div className="-mx-1 flex flex-col gap-2 border-t border-border/60 pt-3">
         <Button size="default" variant="default" disabled={readOnly} onClick={onDownloadIcs} className="w-full">
-          📅 Add to Calendar
+          <CalendarPlus aria-hidden size={15} /> Add to Calendar
         </Button>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenGoogle} className="flex-1">
@@ -291,7 +277,7 @@ function OrgMatchBadge({ match }: { match: OrgMatch }) {
       rel="noopener noreferrer"
       className="flex items-center gap-1.5 rounded-md bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
     >
-      <span aria-hidden>🎓</span>
+      <GraduationCap aria-hidden size={14} />
       <span>
         GopherLink
         {match.organizer && (
@@ -306,7 +292,7 @@ function CampusMatchBadge({ match }: { match: CampusMatch }) {
   return (
     <div className="rounded-lg bg-sky-500/5 p-3 ring-1 ring-inset ring-sky-500/20">
       <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-400">
-        <span aria-hidden>🏛️</span>
+        <Building2 aria-hidden size={14} />
         <span>Found on UMN Events Calendar</span>
       </div>
       <a
