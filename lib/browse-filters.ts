@@ -214,10 +214,11 @@ export function applyFilters(
       if (eMs < range.startMs || eMs > range.endMs) return false;
     }
 
-    // Time of day. All-day events bypass the filter — they're ALWAYS
-    // shown when no time-of-day filter is active, but excluded when one
-    // is. (Otherwise filtering "evening" would surface every all-day.)
-    if (state.timesOfDay.size > 0) {
+    // Time of day. All-day events are excluded when a *partial* time-of-day
+    // filter is active (otherwise filtering "evening" would surface every
+    // all-day event). But when all 4 buckets are selected, the user is
+    // saying "any time" — include all-day events too.
+    if (state.timesOfDay.size > 0 && state.timesOfDay.size < 4) {
       if (e.is_all_day) return false;
       const bucket = timeOfDayBucket(e.date_iso);
       if (!bucket || !state.timesOfDay.has(bucket)) return false;
