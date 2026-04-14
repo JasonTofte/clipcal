@@ -207,11 +207,14 @@ export function applyFilters(
   range: DateRange,
 ): LiveWhaleEvent[] {
   return events.filter((e) => {
-    // Date window — events outside the precise window are dropped (the
-    // API may return adjacent days).
-    const eMs = new Date(e.date_iso).getTime();
-    if (Number.isFinite(eMs)) {
-      if (eMs < range.startMs || eMs > range.endMs) return false;
+    // Date window — compare by the event's own calendar day (first 10
+    // chars of date_iso). Using absolute ms would mis-bucket all-day
+    // events tagged at midnight Central when the user's browser runs in
+    // a westward timezone (e.g. Apr 14 00:00 CT parses to Apr 13 22:00
+    // PT, which falls before a "today" range built from local midnight).
+    const eDay = e.date_iso.slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(eDay)) {
+      if (eDay < range.startDate || eDay > range.endDate) return false;
     }
 
     // Time of day. All-day events are excluded when a *partial* time-of-day

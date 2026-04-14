@@ -208,10 +208,14 @@ export function OneThingHero({
       >
         {event.title}
       </h2>
-      <p className="mt-1 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+      <p className="mt-2 text-base font-semibold" style={{ color: 'var(--goldy-maroon-600)' }}>
         {formatEventWhen(event.start)}
-        {event.location ? ` · ${event.location}` : ''}
       </p>
+      {event.location && (
+        <p className="mt-0.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          {event.location}
+        </p>
+      )}
 
       {leaveBy ? (
         <LeaveByPanel leaveBy={leaveBy} phase={phase} minutesToStart={minutesToStart} />

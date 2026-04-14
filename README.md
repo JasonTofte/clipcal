@@ -4,6 +4,9 @@
 
 ShowUp is an AI-powered flyer → calendar web app with a decision-support UX layer grounded in the [Ottawa Decision Support Framework](https://pubmed.ncbi.nlm.nih.gov/32428429/) and cognitive-offloading theory ([Risko & Gilbert 2016](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(16)30098-5)). Built for a hackathon (Apr 10 – Apr 13, 2026).
 
+**Live demo:** https://clipcal-six.vercel.app/feed
+**Demo video:** _coming soon_
+
 **Status:** Hackathon build · Session 1 complete (scaffold + Claude vision extraction proven end-to-end)
 
 ## What it does
