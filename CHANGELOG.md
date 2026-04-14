@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Starred events** (`lib/schema.ts` → optional `starred` field, `components/event-card.tsx`, `lib/ble-sync.ts`) — a ★ toggle on each event card lets users flag high-priority events. In the app, starred events get an amber ring and gold star; in the e-ink payload, a `s: true` flag is emitted so the Pi renderer (already wired for it) prefixes the priority title with `* `. `lib/event-store.ts` gains `updateEventInBatch` so the toggle persists to `localStorage` through the existing batch shape. (PR #74 split.)
+- **Pi Zero e-ink sidecar** (`pi/ble_server.py`, `pi/http_server.py`, `pi/main.py`, `pi/renderer.py`, `pi/ap_setup.sh`, `pi/setup.sh`, `pi/clipcal.service`) — the physical display side of the existing app-side sync transports. BLE GATT peripheral advertising as `ShowUp` (matches `components/eink-sync-button.tsx` filter); captive-portal HTTP server on `10.42.0.1:8080` for iOS devices that cannot use Web Bluetooth; Waveshare 2.13" V4 renderer with a priority-event hero + row list; systemd unit for boot-time start. WiFi AP mode (`ShowUp-Display` SSID) documented in `pi/ap_setup.sh` for first-pair setup. Known caveat: `pi/clipcal.service` hardcodes Elton's home path and needs parameterization before any other Pi deployment.
+- **`next.config.ts` — `allowedDevOrigins`** — wildcard LAN ranges (`192.168.*`, `10.0.*`, `10.59.*`, `172.16.*`, `172.20.*`) so phones on the same network can reach the Next.js dev server during e-ink sync testing. Existing CSP / PI_ORIGIN / security headers unchanged.
+
+### Changed
+
+- **`/api/abbreviate` validation** (`app/api/abbreviate/route.ts`) — swapped zod `.max(20/14)` rejection for `.transform()` truncation using the existing `truncate()` helper. An LLM response that exceeds column widths now shortens with an ellipsis instead of failing validation and forcing the local fallback. All upstream hardening (`requireAnthropic` auth, `abbreviateLimiter` rate limit, 10 KB body cap, 50-event cap, prompt-safety fences) preserved.
+
 ### Changed
 
 - **Rebrand: ClipCal → ShowUp.** All user-facing surfaces updated: PWA manifest (`name`/`short_name`), `<title>`/Apple web app title, profile page copy, interviewer system prompt, `.ics` download filename (`showup-events.ics`), Nominatim User-Agent, and the Pi sidecar's BLE advertised name, e-ink splash, and HTTP captive-portal sync page. Prose across README, CHANGELOG, release notes, collaborator guide, and `docs/*` swapped to the new name. Internal identifiers intentionally left unchanged to preserve existing user data and device provisioning: localStorage keys (`clipcal_*`), service-worker cache name (`clipcal-shared-media`), `package.json` name, filesystem paths (`/etc/clipcal/`), env var (`CLIPCAL_SYNC_TOKEN`), WiFi SSID (`ClipCal-Display`), GitHub repo slug, and historical ADRs/mockups.

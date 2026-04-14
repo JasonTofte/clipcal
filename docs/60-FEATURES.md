@@ -25,7 +25,9 @@ Update this file when a feature graduates from the plan to production.
 | **Shared primitive library** | App-wide | Shipped | v1.0.3 | `LeaveByClock`, `NoticingChip`, `ConflictBadge`, `PrimaryCTA`, `GoldyBubble` in `components/shared/` |
 | **QR code decode** | Upload | Shipped | v1.0.3+ | `BarcodeDetector` (Chrome/Edge/Android) + `qr-scanner` fallback (iOS/Firefox); signup URL extracted from flyer image |
 | **E-ink / Pi sync** | Feed | Shipped | v1.0.3+ | WiFi (HTTPS POST) + BLE (Web Bluetooth, 20-byte ATT-MTU chunked) to Pi Zero e-ink display |
-| **`/api/abbreviate`** | Feed (internal) | Shipped | v1.0.3+ | Claude Haiku 4.5 shortens titles/locations for 250×122px e-ink display; prompt-safety fenced |
+| **Pi Zero e-ink sidecar** | Hardware | Shipped | Unreleased | `pi/*.py` — BLE GATT peripheral + captive-portal HTTP fallback + Waveshare 2.13" V4 renderer; systemd-managed; WiFi AP mode for iOS pairing |
+| **Starred events** | Feed, E-ink | Shipped | Unreleased | Star-toggle on event cards; starred events get amber ring in app, `* ` prefix on Pi display (`s: true` payload flag) |
+| **`/api/abbreviate`** | Feed (internal) | Shipped | v1.0.3+ | Claude Haiku 4.5 shortens titles/locations for 250×122px e-ink display; prompt-safety fenced; zod `.transform()` coerces over-long LLM responses |
 | **Calm Mode toggle** | Feed header, Profile | Shipped | Tiimo-Caliber | User-controlled sensory-low palette via `[data-calm="true"]` token cascade; persisted in `localStorage['clipcal_calm_mode_v1']` |
 | **Sensory-low typography baseline** | App-wide | Shipped | Tiimo-Caliber | `line-height ≥ 1.6`, `max-width 68ch`, no sub-400 weights in body text; always on (not behind Calm Mode) |
 | **Day Rail (proportional time view)** | Feed | Shipped | Tiimo-Caliber | Vertical rail 8 AM–10 PM; block height proportional to event duration; now-line; earlier/later summary rows |

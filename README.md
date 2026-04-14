@@ -5,9 +5,9 @@
 ShowUp is an AI-powered flyer → calendar web app with a decision-support UX layer grounded in the [Ottawa Decision Support Framework](https://pubmed.ncbi.nlm.nih.gov/32428429/) and cognitive-offloading theory ([Risko & Gilbert 2016](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(16)30098-5)). Built for a hackathon (Apr 10 – Apr 13, 2026).
 
 **Live demo:** https://clipcal-six.vercel.app/feed
-**Demo video:** _coming soon_
+**Demo video:** https://youtu.be/5ruDXcEH1Iw
 
-**Status:** Hackathon build · Session 1 complete (scaffold + Claude vision extraction proven end-to-end)
+**Status:** Post-hackathon · v1.0.1 (Public Release — Safety Gates, TDD, Multi-Agent Review). Ships with a Pi Zero e-ink sidecar (`pi/`) as an optional hardware companion.
 
 ## What it does
 
@@ -70,6 +70,7 @@ clipcal/
 │   └── relevance.ts          # Interest matcher + relevance score schema
 ├── docs/                     # Product brief + full build plan
 ├── mockups/                  # Static HTML mockups (6 directions + index)
+├── pi/                       # Pi Zero e-ink sidecar (BLE + captive-portal HTTP)
 ├── public/                   # Static assets
 └── README.md
 ```
@@ -78,7 +79,7 @@ clipcal/
 
 - `npm run dev` — Next dev server
 - `npm run build` — production build
-- `npm test` — Vitest (currently 166 tests)
+- `npm test` — Vitest unit tests (~280 tests across schema, chip ranking, conflict detection, commentary, profile flow, etc.)
 - `npm run analyze` — bundle analyzer (Turbopack-native `--experimental-analyze`). Open `.next/diagnostics/analyze/index.html` after the build.
 - `npm run lighthouse` — mobile Lighthouse report against a running `npm run dev`. Requires no pre-install (uses `npx -y lighthouse`); outputs `lighthouse-feed.html`.
 
