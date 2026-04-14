@@ -21,7 +21,7 @@ import { triggerIcsDownload } from '@/lib/ics';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
 import { parseNowOverride } from '@/lib/day-of-reminder';
-import { formatWeekday } from '@/lib/format';
+import { formatShortDate, formatWeekday } from '@/lib/format';
 // Inlined: prior demo seed module (lib/demo-feed-seed.ts) was removed
 // when we dropped auto-seeded fake flyers. The legacy id prefix is
 // preserved here so this cleanup pass keeps stripping stale data
@@ -33,7 +33,7 @@ import {
   unhideEvent,
   clearHiddenEvents,
 } from '@/lib/hidden-events';
-import { FOOD_RX, GAMEDAY_RX } from '@/lib/flyer-class';
+import { FOOD_RX, GAMEDAY_RX, flyerClass } from '@/lib/flyer-class';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
@@ -108,6 +108,7 @@ export function GoldyFeedClient() {
   // reversal and hide reversal.
   const [undo, setUndo] = useState<UndoAction | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
+  const [savedOpen, setSavedOpen] = useState(false);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [showHidden, setShowHidden] = useState(false);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -398,6 +399,74 @@ export function GoldyFeedClient() {
           if (hit) handleHide(hit.row);
         }}
       />
+
+      {recentClips.length > 0 && (
+        <div className="mb-3">
+          <button
+            type="button"
+            aria-expanded={savedOpen}
+            aria-controls="saved-strip"
+            onClick={() => setSavedOpen((v) => !v)}
+            className="inline-flex min-h-[36px] items-center gap-2 rounded-full bg-muted px-3.5 py-1.5 text-[13px] font-semibold transition-colors hover:bg-muted/80"
+            style={{ color: 'var(--foreground)' }}
+          >
+            <Camera aria-hidden size={14} />
+            <span>Saved</span>
+            <span className="font-medium text-muted-foreground">· {recentClips.length}</span>
+            <span
+              aria-hidden
+              className="ml-1 inline-block transition-transform"
+              style={{ transform: savedOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+            >
+              ›
+            </span>
+          </button>
+          <div
+            id="saved-strip"
+            hidden={!savedOpen}
+            className="scrollbar-hide goldy-snap-x -mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2"
+          >
+              {recentClips.map(({ batchId, eventIndex, event }) => {
+                const key = `${batchId}-${eventIndex}`;
+                const flyer = flyerClass(event);
+                const onPizza = flyer === 'flyer-pizza';
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handleCameraTap(key)}
+                    aria-label={`Jump to ${event.title}`}
+                    className="goldy-snap-item w-40 shrink-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    style={{ borderRadius: '1rem' }}
+                  >
+                    <div
+                      className={`relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg transition-transform active:scale-[0.98] ${flyer}`}
+                    >
+                      <div className={`absolute inset-0 flex flex-col p-3 ${onPizza ? '' : 'text-white'}`}>
+                        <div
+                          className="text-[9px] font-semibold uppercase tracking-widest"
+                          style={{ color: onPizza ? 'var(--goldy-maroon-700)' : 'var(--goldy-gold-300)' }}
+                        >
+                          {event.category}
+                        </div>
+                        <div className="goldy-display mt-1 text-lg font-bold leading-tight line-clamp-3">
+                          {event.title}
+                        </div>
+                        <div
+                          className="mt-auto text-[10px]"
+                          style={{ color: onPizza ? 'var(--goldy-maroon-700)' : 'var(--goldy-gold-200)' }}
+                        >
+                          {formatShortDate(event.start)}
+                          {event.location ? ` · ${event.location.split(',')[0]}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+          </div>
+        </div>
+      )}
 
       <WeekSection
         events={allEvents}
