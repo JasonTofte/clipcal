@@ -7,7 +7,7 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { WeekSection } from '@/components/week-section';
 import { CampusFeed } from '@/components/campus-feed';
 import { OneThingHero } from '@/components/one-thing-hero';
-import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
+import { FeedOverflowMenu } from '@/components/feed-overflow-menu';
 import { DEMO_CALENDAR, computeDemoFeedEvents } from '@/lib/demo-calendar';
 import {
   EVENT_STORE_KEY,
@@ -388,8 +388,6 @@ export function GoldyFeedClient() {
           if (hit) handleHide(hit.row);
         }}
       />
-
-      <LeaveByNotifyToggle events={allEvents} />
 
       <WeekSection
         events={allEvents}
