@@ -234,9 +234,11 @@ export function DayRail({
 
         {layout.busyInDay.map((b, i) => {
           const topPct = hourFraction(b.start, rangeStart, totalMinutes) * 100;
-          const heightPct =
+          const rawHeightPct =
             ((b.end.getTime() - b.start.getTime()) / MS_PER_MIN / totalMinutes) *
             100;
+          const maxHeightPct = Math.max(0, 100 - topPct);
+          const heightPct = Math.min(Math.max(3, rawHeightPct), maxHeightPct);
           return (
             <div
               key={`busy-${i}`}
@@ -244,7 +246,7 @@ export function DayRail({
               className="absolute left-0 right-0 rounded-lg px-2 py-1 text-[11px]"
               style={{
                 top: `${topPct}%`,
-                height: `${Math.max(3, heightPct)}%`,
+                height: `${heightPct}%`,
                 background: 'var(--goldy-maroon-500)',
                 color: '#FFF',
               }}
@@ -267,7 +269,11 @@ export function DayRail({
           // overflows via ellipsis when the duration is genuinely short.
           const MIN_TAP_PX = 44;
           const minPct = (MIN_TAP_PX / railHeight) * 100;
-          const heightPct = Math.max(minPct, computedPct);
+          // Clamp to rail bottom. All-day events (24h end) otherwise produce
+          // heightPct > 100% against the 14h visible window and bleed over
+          // sibling sections since the rail has no overflow: hidden.
+          const maxHeightPct = Math.max(minPct, 100 - topPct);
+          const heightPct = Math.min(Math.max(minPct, computedPct), maxHeightPct);
           return (
             <button
               key={`ev-${i}`}

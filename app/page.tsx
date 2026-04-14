@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
 import { decodeQRFromFile } from '@/lib/qr-decode';
+import { downscaleIfNeeded } from '@/lib/image-downscale';
 import { WeekStrip } from '@/components/week-strip';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
@@ -59,13 +60,14 @@ export default function Home() {
 
   const handleFiles = useCallback(async (files: File[], model?: 'sonnet') => {
     if (files.length === 0) return;
-    const file = files[0];
-    lastFileRef.current = file;
+    const originalFile = files[0];
+    lastFileRef.current = originalFile;
     setState({
       status: 'loading',
       message: model === 'sonnet' ? 'Retrying with Claude Sonnet…' : LOADING_MESSAGE,
     });
 
+    const file = await downscaleIfNeeded(originalFile);
     const formData = new FormData();
     formData.append('image', file);
     if (model) formData.append('model', model);
@@ -77,7 +79,7 @@ export default function Home() {
       // as `signupUrl` — surfaced as a link chip in the event card.
       const [response, qrUrl] = await Promise.all([
         fetch('/api/extract', { method: 'POST', body: formData }),
-        decodeQRFromFile(file).catch(() => null),
+        decodeQRFromFile(originalFile).catch(() => null),
       ]);
       const json: unknown = await response.json().catch(() => null);
 
@@ -88,7 +90,9 @@ export default function Home() {
           'error' in json &&
           typeof (json as { error: unknown }).error === 'string'
             ? (json as { error: string }).error
-            : `HTTP ${response.status}`;
+            : response.status === 413
+              ? 'Image too large — try a smaller photo'
+              : `HTTP ${response.status}`;
         setState({ status: 'error', message: errMsg });
         return;
       }
