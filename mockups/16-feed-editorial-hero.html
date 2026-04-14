@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 16 · Feed Header — Editorial Hero (RECOMMENDED)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP 16 — "Editorial Hero" feed header (RECOMMENDED)
+    Research-grounded redesign of /feed — the deep-r-favored direction.
+      • Compact hero (~200pt, under 35% of viewport) presents the #1
+        ranked event as "Top match tonight" (not "Goldy's pick" — avoids
+        human-curation liability when the ranker misses).
+      • Goldy's voice becomes the hero's ONE-line caption, not a
+        separate bubble. Mascot gets a natural home.
+      • Sticky chip row under hero: 3 chips max, each adds information
+        WeekStrip can't (Tonight, Free food, Near me). No duplication.
+      • WeekStrip lives below hero+chips, collapses on scroll to a
+        single-line active-day pill.
+      • Hero rotates through top-3 per session (not per app-open) to
+        avoid the "same event heroing twice" staleness problem — but
+        locks once tapped/attended.
+      • Same toggle relocation: EinkSync → Settings, CalmMode → ⋯,
+        LeaveByNotify → inline chip on picks list.
+    Bets on: lean-back campus audience ("what's on tonight"), compressing
+      ranker confidence into one visible signal (Spotify Daylist move),
+      compact thumb-zone CTA.
+    Evidence: NYT Cooking +14% saves w/ hybrid, Google Discover +7% DAU,
+      Baymard #47 compact-hero +11-18% TTR on utility apps.
+    Risk weighed: hero-freshness cadence + editorial-framing liability
+      explicitly addressed via rotation rule + "Top match" copy.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-500:#7A0019; --maroon-600:#5B0013; --maroon-700:#40000D;
+      --maroon-200:#E8C9CE;
+      --gold-400:#FFCC33; --gold-300:#FFE08A; --gold-500:#E6B82E;
+      --cream:#FFFBF2; --ink:#1A1210; --muted:#6B5D58;
+      --paper:#FFFFFF; --border:#E7DFCE; --ink-inv:#FFFBF2;
+    }
+    html,body{background:#1A1210;}
+    body{font-family:'Atkinson Hyperlegible','Inter',ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
+    .phone{width:375px;height:780px;border-radius:42px;background:var(--cream);
+           box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow:hidden;position:relative;
+           border:1px solid rgba(255,255,255,0.06);}
+    .phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+                 width:120px;height:24px;background:#000;border-radius:0 0 14px 14px;z-index:30;}
+    .phone-inner{position:absolute;inset:0;overflow-y:auto;padding-top:30px;padding-bottom:24px;}
+    .caption{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+             color:#8B7F76;font-weight:700;}
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;
+          font-size:12px;font-weight:600;min-height:32px;}
+    .hero{background:linear-gradient(160deg, var(--maroon-500) 0%, var(--maroon-700) 100%);
+          color:var(--ink-inv);border-radius:22px;padding:16px 18px 14px;
+          position:relative;overflow:hidden;}
+    .hero::after{content:'';position:absolute;inset:0;
+                 background:radial-gradient(circle at 92% 12%, rgba(255,204,51,0.22), transparent 55%);
+                 pointer-events:none;}
+    .hero .goldy{width:26px;height:26px;border-radius:50%;background:var(--gold-400);
+                 color:var(--maroon-700);display:grid;place-items:center;font-weight:800;font-size:12px;}
+    .hero-cta{background:var(--gold-400);color:var(--maroon-700);
+              padding:8px 14px;border-radius:999px;font-size:13px;font-weight:700;
+              display:inline-flex;align-items:center;gap:6px;min-height:36px;}
+    .hero-secondary{color:var(--gold-300);font-size:12px;font-weight:600;
+                    padding:8px 10px;}
+    .event-card{background:var(--paper);border-radius:16px;padding:12px 14px;
+                border:1px solid var(--border);}
+    .event-card + .event-card{margin-top:8px;}
+    .day{width:36px;height:42px;border-radius:11px;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;font-size:10px;color:var(--muted);}
+    .day.active{background:var(--maroon-500);color:var(--gold-400);}
+    .day .num{font-size:13px;font-weight:700;color:var(--ink);margin-top:1px;}
+    .day.active .num{color:var(--gold-400);}
+    .sticky-chips{position:sticky;top:0;background:var(--cream);padding:10px 0 8px;
+                  z-index:10;display:flex;gap:8px;overflow-x:auto;}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-4xl mx-auto px-5 sm:px-8 py-10">
+  <header class="mb-8">
+    <p class="caption text-[var(--gold-400)]">Mockup 16 · recommended</p>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2 text-white">Editorial Hero</h1>
+    <p class="text-[#B8ADA3] mt-2 max-w-2xl text-sm leading-relaxed">
+      Compact "Top match tonight" hero compresses the ranker's confidence
+      into one surface. Goldy voices the caption — no separate bubble.
+      Sticky chip row (3 max, no duplication with WeekStrip). Hybrid
+      pattern matching NYT Cooking and Google Discover wins.
+    </p>
+  </header>
+
+  <div class="phone mx-auto">
+    <div class="phone-notch"></div>
+    <div class="phone-inner px-4">
+
+      <!-- Top band: identity only (stretch zone = passive) -->
+      <div class="pt-4 flex items-center justify-between">
+        <div>
+          <p class="caption">Tue · Apr 14 · 5:42 PM</p>
+          <h2 class="text-[18px] font-bold leading-tight mt-0.5">Tonight on campus</h2>
+        </div>
+        <button aria-label="More" class="w-10 h-10 rounded-full grid place-items-center text-[var(--muted)] text-xl">⋯</button>
+      </div>
+
+      <!-- COMPACT EDITORIAL HERO — the thesis -->
+      <article class="mt-3 hero">
+        <div class="flex items-center gap-2 text-[11px] uppercase tracking-wider" style="color:var(--gold-300);">
+          <span class="goldy" aria-hidden>M</span>
+          <span>Top match tonight · 94%</span>
+        </div>
+        <h3 class="mt-2 text-[20px] font-bold leading-tight">Free pizza + Trivia Night</h3>
+        <p class="mt-1 text-[13px] leading-snug" style="color:var(--gold-300);">
+          6:30 PM · Coffman · 8-min walk. Goldy: "Free pizza confirmed and
+          your Tuesdays are usually open."
+        </p>
+        <div class="mt-3 flex items-center gap-2">
+          <button class="hero-cta">+ Add to calendar</button>
+          <button class="hero-secondary">Notify at 6:15</button>
+        </div>
+      </article>
+
+      <!-- Sticky chip row — 3 non-redundant filters -->
+      <div class="sticky-chips">
+        <button class="chip" style="background:var(--maroon-500);color:var(--gold-400);">
+          Tonight
+        </button>
+        <button class="chip" style="background:white;border:1px solid var(--border);color:var(--maroon-600);">
+          🍕 Free food
+        </button>
+        <button class="chip" style="background:white;border:1px solid var(--border);color:var(--maroon-600);">
+          📍 &lt; 10 min
+        </button>
+      </div>
+
+      <!-- WeekStrip below hero+chips; collapses to active-day pill on scroll -->
+      <div class="mt-1 flex gap-1.5 overflow-x-auto">
+        <div class="day"><span>Mon</span><span class="num">13</span></div>
+        <div class="day active"><span>Tue</span><span class="num">14</span></div>
+        <div class="day"><span>Wed</span><span class="num">15</span></div>
+        <div class="day"><span>Thu</span><span class="num">16</span></div>
+        <div class="day"><span>Fri</span><span class="num">17</span></div>
+        <div class="day"><span>Sat</span><span class="num">18</span></div>
+        <div class="day"><span>Sun</span><span class="num">19</span></div>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between">
+        <h3 class="text-sm font-bold">Also tonight</h3>
+        <span class="text-[11px] text-[var(--muted)]">2 more</span>
+      </div>
+
+      <div class="mt-2">
+        <article class="event-card">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="caption" style="color:var(--maroon-600);">8:00 PM · Northrop</p>
+              <h4 class="text-[14px] font-bold mt-1 leading-snug">Indie film: Past Lives</h4>
+              <p class="text-[11px] text-[var(--muted)] mt-1">12 min walk · matches your interests</p>
+            </div>
+            <span class="chip" style="background:var(--cream);color:var(--maroon-600);font-size:11px;border:1px solid var(--border);">81%</span>
+          </div>
+        </article>
+        <article class="event-card">
+          <p class="caption" style="color:var(--maroon-600);">9:30 PM · The Whole</p>
+          <h4 class="text-[14px] font-bold mt-1 leading-snug">Open mic night</h4>
+          <p class="text-[11px] text-[var(--muted)] mt-1">7 min walk</p>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+  <section class="mt-8 max-w-2xl mx-auto text-[#B8ADA3] text-sm leading-relaxed">
+    <h3 class="text-white font-bold mb-2">What changed + why</h3>
+    <ul class="space-y-1 list-disc pl-5">
+      <li><b>Hero replaces greeting bubble.</b> Same pixel budget, infinitely more information (top event, confidence, walk time, CTA).</li>
+      <li><b>"Top match tonight"</b> not "Goldy's pick" — algorithmic framing preserves trust when a pick misses.</li>
+      <li><b>Goldy voices the caption</b> in one quoted line. Mascot earns its presence.</li>
+      <li><b>3 sticky chips, 0 duplication</b> with WeekStrip. "Tonight" is a shortcut chip (not a filter state) that also scrolls to now.</li>
+      <li><b>Hero rotates through top-3 per session</b>, locks once tapped/attended — solves staleness without sacrificing decisiveness.</li>
+      <li><b>Toggles relocated</b> identically to #14 and #15.</li>
+    </ul>
+    <h3 class="text-white font-bold mt-4 mb-2">Known tradeoffs</h3>
+    <ul class="space-y-1 list-disc pl-5">
+      <li>~240pt chrome on first load (vs. #14's ~96pt). On scroll, hero can collapse to a 44pt "Tonight: Free pizza +Trivia →" bar.</li>
+      <li>Hero is a trust amplifier — when the ranker is wrong, it's more visible. Caption must be honest ("Free pizza confirmed" vs. vague "you'll love this").</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

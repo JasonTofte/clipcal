@@ -383,7 +383,7 @@ export function CampusFeed() {
               </button>
             </div>
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-              Swipe right to open · left to skip
+              Swipe right to open · left to skip (or tap the buttons)
             </p>
           </div>
         </div>

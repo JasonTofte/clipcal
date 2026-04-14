@@ -46,17 +46,6 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-function bucketFor(count: number, max: number): 0 | 1 | 2 | 3 {
-  if (count === 0) return 0;
-  if (max <= 1) return 3;
-  const ratio = count / max;
-  if (ratio >= 0.85) return 3;
-  if (ratio >= 0.5) return 2;
-  return 1;
-}
-
-const BUCKET_FILL_PCT = [0, 30, 65, 100] as const;
-
 function countEventsPerDay(events: Event[], start: Date): number[] {
   const counts = new Array(7).fill(0) as number[];
   for (const ev of events) {
@@ -103,20 +92,14 @@ export function WeekStrip({
       ? countEventsPerDay(mode.events, start)
       : countBusyPerDay(mode.busySlots, start);
 
-  const maxCount = Math.max(1, ...counts);
-
   const handleTap = (i: number) => {
     if (!onSelectDay) return;
     onSelectDay(selectedDayIdx === i ? null : i);
   };
 
   return (
-    <section
-      aria-labelledby="week-strip-heading"
-      className="mb-5 rounded-2xl border bg-card p-4"
-      style={{ borderColor: 'var(--border)' }}
-    >
-      <div className="mb-3 flex items-center justify-between">
+    <section aria-labelledby="week-strip-heading" className="mb-5">
+      <div className="mb-2 flex items-baseline justify-between px-1">
         <h2
           id="week-strip-heading"
           className="text-[11px] font-bold uppercase tracking-widest"
@@ -132,105 +115,76 @@ export function WeekStrip({
         </span>
       </div>
 
-      <ul className="grid grid-cols-7 gap-1.5" role="list">
+      <ul className="grid grid-cols-7 gap-1" role="list">
         {DAY_LABELS.map((label, i) => {
           const count = counts[i];
-          const bucket = bucketFor(count, maxCount);
-          const fillPct = BUCKET_FILL_PCT[bucket];
           const dayStart = new Date(start);
           dayStart.setDate(dayStart.getDate() + i);
           const isToday = isSameDay(dayStart, today);
           const isSelected = selectedDayIdx === i;
-          const isOpen = count === 0;
+          const hasEvents = count > 0;
+          const dayNum = dayStart.getDate();
 
-          const pill = (
-            <>
+          const bg = isSelected
+            ? 'var(--goldy-maroon-500)'
+            : isToday
+              ? 'var(--goldy-gold-100)'
+              : 'transparent';
+          const fg = isSelected
+            ? 'white'
+            : isToday
+              ? 'var(--goldy-maroon-700)'
+              : 'var(--foreground)';
+          const letterFg = isSelected
+            ? 'rgba(255,255,255,0.85)'
+            : 'var(--muted-foreground)';
+          const dotColor = isSelected
+            ? 'rgba(255,255,255,0.95)'
+            : 'var(--goldy-maroon-500)';
+
+          const cell = (
+            <div
+              className="flex flex-col items-center justify-center"
+              style={{
+                minHeight: 56,
+                borderRadius: 12,
+                background: bg,
+                padding: '6px 0 4px',
+                transition: 'background-color 120ms ease',
+              }}
+            >
               <span
-                className={`text-[11px] ${isToday || isSelected ? 'font-bold' : 'font-semibold'}`}
-                style={{
-                  color: isSelected || isToday
-                    ? 'var(--goldy-maroon-600)'
-                    : isOpen
-                      ? 'var(--goldy-gold-700)'
-                      : 'var(--muted-foreground)',
-                  borderBottom:
-                    isToday || isSelected
-                      ? '2px solid var(--goldy-maroon-500)'
-                      : '2px solid transparent',
-                  lineHeight: 1,
-                  paddingBottom: 2,
-                }}
-                aria-hidden
+                className="text-[17px] font-bold leading-none tabular-nums"
+                style={{ color: fg }}
+              >
+                {dayNum}
+              </span>
+              <span
+                className="mt-1 text-[10px] font-semibold uppercase leading-none tracking-wide"
+                style={{ color: letterFg }}
               >
                 {label}
               </span>
-              <div
-                className="relative w-full overflow-hidden"
+              <span
+                aria-hidden
+                className="mt-1.5 block rounded-full"
                 style={{
-                  height: 52,
-                  borderRadius: 12,
-                  background: isOpen ? 'transparent' : 'var(--surface-calm)',
-                  border: isOpen
-                    ? '1.5px solid var(--goldy-gold-400)'
-                    : isSelected
-                      ? '2px solid var(--goldy-maroon-500)'
-                      : '1px solid var(--border)',
-                  boxShadow: isSelected
-                    ? '0 0 0 3px rgba(122,0,25,0.08)'
-                    : undefined,
+                  width: 4,
+                  height: 4,
+                  background: hasEvents ? dotColor : 'transparent',
                 }}
-              >
-                {!isOpen && (
-                  <div
-                    aria-hidden
-                    className="absolute inset-x-0 bottom-0"
-                    style={{
-                      height: `${fillPct}%`,
-                      background: 'var(--goldy-maroon-500)',
-                    }}
-                  />
-                )}
-                {!isOpen && (
-                  <span
-                    className="absolute inset-0 flex items-center justify-center text-xs font-bold"
-                    style={{
-                      color: fillPct >= 60 ? 'white' : 'var(--goldy-maroon-600)',
-                    }}
-                  >
-                    {count}
-                  </span>
-                )}
-                {isOpen && (
-                  <span
-                    aria-hidden
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <span
-                      className="block rounded-full"
-                      style={{
-                        width: 8,
-                        height: 8,
-                        background: 'var(--goldy-gold-400)',
-                      }}
-                    />
-                  </span>
-                )}
-              </div>
-            </>
+              />
+            </div>
           );
 
-          const ariaLabel = `${DAY_FULL[i]}: ${
-            count === 0 ? 'open' : `${count} event${count === 1 ? '' : 's'}`
+          const ariaLabel = `${DAY_FULL[i]} ${dayNum}: ${
+            count === 0 ? 'no events' : `${count} event${count === 1 ? '' : 's'}`
           }${isToday ? ' (today)' : ''}${isSelected ? ' (filter active)' : ''}`;
 
           if (!interactive) {
             return (
-              <li
-                key={label + i}
-                aria-label={ariaLabel}
-                className="flex flex-col items-center gap-1.5"
-              >
-                {pill}
+              <li key={label + i} aria-label={ariaLabel}>
+                {cell}
               </li>
             );
           }
@@ -242,23 +196,14 @@ export function WeekStrip({
                 onClick={() => handleTap(i)}
                 aria-pressed={isSelected}
                 aria-label={ariaLabel}
-                className="flex min-h-[72px] w-full flex-col items-center gap-1.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--goldy-maroon-500)]"
+                className="w-full rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--goldy-maroon-500)]"
               >
-                {pill}
+                {cell}
               </button>
             </li>
           );
         })}
       </ul>
-
-      {interactive && (
-        <p
-          className="mt-3 text-[11px]"
-          style={{ color: 'var(--muted-foreground)' }}
-        >
-          Tap a day to filter · tap again to clear.
-        </p>
-      )}
     </section>
   );
 }
