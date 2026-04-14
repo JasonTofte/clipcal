@@ -17,7 +17,12 @@ export async function GET(): Promise<Response> {
 
   try {
     const events = await fetchUpcoming(10);
-    feedCache = { events, fetchedAt: Date.now() };
+    // Don't cache empty results: fetchUpcoming swallows upstream failures
+    // by returning []. Caching [] for the full TTL would freeze the feed
+    // empty even after LiveWhale recovers.
+    if (events.length > 0) {
+      feedCache = { events, fetchedAt: Date.now() };
+    }
     return Response.json({ events } satisfies CampusFeedResponse);
   } catch (err) {
     const e = err as { name?: string; message?: string };
