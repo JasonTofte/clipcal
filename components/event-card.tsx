@@ -15,7 +15,7 @@ import type { BusySlot } from '@/lib/demo-calendar';
 import { TemporalBar } from '@/components/temporal-bar';
 import { formatTimeRange, toDatetimeLocal, fromDatetimeLocal } from '@/lib/format';
 import { Button } from '@/components/ui/button';
-import { ConflictBadge, LeaveByClock, NoticingChip, TimezoneBadge } from '@/components/shared';
+import { ConflictBadge, LeaveByClock, NoticingChip } from '@/components/shared';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
@@ -186,7 +186,6 @@ export function EventCard({
             <DoorOpen aria-hidden size={10} /> {event.room}
           </span>
         )}
-        <TimezoneBadge timezone={event.timezone} className="ml-auto" />
       </div>
 
       {noticings.length > 0 && (() => {

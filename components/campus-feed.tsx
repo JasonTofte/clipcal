@@ -6,6 +6,29 @@ import type { CampusFeedEvent, CampusFeedResponse } from '@/app/api/campus-feed/
 import { loadProfileFromStorage } from '@/lib/profile';
 import { scoreEvent, scoreTone, formatScoreBadge } from '@/lib/relevance';
 import { useSwipeReveal } from '@/lib/use-swipe-reveal';
+import { appendBatch, loadBatches, EVENT_STORE_KEY } from '@/lib/event-store';
+import type { Event } from '@/lib/schema';
+
+function toEvent(ev: CampusFeedEvent): Event {
+  // LiveWhale doesn't expose an end time; synthesize a 1-hour window so the
+  // saved event renders as a block in the day rail and exports a valid DTEND
+  // to ICS instead of a zero-duration marker.
+  const start = new Date(ev.date_iso);
+  const end = Number.isFinite(start.getTime())
+    ? new Date(start.getTime() + 60 * 60 * 1000).toISOString()
+    : null;
+  return {
+    title: ev.title,
+    start: ev.date_iso,
+    end,
+    location: ev.location,
+    description: ev.group_title,
+    category: 'other',
+    hasFreeFood: false,
+    timezone: 'America/Chicago',
+    confidence: 'high',
+  };
+}
 
 const TONE_STYLES: Record<'high' | 'medium' | 'low', { bg: string; fg: string }> = {
   high: { bg: 'var(--goldy-gold-100)', fg: 'var(--goldy-maroon-700)' },
@@ -249,6 +272,7 @@ export function CampusFeed() {
   const [listMode, setListMode] = useState(false);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
   const [expanded, setExpanded] = useState(true);
+  const [savedToast, setSavedToast] = useState<{ batchId: string; title: string } | null>(null);
 
   useEffect(() => {
     const profile = loadProfileFromStorage();
@@ -281,9 +305,23 @@ export function CampusFeed() {
   };
 
   const open = () => {
-    window.open(remaining[0]?.url, '_blank', 'noopener,noreferrer');
-    const currentIdx = events.indexOf(remaining[0]);
+    const current = remaining[0];
+    if (!current) return;
+    const batch = appendBatch([toEvent(current)], `Campus feed: ${current.url}`);
+    window.open(current.url, '_blank', 'noopener,noreferrer');
+    const currentIdx = events.indexOf(current);
     setDismissed((prev) => new Set([...prev, currentIdx]));
+    setSavedToast({ batchId: batch.id, title: current.title });
+    window.setTimeout(() => {
+      setSavedToast((t) => (t && t.batchId === batch.id ? null : t));
+    }, 5000);
+  };
+
+  const undoSave = () => {
+    if (!savedToast) return;
+    const kept = loadBatches().filter((b) => b.id !== savedToast.batchId);
+    window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(kept));
+    setSavedToast(null);
   };
 
   return (
@@ -410,12 +448,34 @@ export function CampusFeed() {
               </button>
             </div>
             <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-              Swipe right to open · left to skip (or tap the buttons)
+              Swipe right to save · left to skip (or tap the buttons)
             </p>
           </div>
         </div>
       )}
       </div>
+      )}
+      {savedToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 bottom-6 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border px-4 py-2 text-sm shadow-lg"
+          style={{
+            background: 'var(--surface-paper)',
+            borderColor: 'var(--border)',
+            color: 'var(--foreground)',
+          }}
+        >
+          <span>Saved &ldquo;{savedToast.title.slice(0, 40)}{savedToast.title.length > 40 ? '…' : ''}&rdquo;</span>
+          <button
+            type="button"
+            onClick={undoSave}
+            className="font-semibold underline decoration-dotted underline-offset-2"
+            style={{ color: 'var(--goldy-maroon-600)' }}
+          >
+            Undo
+          </button>
+        </div>
       )}
     </section>
   );
