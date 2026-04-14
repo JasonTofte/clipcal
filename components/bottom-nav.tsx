@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Camera, Search, LayoutList, User } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
-type Tab = { href: string; label: string; icon: string };
+type Tab = { href: string; label: string; Icon: LucideIcon };
 
 const TABS: Tab[] = [
-  { href: '/', label: 'Upload', icon: '📸' },
-  { href: '/browse', label: 'Browse', icon: '🔎' },
-  { href: '/feed', label: 'Feed', icon: '📰' },
-  { href: '/profile', label: 'Profile', icon: '👤' },
+  { href: '/', label: 'Upload', Icon: Camera },
+  { href: '/browse', label: 'Browse', Icon: Search },
+  { href: '/feed', label: 'Feed', Icon: LayoutList },
+  { href: '/profile', label: 'Profile', Icon: User },
 ];
 
 function isActive(pathname: string | null, href: string): boolean {
@@ -40,9 +42,7 @@ export function BottomNav() {
                     : 'text-muted-foreground'
                 }`}
               >
-                <span aria-hidden className="text-lg leading-none">
-                  {tab.icon}
-                </span>
+                <tab.Icon aria-hidden size={20} strokeWidth={active ? 2.5 : 1.75} />
                 <span className={active ? 'font-bold' : ''}>{tab.label}</span>
               </Link>
             </li>

@@ -212,7 +212,7 @@ export default function BrowsePage() {
       {/* What's on */}
       <ChipRow ariaLabel="What's on">
         <Chip active={flags.has('free-food')} onClick={() => toggleFlag('free-food')}>
-          🍕 Free food
+          Free food
         </Chip>
         <Chip active={flags.has('free-cost')} onClick={() => toggleFlag('free-cost')}>
           $0 Free
@@ -470,7 +470,7 @@ function EventList({
   const sorted = [...events].sort((a, b) => a.date_iso.localeCompare(b.date_iso));
   return (
     <ul className="flex flex-col gap-2">
-      {sorted.map((e) => {
+      {sorted.map((e, idx) => {
         const isMatch =
           interests.length > 0 &&
           matchesInterests(
@@ -482,7 +482,7 @@ function EventList({
         const time = e.is_all_day ? 'All day' : formatTimeOnly(e.date_iso);
         const day = formatDayShort(e.date_iso);
         return (
-          <li key={e.id}>
+          <li key={`${e.id}-${idx}`}>
             <a
               href={e.url}
               target="_blank"
@@ -535,7 +535,7 @@ function EventList({
                         color: 'var(--goldy-maroon-700)',
                       }}
                     >
-                      🍕 free food
+                      free food
                     </span>
                   )}
                   {isFree && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Camera } from 'lucide-react';
 import Link from 'next/link';
 import { GoldyAvatar } from '@/components/goldy-avatar';
 import { WeekStrip } from '@/components/week-strip';
@@ -379,9 +380,7 @@ export function GoldyFeedClient() {
           className="mt-8 flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed bg-white/60 p-10 text-center"
           style={{ borderColor: 'var(--goldy-maroon-200)' }}
         >
-          <div className="text-4xl" aria-hidden>
-            📸
-          </div>
+          <Camera aria-hidden size={40} strokeWidth={1.5} className="text-[var(--goldy-maroon-200)]" />
           <p className="text-sm text-stone-600">
             Your camera roll is full of flyers you meant to go to. Feed me one and I&rsquo;ll
             turn it into a decision you can actually act on.
@@ -491,7 +490,7 @@ export function GoldyFeedClient() {
               id="goldy-recent-heading"
               className="flex items-center gap-1.5 text-sm font-bold text-stone-900"
             >
-              <span aria-hidden className="text-base">📸</span> You screenshotted these
+              <Camera aria-hidden size={14} /> You screenshotted these
             </h2>
             <span className="text-xs text-stone-500">
               {recentClips.length} snapped · tap to jump
@@ -559,7 +558,7 @@ export function GoldyFeedClient() {
             id="goldy-picks-heading"
             className="flex items-center gap-1.5 text-sm font-bold text-stone-900"
           >
-            <span aria-hidden className="text-base">🐿️</span> Goldy&apos;s picks for you
+            Goldy&apos;s picks for you
           </h2>
           <span className="text-xs text-stone-500">
             {activeFilterSummary

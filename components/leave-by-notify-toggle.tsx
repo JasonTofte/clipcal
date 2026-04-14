@@ -38,7 +38,7 @@ export function LeaveByNotifyToggle({ events }: Props) {
         }}
       >
         <span>
-          <strong>🔔 Leave-by pings on.</strong> You&rsquo;ll get a notification 10 min
+          <strong>Leave-by pings on.</strong> You&rsquo;ll get a notification 10 min
           before you need to head out. (Tab must stay open.)
         </span>
         <button

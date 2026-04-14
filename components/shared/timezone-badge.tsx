@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface TimezoneBadgeProps {
@@ -40,7 +41,7 @@ export function TimezoneBadge({ timezone, className }: TimezoneBadgeProps) {
           : `Event is in ${timezone}`
       }
     >
-      <span aria-hidden>🌐</span>
+      <Globe aria-hidden size={10} />
       <span>{shortName(timezone)}</span>
       {mismatch && <span aria-hidden>⚠</span>}
     </span>
