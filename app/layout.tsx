@@ -67,9 +67,15 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${atkinson.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${atkinson.variable} ${fredoka.variable} antialiased`}
     >
-      <body className="min-h-full flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]">
+      <body
+        className="min-h-dvh flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]"
+        style={{
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        }}
+      >
         <GoldyHeader />
         {children}
         <BottomNav />
