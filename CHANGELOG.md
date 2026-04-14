@@ -1,11 +1,15 @@
 # Changelog
 
-All notable changes to ClipCal are documented in this file.
+All notable changes to ShowUp are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+### Changed
+
+- **Rebrand: ClipCal → ShowUp.** All user-facing surfaces updated: PWA manifest (`name`/`short_name`), `<title>`/Apple web app title, profile page copy, interviewer system prompt, `.ics` download filename (`showup-events.ics`), Nominatim User-Agent, and the Pi sidecar's BLE advertised name, e-ink splash, and HTTP captive-portal sync page. Prose across README, CHANGELOG, release notes, collaborator guide, and `docs/*` swapped to the new name. Internal identifiers intentionally left unchanged to preserve existing user data and device provisioning: localStorage keys (`clipcal_*`), service-worker cache name (`clipcal-shared-media`), `package.json` name, filesystem paths (`/etc/clipcal/`), env var (`CLIPCAL_SYNC_TOKEN`), WiFi SSID (`ClipCal-Display`), GitHub repo slug, and historical ADRs/mockups.
 
 ### Added
 

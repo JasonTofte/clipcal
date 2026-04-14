@@ -1,4 +1,4 @@
-# ClipCal — Hackathon Team Brief
+# ShowUp — Hackathon Team Brief
 
 **Hackathon:** 2026-04-10 → 2026-04-13 5:45 PM (3.5 days)
 **Format:** Responsive web app (mobile-first PWA)
@@ -18,7 +18,7 @@
 
 > Students screenshot event flyers and forget them. 60% of college students never attend a campus event — not because they don't want to, but because the flyer lives on an Instagram story, gets screenshotted, and dies in the camera roll.
 >
-> ClipCal is a mobile web app. You paste, drop, or snap any flyer. Claude extracts the event (even 8 events from a club semester schedule), checks your Google Calendar for conflicts, cross-references GopherLink to enrich with RSVP links, and scores it against your interests — which we learned in a 90-second AI chat interview.
+> ShowUp is a mobile web app. You paste, drop, or snap any flyer. Claude extracts the event (even 8 events from a club semester schedule), checks your Google Calendar for conflicts, cross-references GopherLink to enrich with RSVP links, and scores it against your interests — which we learned in a 90-second AI chat interview.
 >
 > Green badge = free. Red badge = conflict. "3/5 match — networking event with free food." One tap → `.ics` download.
 
@@ -123,7 +123,7 @@
 
 ## Open Questions for the Team
 
-1. **Name:** "ClipCal" is a placeholder. Alternatives: SnapSchedule, FlyerIQ, CampusCopilot, Gopherly, PasteIt?
+1. **Name:** ~~"ShowUp" is a placeholder. Alternatives: SnapSchedule, FlyerIQ, CampusCopilot, Gopherly, PasteIt?~~ Resolved → **ShowUp**.
 2. **Primary campus?** GopherLink suggests UMN — do we demo against UMN-specific events or keep it campus-agnostic?
 3. **Who owns the demo script and pitch deck?** (Needs to happen by Sunday night, not Monday.)
 4. **Do we want a Vercel team account** so everyone can deploy, or one dev owns the deploy?

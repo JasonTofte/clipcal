@@ -66,7 +66,7 @@ export function buildIcsBlobUrl(events: Event[]): string {
 }
 
 export function buildIcsFilename(events: Event[]): string {
-  const raw = events.length === 1 ? events[0].title || 'event' : 'clipcal-events';
+  const raw = events.length === 1 ? events[0].title || 'event' : 'showup-events';
   const slug = raw
     .replace(/[^a-z0-9-_ ]+/gi, '')
     .trim()

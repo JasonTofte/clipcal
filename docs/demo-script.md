@@ -1,4 +1,4 @@
-# ClipCal Demo Script
+# ShowUp Demo Script
 
 **Target time:** 3 minutes
 **Format:** Live demo on projector (phone or laptop browser)
@@ -8,7 +8,7 @@
 
 ## Pre-Demo Setup
 
-- Browser open to ClipCal home page (demo mode ON)
+- Browser open to ShowUp home page (demo mode ON)
 - One strong flyer ready to paste (clear date, time, location)
 - Phone nearby for mobile demo if asked
 - Terminal and Slack closed, Spotify paused
@@ -27,11 +27,11 @@
 
 ### 2. What It Is (10 sec)
 
-> "I'm Jason. I built ClipCal -- the only mobile web flyer scanner that's conflict-aware, campus-aware, and built for ADHD brains."
+> "I'm Jason. I built ShowUp -- the only mobile web flyer scanner that's conflict-aware, campus-aware, and built for ADHD brains."
 
-*(Gesture at screen showing ClipCal home page. Point out the "Happening on Campus" section at the bottom.)*
+*(Gesture at screen showing ShowUp home page. Point out the "Happening on Campus" section at the bottom.)*
 
-> "Before you even scan anything, ClipCal is already pulling live events from the UMN Events Calendar. It knows your campus."
+> "Before you even scan anything, ShowUp is already pulling live events from the UMN Events Calendar. It knows your campus."
 
 ### 3. Live Demo -- Scan a Flyer (45 sec)
 
@@ -47,7 +47,7 @@
 - *(Point to temporal bar)* "This color bar shows how far away the event is. It pulses when it's happening soon -- ambient time awareness for ADHD time blindness."
 - *(Point to noticings)* "Walk time. Buffer before my next thing. Whether it's a weekend commitment. These are noticings -- observations, never instructions."
 - *(Point to day-shape)* "This little timeline shows my whole day. I can see the breathing room at a glance."
-- *(Point to campus match panel, if present)* "And ClipCal cross-referenced the UMN Events Calendar and found this event -- with the official department and registration link."
+- *(Point to campus match panel, if present)* "And ShowUp cross-referenced the UMN Events Calendar and found this event -- with the official department and registration link."
 - *(Point to sensory chips)* "Indoor, small group. Sensory context so you know what you're walking into."
 
 > "One tap -- it's in my calendar."
@@ -66,7 +66,7 @@
 
 > "Apple's iOS 26 feature extracts one event per image. Google Lens is one-shot. Photo2Calendar is iOS only. None of them know your campus. None of them check your calendar for conflicts. And none of them are built for ADHD brains."
 >
-> "ClipCal does all four. It runs on any phone's browser -- no install. Android, iPhone, laptop. And if the first extraction isn't perfect, you can retry with a stronger model."
+> "ShowUp does all four. It runs on any phone's browser -- no install. Android, iPhone, laptop. And if the first extraction isn't perfect, you can retry with a stronger model."
 
 *(Point to "Try with stronger model" button if visible.)*
 
@@ -74,7 +74,7 @@
 
 > "Our design principle is three words: *inform, don't decide*. Grounded in cognitive offloading research and the Ottawa Decision Support Framework. No auto-decline. No streak counters. No shame. We surface the trade-offs. You make the call."
 >
-> "ClipCal is live right now. Try it with any flyer."
+> "ShowUp is live right now. Try it with any flyer."
 
 ---
 
@@ -86,4 +86,4 @@
 - **"What about privacy?"** -- Stateless. No accounts, no database. Everything lives in your browser's localStorage. We never see your data.
 - **"Can it do multiple events?"** -- Yes. If a flyer has a semester schedule with 8 events, Claude extracts all of them. No competitor does this.
 - **"What's next?"** -- User accounts with UMN Google sign-in, real Google Calendar integration (not demo mode), and deeper GopherLink student org integration.
-- **"How is this different from just adding it to my calendar manually?"** -- Manual entry takes 2 minutes per event and you still don't know if you're free. ClipCal gives you extraction + conflict check + context in 3 seconds.
+- **"How is this different from just adding it to my calendar manually?"** -- Manual entry takes 2 minutes per event and you still don't know if you're free. ShowUp gives you extraction + conflict check + context in 3 seconds.

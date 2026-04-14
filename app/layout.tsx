@@ -38,7 +38,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "ClipCal",
+  title: "ShowUp",
   description: "Your campus copilot. Snap a flyer, know if you should go.",
   manifest: "/manifest.json",
   icons: {
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   },
   appleWebApp: {
     capable: true,
-    title: "ClipCal",
+    title: "ShowUp",
     statusBarStyle: "default",
   },
 };

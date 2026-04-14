@@ -1,8 +1,8 @@
-# ClipCal — Collaborator Setup Guide
+# ShowUp — Collaborator Setup Guide
 
-> Welcome to the ClipCal hackathon project. This guide walks you from a fresh Windows machine to a running development environment and your first contribution. Should take about 15 minutes end-to-end if Node.js is already installed.
+> Welcome to the ShowUp hackathon project. This guide walks you from a fresh Windows machine to a running development environment and your first contribution. Should take about 15 minutes end-to-end if Node.js is already installed.
 
-**Project:** [ClipCal](https://github.com/JasonTofte/clipcal) — AI-powered flyer → calendar web app
+**Project:** [ShowUp](https://github.com/JasonTofte/clipcal) — AI-powered flyer → calendar web app
 **Stack:** Next.js 16 · TypeScript · Tailwind 4 · shadcn/ui · Claude Haiku 4.5 via Vercel AI SDK
 **Hackathon window:** April 10–13, 2026
 
@@ -131,7 +131,7 @@ This takes 2–4 minutes. It reads `package.json`, downloads approximately 400 M
 
 ## Step 6 — Configure your environment file
 
-ClipCal reads secrets from a file called `.env.local` in the repository root. This file is git-ignored, meaning it will never be committed to the repository — that is by design.
+ShowUp reads secrets from a file called `.env.local` in the repository root. This file is git-ignored, meaning it will never be committed to the repository — that is by design.
 
 **Create the file:**
 
@@ -174,11 +174,11 @@ After 2–5 seconds, you should see output similar to:
 ✓ Ready in 2.1s
 ```
 
-Open your browser to **http://localhost:3000**. You should see the ClipCal home page with a file upload input.
+Open your browser to **http://localhost:3000**. You should see the ShowUp home page with a file upload input.
 
 ### Test the API key
 
-The core feature of ClipCal is extracting event details from a flyer image using Claude. To confirm the API key is wired up correctly:
+The core feature of ShowUp is extracting event details from a flyer image using Claude. To confirm the API key is wired up correctly:
 
 1. Find a flyer image — Google "event flyer" and save any result, or use a photo of a real poster
 2. Upload it using the input on the page
@@ -400,7 +400,7 @@ They will. The right response:
 
 ## Design principle — read this before you code
 
-ClipCal's core design principle is **"Inform, don't decide."**
+ShowUp's core design principle is **"Inform, don't decide."**
 
 The app surfaces trade-offs (`12-min walk · first open Sat · ends after your 8am class`) so the user can make a better decision themselves — it never auto-rejects events, never nags, never shames. This is grounded in cognitive offloading research (Risko & Gilbert 2016) and the Ottawa Decision Support Framework.
 

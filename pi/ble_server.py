@@ -1,5 +1,5 @@
 """
-BLE GATT peripheral for ClipCal e-ink display.
+BLE GATT peripheral for ShowUp e-ink display.
 
 Service:  6e400001-b5a3-f393-e0a9-e50e24dcca9e
   Write:  6e400002-b5a3-f393-e0a9-e50e24dcca9e  (phone → Pi, JSON payload)
@@ -44,7 +44,7 @@ class BleServer:
 
     async def start(self) -> None:
         loop = asyncio.get_event_loop()
-        self._server = BlessServer(name="ClipCal", loop=loop)
+        self._server = BlessServer(name="ShowUp", loop=loop)
         self._server.read_request_func = self._handle_read
         self._server.write_request_func = self._handle_write
 
@@ -69,7 +69,7 @@ class BleServer:
         )
 
         await self._server.start()
-        log.info("BLE advertising as 'ClipCal'")
+        log.info("BLE advertising as 'ShowUp'")
 
     async def run_forever(self) -> None:
         await self._stop_event.wait()

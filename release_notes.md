@@ -6,7 +6,7 @@
 
 **Product thesis shift: "Inform, don't decide" is no longer a tagline — it is now grounded in cited research.**
 
-This cycle raises ClipCal from "ADHD-flavored vibes" to falsifiable neuro-inclusion. The framing comes from the Ottawa Decision Support Framework (O'Connor et al.), which measures decisional conflict reduction as an outcome, and from cognitive offloading research (Risko & Gilbert 2016), which explains why visible time structure reduces working-memory load for ADHD users. Tiimo's 2024 and 2025 Apple Design Award wins validated the pattern in shipping software: the award language explicitly cited user-controllable sensory environments as the design rationale, not fixed presets.
+This cycle raises ShowUp from "ADHD-flavored vibes" to falsifiable neuro-inclusion. The framing comes from the Ottawa Decision Support Framework (O'Connor et al.), which measures decisional conflict reduction as an outcome, and from cognitive offloading research (Risko & Gilbert 2016), which explains why visible time structure reduces working-memory load for ADHD users. Tiimo's 2024 and 2025 Apple Design Award wins validated the pattern in shipping software: the award language explicitly cited user-controllable sensory environments as the design rationale, not fixed presets.
 
 What this means in practice: every change this cycle has a citation, not just a rationale.
 
