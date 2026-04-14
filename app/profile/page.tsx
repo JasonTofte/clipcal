@@ -103,31 +103,33 @@ export default function ProfilePage() {
         </p>
       </GoldyBubble>
 
-      <div className="mb-5 flex gap-2">
-        <button
-          type="button"
-          onClick={() => setMode('pick')}
-          className={cn(
-            'rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
-            mode === 'pick'
-              ? 'bg-primary text-primary-foreground ring-primary'
-              : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
-          )}
-        >
-          Quick pick
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('chat')}
-          className={cn(
-            'rounded-full px-3 py-1 text-xs font-medium ring-1 ring-inset transition-colors',
-            mode === 'chat'
-              ? 'bg-primary text-primary-foreground ring-primary'
-              : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
-          )}
-        >
-          Chat interview
-        </button>
+      <div
+        role="tablist"
+        aria-label="Profile setup mode"
+        className="mb-5 flex justify-center gap-10 border-b border-border"
+      >
+        {(['pick', 'chat'] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            role="tab"
+            aria-selected={mode === m}
+            onClick={() => setMode(m)}
+            className={cn(
+              'relative pb-3 text-sm font-medium transition-colors',
+              mode === m ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
+            )}
+          >
+            {m === 'pick' ? 'Quick pick' : 'Chat setup'}
+            <span
+              className="absolute -bottom-px left-1/2 h-0.5 -translate-x-1/2 rounded-full transition-all duration-200"
+              style={{
+                width: mode === m ? 'calc(100% + 24px)' : '0px',
+                background: 'var(--goldy-maroon-500)',
+              }}
+            />
+          </button>
+        ))}
       </div>
 
       {mode === 'pick' ? (

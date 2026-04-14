@@ -13,26 +13,26 @@ import { geocode } from '@/lib/geocode';
 import { cn } from '@/lib/utils';
 
 const INTEREST_OPTIONS = [
-  { label: 'Free Food', emoji: '🍕' },
-  { label: 'Networking', emoji: '🤝' },
-  { label: 'Tech / CS', emoji: '💻' },
-  { label: 'Hackathons', emoji: '⚡' },
-  { label: 'AI / ML', emoji: '🤖' },
-  { label: 'Art & Design', emoji: '🎨' },
-  { label: 'Music', emoji: '🎵' },
-  { label: 'Sports / Fitness', emoji: '⚽' },
-  { label: 'Outdoors', emoji: '🌲' },
-  { label: 'Career Fairs', emoji: '💼' },
-  { label: 'Research', emoji: '🔬' },
-  { label: 'Volunteering', emoji: '🤲' },
-  { label: 'Cultural Events', emoji: '🎭' },
-  { label: 'Gaming', emoji: '🎮' },
-  { label: 'Film / Movies', emoji: '🎬' },
-  { label: 'Dance', emoji: '💃' },
-  { label: 'Mental Health', emoji: '🧠' },
-  { label: 'Entrepreneurship', emoji: '🚀' },
-  { label: 'Study Groups', emoji: '📚' },
-  { label: 'Social / Parties', emoji: '🎉' },
+  { label: 'Free Food' },
+  { label: 'Networking' },
+  { label: 'Tech / CS' },
+  { label: 'Hackathons' },
+  { label: 'AI / ML' },
+  { label: 'Art & Design' },
+  { label: 'Music' },
+  { label: 'Sports / Fitness' },
+  { label: 'Outdoors' },
+  { label: 'Career Fairs' },
+  { label: 'Research' },
+  { label: 'Volunteering' },
+  { label: 'Cultural Events' },
+  { label: 'Gaming' },
+  { label: 'Film / Movies' },
+  { label: 'Dance' },
+  { label: 'Mental Health' },
+  { label: 'Entrepreneurship' },
+  { label: 'Study Groups' },
+  { label: 'Social / Parties' },
 ];
 
 const STAGE_OPTIONS = [
@@ -148,8 +148,7 @@ export function InterestPicker() {
                   : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
               )}
             >
-              <span>{opt.emoji}</span>
-              <span>{opt.label}</span>
+              {opt.label}
             </button>
           ))}
         </div>
