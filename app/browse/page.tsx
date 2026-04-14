@@ -468,10 +468,11 @@ function EventList({
   events: LiveWhaleEvent[];
   interests: string[];
 }) {
-  const sorted = [...events].sort((a, b) => a.date_iso.localeCompare(b.date_iso));
+  const deduped = Array.from(new Map(events.map((e) => [e.id, e])).values());
+  const sorted = deduped.sort((a, b) => a.date_iso.localeCompare(b.date_iso));
   return (
     <ul className="flex flex-col gap-2">
-      {sorted.map((e, idx) => {
+      {sorted.map((e) => {
         const isMatch =
           interests.length > 0 &&
           matchesInterests(
@@ -483,7 +484,7 @@ function EventList({
         const time = e.is_all_day ? 'All day' : formatTimeOnly(e.date_iso);
         const day = formatDayShort(e.date_iso);
         return (
-          <li key={`${e.id}-${idx}`}>
+          <li key={e.id}>
             <a
               href={e.url}
               target="_blank"

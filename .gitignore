@@ -93,3 +93,4 @@ coverage/
 .cache/
 .vercel
 lighthouse-feed*.{html,json}
+.fw-sync-cache/

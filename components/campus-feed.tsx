@@ -192,11 +192,11 @@ function ListView({
 }) {
   return (
     <ul className="space-y-2">
-      {events.map((event, idx) => {
+      {events.map((event) => {
         const score = scoreEvent(event, interests);
         const tone = score === null ? null : scoreTone(score);
         return (
-          <li key={`${event.id}-${idx}`}>
+          <li key={event.id}>
             <a
               href={event.url}
               target="_blank"
@@ -246,7 +246,6 @@ export function CampusFeed() {
   const [events, setEvents] = useState<CampusFeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [interests, setInterests] = useState<string[]>([]);
-  const [idx, setIdx] = useState(0);
   const [listMode, setListMode] = useState(false);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
 

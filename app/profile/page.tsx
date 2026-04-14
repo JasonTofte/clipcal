@@ -103,11 +103,17 @@ export default function ProfilePage() {
         </p>
       </GoldyBubble>
 
-      <div className="mb-5 flex justify-center gap-10 border-b border-border">
+      <div
+        role="tablist"
+        aria-label="Profile setup mode"
+        className="mb-5 flex justify-center gap-10 border-b border-border"
+      >
         {(['pick', 'chat'] as const).map((m) => (
           <button
             key={m}
             type="button"
+            role="tab"
+            aria-selected={mode === m}
             onClick={() => setMode(m)}
             className={cn(
               'relative pb-3 text-sm font-medium transition-colors',
