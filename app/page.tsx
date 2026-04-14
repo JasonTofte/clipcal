@@ -218,7 +218,7 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>
@@ -231,7 +231,7 @@ export default function Home() {
       {demoMode && <TodaySnapshot busySlots={DEMO_CALENDAR} />}
 
       <div className="flex-1">
-        {state.status === 'idle' && <HomeIdleView demoMode={demoMode} onFiles={handleFiles} />}
+        {state.status === 'idle' && <HomeIdleView onFiles={handleFiles} />}
 
         {state.status === 'loading' && <LoadingPanel message={state.message} />}
 

@@ -4,6 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Mobile hardening: suppress stray horizontal scroll without
+   creating a scroll container (so position: sticky keeps working). */
+html, body {
+  overflow-x: clip;
+}
+@supports not (overflow: clip) {
+  html, body { overflow-x: hidden; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
