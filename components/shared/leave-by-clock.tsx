@@ -11,7 +11,7 @@ export function LeaveByClock({ info, className }: LeaveByClockProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-between rounded-xl bg-primary/5 px-4 py-3 ring-1 ring-inset ring-primary/20',
+        'flex items-center justify-between rounded-xl bg-primary/5 px-4 py-3',
         className,
       )}
     >
@@ -19,7 +19,7 @@ export function LeaveByClock({ info, className }: LeaveByClockProps) {
         <Clock aria-hidden size={20} className="shrink-0" />
         <div>
           <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">leave by</div>
-          <div className="text-2xl font-bold tracking-tight leading-none">{info.displayText}</div>
+          <div className="text-lg font-bold tracking-tight leading-none">{info.displayText}</div>
         </div>
       </div>
       <div className="text-right text-xs text-muted-foreground">

@@ -49,7 +49,7 @@ export function DayShape({ event, busySlots }: DayShapeProps) {
   return (
     <div className="flex items-center gap-2">
       <span className="shrink-0 text-[10px] text-muted-foreground/60">7a</span>
-      <div className="relative h-4 flex-1 rounded-full bg-muted/40 ring-1 ring-inset ring-border/40">
+      <div className="relative h-4 flex-1 rounded-full bg-muted/40">
         {/* Existing busy blocks */}
         {slotsOnDay.map((slot, i) => {
           const left = toPct(minuteOfDay(slot.start < dayStart ? dayStart : slot.start));
@@ -66,7 +66,7 @@ export function DayShape({ event, busySlots }: DayShapeProps) {
 
         {/* Proposed event */}
         <div
-          className="absolute inset-y-0.5 rounded-full bg-primary/70 ring-1 ring-primary/30"
+          className="absolute inset-y-0.5 rounded-full bg-primary/70"
           style={{
             left: `${toPct(minuteOfDay(eventStart))}%`,
             width: `${Math.max(toPct(minuteOfDay(eventEnd)) - toPct(minuteOfDay(eventStart)), 2)}%`,

@@ -34,6 +34,7 @@ type UxState =
       batchId: string;
       events: Event[];
       sourceNotes: string | null;
+      posterUrl: string | null;
       relevance: RelevanceScore[] | null;
       campusMatches: (CampusMatch | null)[] | null;
       orgMatches: (OrgMatch | null)[] | null;
@@ -47,6 +48,7 @@ export default function Home() {
   const [demoMode, setDemoMode] = useDemoMode(true);
   const [profile, setProfile] = useState<Profile | null>(null);
   const lastFileRef = useRef<File | null>(null);
+  const posterUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     setProfile(loadProfileFromStorage());
@@ -59,6 +61,8 @@ export default function Home() {
     if (files.length === 0) return;
     const file = files[0];
     lastFileRef.current = file;
+    if (posterUrlRef.current) URL.revokeObjectURL(posterUrlRef.current);
+    posterUrlRef.current = URL.createObjectURL(file);
     setState({
       status: 'loading',
       message: model === 'sonnet' ? 'Retrying with Claude Sonnet…' : LOADING_MESSAGE,
@@ -104,6 +108,7 @@ export default function Home() {
         batchId: saved.id,
         events: extraction.events,
         sourceNotes: extraction.sourceNotes,
+        posterUrl: posterUrlRef.current,
         relevance: null,
         campusMatches: null,
         orgMatches: null,
@@ -221,14 +226,12 @@ export default function Home() {
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-primary">ClipCal</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Your campus copilot. Snap a flyer, know if you should go.
           </p>
         </div>
       </header>
-
-      {demoMode && <TodaySnapshot busySlots={DEMO_CALENDAR} />}
 
       <div className="flex-1">
         {state.status === 'idle' && <HomeIdleView onFiles={handleFiles} />}
@@ -250,6 +253,7 @@ export default function Home() {
           <HomeSuccessView
             events={state.events}
             sourceNotes={state.sourceNotes}
+            posterUrl={state.posterUrl}
             relevance={state.relevance}
             campusMatches={state.campusMatches}
             orgMatches={state.orgMatches}
@@ -289,62 +293,6 @@ export default function Home() {
   );
 }
 
-function TodaySnapshot({ busySlots }: { busySlots: typeof DEMO_CALENDAR }) {
-  const now = new Date();
-  const dayStart = new Date(now);
-  dayStart.setHours(0, 0, 0, 0);
-  const dayEnd = new Date(dayStart);
-  dayEnd.setDate(dayEnd.getDate() + 1);
-
-  const count = busySlots.filter(
-    (s) => s.start < dayEnd && s.end > dayStart,
-  ).length;
-
-  const dayLabel = now.toLocaleDateString('en-US', { weekday: 'short' });
-  const dateLabel = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const fillPct = Math.min(100, count * 20);
-  const busy = count > 0;
-
-  return (
-    <div className="mb-4 flex items-center gap-3 rounded-2xl border bg-card px-4 py-3" style={{ borderColor: 'var(--border)' }}>
-      <div className="flex flex-col items-center">
-        <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: 'var(--muted-foreground)' }}>
-          {dayLabel}
-        </span>
-        <span className="text-lg font-bold leading-tight" style={{ color: 'var(--goldy-maroon-600)' }}>
-          {dateLabel.split(' ')[1]}
-        </span>
-        <span className="text-[10px]" style={{ color: 'var(--muted-foreground)' }}>
-          {dateLabel.split(' ')[0]}
-        </span>
-      </div>
-
-      <div
-        className="relative h-10 w-3 shrink-0 overflow-hidden rounded-full"
-        style={{
-          background: busy ? 'var(--surface-calm)' : 'transparent',
-          border: busy ? '1px solid var(--border)' : '1.5px solid var(--goldy-gold-400)',
-        }}
-      >
-        {busy && (
-          <div
-            className="absolute inset-x-0 bottom-0 rounded-full"
-            style={{ height: `${fillPct}%`, background: 'var(--goldy-maroon-500)' }}
-          />
-        )}
-        {!busy && (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <span className="block size-1.5 rounded-full" style={{ background: 'var(--goldy-gold-400)' }} />
-          </span>
-        )}
-      </div>
-
-      <span className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
-        {count === 0 ? 'Open day' : `${count} event${count === 1 ? '' : 's'} today`}
-      </span>
-    </div>
-  );
-}
 
 function LoadingPanel({ message }: { message: string }) {
   return (

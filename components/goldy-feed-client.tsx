@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Camera } from 'lucide-react';
 import Link from 'next/link';
-import { WeekStrip } from '@/components/week-strip';
-import { DayRail } from '@/components/day-rail';
-import { GoldyEventRow } from '@/components/goldy-event-row';
+import { GoldyAvatar } from '@/components/goldy-avatar';
+import { WeekSection } from '@/components/week-section';
+import { CampusFeed } from '@/components/campus-feed';
 import { OneThingHero } from '@/components/one-thing-hero';
-import { FeedOverflowMenu } from '@/components/feed-overflow-menu';
-import { DEMO_CALENDAR } from '@/lib/demo-calendar';
+import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
+import { DEMO_CALENDAR, computeDemoFeedEvents } from '@/lib/demo-calendar';
 import {
   EVENT_STORE_KEY,
   loadBatches,
@@ -20,7 +20,7 @@ import { triggerIcsDownload } from '@/lib/ics';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
 import { parseNowOverride } from '@/lib/day-of-reminder';
-import { formatShortDate } from '@/lib/format';
+import { formatWeekday } from '@/lib/format';
 // Inlined: prior demo seed module (lib/demo-feed-seed.ts) was removed
 // when we dropped auto-seeded fake flyers. The legacy id prefix is
 // preserved here so this cleanup pass keeps stripping stale data
@@ -32,8 +32,7 @@ import {
   unhideEvent,
   clearHiddenEvents,
 } from '@/lib/hidden-events';
-import { detectDuplicates, siblingDatesLabel } from '@/lib/dedupe-events';
-import { flyerClass } from '@/lib/flyer-class';
+import { FOOD_RX, GAMEDAY_RX } from '@/lib/flyer-class';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
@@ -156,12 +155,29 @@ export function GoldyFeedClient() {
   );
 
   const calendar = demoMode ? DEMO_CALENDAR : [];
+
+  // When demo mode is on and nothing has been uploaded yet, seed the feed
+  // with sample events so first-time visitors (and phone users on a fresh
+  // session) see a real feed instead of the empty-state upload prompt.
+  const demoFeedRows: FeedRow[] = useMemo(() => {
+    if (!demoMode || rows.length > 0) return [];
+    return computeDemoFeedEvents().map((event, i) => ({
+      batchId: 'demo_feed',
+      eventIndex: i,
+      event,
+      addedAt: new Date().toISOString(),
+      icsCommitted: false,
+    }));
+  }, [demoMode, rows.length]);
+
+  const activeRows = rows.length > 0 ? rows : demoFeedRows;
+
   const allEvents = useMemo(
     () =>
-      [...rows.map((r) => r.event)].sort((a, b) =>
+      [...activeRows.map((r) => r.event)].sort((a, b) =>
         a.start.localeCompare(b.start),
       ),
-    [rows],
+    [activeRows],
   );
   const interests = profile?.interests ?? [];
   const weekStart = useMemo(() => startOfWeekMonday(new Date()), []);
@@ -175,7 +191,7 @@ export function GoldyFeedClient() {
 
   const ranked = useMemo(() => {
     const now = nowOverride ?? new Date();
-    return rows
+    return activeRows
       .map((row) => {
         const ctx = buildContext(row.event, calendar, allEvents, interests, now);
         const line = pickGoldyLine(row.event, ctx);
@@ -183,13 +199,60 @@ export function GoldyFeedClient() {
         return { row, ctx, line, rank };
       })
       .sort((a, b) => b.rank - a.rank);
-  }, [rows, demoMode, interests, allEvents, nowOverride]);
+  }, [activeRows, demoMode, interests, allEvents, nowOverride]);
 
-  const recentClips = rows
-    .filter((r) => showHidden || !hiddenIds.has(`${r.batchId}-${r.eventIndex}`))
+  const recentClips = activeRows
     .slice()
     .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
     .slice(0, 6);
+
+  // Greeting blurb picks the most interesting signal out of the ranked
+  // results and addresses it directly. Falls back through: urgent →
+  // packed-today → gameday-this-week → free-food-coming → open-weekend →
+  // light-week → default. Each branch is a distinct sentence so reloading
+  // the feed in different states reads as deliberate observation, not
+  // a generic greeting.
+  const greetingBlurb = useMemo(() => {
+    if (activeRows.length === 0) return null;
+    const weekday = formatWeekday(new Date());
+    const todayISO = new Date().toISOString().slice(0, 10);
+
+    const urgent = ranked.find(({ ctx }) => ctx.bucket === 'urgent');
+    if (urgent) {
+      const m = urgent.ctx.slots.minutesToLeaveBy ?? 0;
+      return `Heads up — ${urgent.row.event.title} needs you moving in about ${m} min. Everything else can wait.`;
+    }
+
+    const todayEvents = allEvents.filter((e) => e.start.startsWith(todayISO));
+    if (todayEvents.length >= 3) {
+      return `${weekday}'s stacked — ${todayEvents.length} things on deck today. Want me to zoom in on today?`;
+    }
+
+    const gameday = ranked.find(({ ctx }) => ctx.bucket === 'top-pick-gameday');
+    if (gameday) {
+      return `Gameday on the calendar this week — ${gameday.row.event.title}. Want me to surface everything that fits around it?`;
+    }
+
+    const freeFood = ranked.find(({ ctx }) => ctx.bucket === 'free-food');
+    if (freeFood) {
+      return `Free food incoming: ${freeFood.row.event.title}. Worth a detour?`;
+    }
+
+    const weekendBooked = allEvents.some((e) => {
+      const d = new Date(e.start).getDay();
+      return d === 0 || d === 6;
+    });
+    if (!weekendBooked) {
+      return `Peeked at your week — your weekend's wide open. Want me to surface what fits?`;
+    }
+
+    if (activeRows.length <= 2) {
+      return `Quiet week — just ${activeRows.length} event${activeRows.length === 1 ? '' : 's'} on deck. Want a look at what's new on campus?`;
+    }
+
+    return `You've got ${activeRows.length} events on deck. ${weekday}'s looking like your day.`;
+  }, [activeRows, ranked, allEvents]);
+
 
   const visibleRanked = useMemo(() => {
     let out = ranked;
@@ -203,16 +266,6 @@ export function GoldyFeedClient() {
     }
     return out;
   }, [ranked, selectedDayIdx, weekStart, hiddenIds, showHidden]);
-
-  // Build duplicate index over all rows (even hidden ones, since a
-  // hidden event can still be a sibling of a visible one).
-  const duplicateIndex = useMemo(() => {
-    const inputs = rows.map((r) => ({
-      rowKey: `${r.batchId}-${r.eventIndex}`,
-      event: r.event,
-    }));
-    return detectDuplicates(inputs);
-  }, [rows]);
 
   const hiddenCount = hiddenIds.size;
 
@@ -288,7 +341,7 @@ export function GoldyFeedClient() {
     else cardRefs.current.delete(key);
   };
 
-  if (rows.length === 0) {
+  if (activeRows.length === 0) {
     return (
       <div
         className="mt-6 flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed bg-white/60 p-10 text-center"
@@ -336,191 +389,18 @@ export function GoldyFeedClient() {
         }}
       />
 
-      <WeekStrip
-        mode={{ source: 'events', events: allEvents }}
+      <LeaveByNotifyToggle events={allEvents} />
+
+      <WeekSection
+        events={allEvents}
+        busySlots={calendar}
         weekStart={weekStart}
         selectedDayIdx={selectedDayIdx}
         onSelectDay={setSelectedDayIdx}
+        now={nowOverride ?? undefined}
       />
 
-      {selectedDayIdx !== null && (
-        <div className="mb-5">
-          <DayRail
-            dayIdx={selectedDayIdx}
-            weekStart={weekStart}
-            events={allEvents}
-            busySlots={calendar}
-            now={nowOverride ?? undefined}
-            onBack={() => setSelectedDayIdx(null)}
-          />
-        </div>
-      )}
-
-      {recentClips.length > 0 && (
-        <section className="mb-8" aria-labelledby="goldy-recent-heading">
-          <div className="mb-2 flex items-center justify-between">
-            <h2
-              id="goldy-recent-heading"
-              className="flex items-center gap-1.5 text-sm font-bold text-stone-900"
-            >
-              <Camera aria-hidden size={14} /> You screenshotted these
-            </h2>
-            <span className="text-xs text-stone-500">
-              {recentClips.length} snapped · tap to jump
-            </span>
-          </div>
-          <p className="mb-3 text-xs text-stone-500">
-            I&apos;ll remember, so you don&apos;t have to.
-          </p>
-          <div className="scrollbar-hide goldy-snap-x -mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
-            {recentClips.map(({ batchId, eventIndex, event }) => {
-              const key = `${batchId}-${eventIndex}`;
-              const flyer = flyerClass(event);
-              const onPizza = flyer === 'flyer-pizza';
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleCameraTap(key)}
-                  aria-label={`Jump to ${event.title}`}
-                  className="goldy-snap-item w-40 shrink-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-                  style={{ borderRadius: '1rem' }}
-                >
-                  <div
-                    className={`relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg transition-transform active:scale-[0.98] ${flyer}`}
-                  >
-                    <div
-                      className={`absolute inset-0 flex flex-col p-3 ${onPizza ? '' : 'text-white'}`}
-                    >
-                      <div
-                        className="text-[9px] font-semibold uppercase tracking-widest"
-                        style={{
-                          color: onPizza ? 'var(--goldy-maroon-700)' : 'var(--goldy-gold-300)',
-                        }}
-                      >
-                        {event.category}
-                      </div>
-                      <div className="goldy-display mt-1 text-lg font-bold leading-tight line-clamp-3">
-                        {event.title}
-                      </div>
-                      <div
-                        className="mt-auto text-[10px]"
-                        style={{
-                          color: onPizza ? 'var(--goldy-maroon-700)' : 'var(--goldy-gold-200)',
-                        }}
-                      >
-                        {formatShortDate(event.start)}
-                        {event.location ? ` · ${event.location.split(',')[0]}` : ''}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      <section
-        className="mb-6 scroll-mt-20"
-        aria-labelledby="goldy-picks-heading"
-      >
-        <div className="mb-3 flex items-center justify-between">
-          <h2
-            id="goldy-picks-heading"
-            className="flex items-center gap-1.5 text-sm font-bold text-stone-900"
-          >
-            Goldy&apos;s picks for you
-          </h2>
-          <span className="text-xs text-stone-500">
-            {activeFilterSummary
-              ? `${visibleRanked.length} of ${ranked.length} · ${activeFilterSummary}`
-              : 'Sorted by fit'}
-          </span>
-        </div>
-        {visibleRanked.length === 0 ? (
-          <div
-            className="rounded-2xl border-2 border-dashed bg-white/60 p-6 text-center text-sm text-stone-600"
-            style={{ borderColor: 'var(--goldy-maroon-200)' }}
-          >
-            <p>Nothing matches your current filter.</p>
-            {selectedDayIdx !== null && (
-              <button
-                type="button"
-                onClick={() => setSelectedDayIdx(null)}
-                className="mt-2 text-xs font-semibold underline"
-                style={{ color: 'var(--goldy-maroon-600)' }}
-              >
-                Clear filter
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {/* Hero already surfaces index 0 when filters are off. Skip it in
-                the list so we don't double-promote the same event. When a
-                filter is active the hero still shows the ranked top of the
-                filtered view, so skipping index 0 is consistent. */}
-            {visibleRanked.slice(1).map(({ row, ctx }) => {
-              const key = `${row.batchId}-${row.eventIndex}`;
-              const flashing = flashKey === key;
-              return (
-                <div
-                  key={key}
-                  ref={registerCardRef(key)}
-                  className="rounded-2xl transition-shadow"
-                  style={
-                    flashing
-                      ? {
-                          boxShadow:
-                            '0 0 0 3px var(--goldy-gold-400), 0 6px 18px -10px rgba(0,0,0,0.2)',
-                        }
-                      : undefined
-                  }
-                >
-                  <GoldyEventRow
-                    event={row.event}
-                    ctx={ctx}
-                    duplicateLabel={siblingDatesLabel(key, duplicateIndex)}
-                    onClick={() => handleAdd(row)}
-                    onHide={() => handleHide(row)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {hiddenCount > 0 && (
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <button
-              type="button"
-              onClick={() => setShowHidden((v) => !v)}
-              className="inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3 py-1.5 font-semibold"
-              style={{
-                background: 'white',
-                borderColor: 'var(--goldy-maroon-500)',
-                color: 'var(--goldy-maroon-600)',
-              }}
-              aria-pressed={showHidden}
-            >
-              {showHidden
-                ? `Hiding ${hiddenCount} — hide them again`
-                : `Hidden (${hiddenCount}) — show`}
-            </button>
-            {showHidden && (
-              <button
-                type="button"
-                onClick={handleUnhideAll}
-                className="inline-flex min-h-[36px] items-center rounded-full px-3 py-1.5 font-semibold underline decoration-dotted underline-offset-4"
-                style={{ color: 'var(--goldy-maroon-500)' }}
-              >
-                Unhide all
-              </button>
-            )}
-          </div>
-        )}
-      </section>
+      <CampusFeed />
 
       {undo && (
         <div

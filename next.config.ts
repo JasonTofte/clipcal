@@ -29,20 +29,23 @@ const CONNECT_SRC = [
   .filter(Boolean)
   .join(' ');
 
+const isDev = process.env.NODE_ENV === 'development';
+
 const CSP_DIRECTIVES = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "img-src 'self' data: blob: https://events.tc.umn.edu https://gopherlink.umn.edu",
   `connect-src ${CONNECT_SRC}`,
-  "font-src 'self' data:",
+  "font-src 'self' data: https://fonts.gstatic.com",
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",
   "object-src 'none'",
   "worker-src 'self'",
   "manifest-src 'self'",
-  "upgrade-insecure-requests",
+  // upgrade-insecure-requests only in production — breaks local HTTP dev on phone
+  ...(!isDev ? ["upgrade-insecure-requests"] : []),
 ].join('; ');
 
 const SECURITY_HEADERS = [

@@ -64,7 +64,7 @@ function SwipeCard({
           : `translateY(${stackOffset * 10}px) scale(${1 - stackOffset * 0.04})`,
         transition: isDragging ? 'none' : 'transform 250ms ease-out',
         zIndex: 10 - stackOffset,
-        touchAction: 'pan-y',
+        touchAction: 'none',
         userSelect: 'none',
       }}
     >
@@ -201,8 +201,7 @@ function ListView({
               href={event.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-start gap-3 rounded-xl border bg-card px-3 py-2.5 transition-colors hover:bg-muted/40"
-              style={{ borderColor: 'var(--border)' }}
+              className="group flex items-start gap-3 rounded-xl bg-card px-3 py-2.5 shadow-sm transition-colors hover:bg-muted/40"
             >
               {event.thumbnail && (
                 <img
@@ -271,7 +270,7 @@ export function CampusFeed() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl bg-card p-4 ring-1 ring-foreground/10">
+      <div className="rounded-2xl bg-card p-4 shadow-sm">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <div className="size-3 animate-spin rounded-full border-[2px] border-muted-foreground/20 border-t-muted-foreground" />
           Loading campus events…
@@ -299,26 +298,33 @@ export function CampusFeed() {
   return (
     <div>
       {/* header */}
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--goldy-maroon-600)' }}>
-          Happening on Campus
-        </span>
-        <div className="flex items-center gap-3">
-          {!listMode && !allDone && (
-            <span className="text-[11px] text-muted-foreground">
-              {remaining.length} of {events.length}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={() => setListMode((v) => !v)}
-            className="flex items-center gap-1 text-[11px] font-medium"
-            style={{ color: 'var(--goldy-maroon-500)' }}
-          >
-            <List size={13} />
-            {listMode ? 'Card view' : 'See all'}
-          </button>
+      <div className="mb-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--goldy-maroon-600)' }}>
+            Happening on Campus
+          </span>
+          <div className="flex items-center gap-3">
+            {!listMode && !allDone && (
+              <span className="text-[11px] text-muted-foreground">
+                {remaining.length} of {events.length}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={() => setListMode((v) => !v)}
+              className="flex items-center gap-1 text-[11px] font-medium"
+              style={{ color: 'var(--goldy-maroon-500)' }}
+            >
+              <List size={13} />
+              {listMode ? 'Card view' : 'See all'}
+            </button>
+          </div>
         </div>
+        {!listMode && !allDone && (
+          <p className="mt-0.5 text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
+            Swipe right to open · left to skip
+          </p>
+        )}
       </div>
 
       {listMode ? (
@@ -382,9 +388,6 @@ export function CampusFeed() {
                 <Check size={20} style={{ color: 'var(--goldy-maroon-500)' }} />
               </button>
             </div>
-            <p className="text-[11px]" style={{ color: 'var(--muted-foreground)' }}>
-              Swipe right to open · left to skip (or tap the buttons)
-            </p>
           </div>
         </div>
       )}

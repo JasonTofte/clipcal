@@ -29,6 +29,7 @@ type EventCardProps = {
   leaveBy: LeaveByInfo | null;
   busySlots?: BusySlot[];
   readOnly?: boolean;
+  posterSrc?: string | null;
   onChange: (updated: Event) => void;
   onDownloadIcs: () => void;
   onOpenGoogle: () => void;
@@ -48,6 +49,12 @@ const CONFIDENCE_STYLES: Record<Event['confidence'], string> = {
 };
 
 
+function formatTime12h(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+}
+
 const inputCls =
   'w-full bg-transparent outline-none rounded-sm focus:ring-2 focus:ring-ring/40 focus:bg-muted/30 hover:bg-muted/20 transition-colors px-1 -mx-1';
 
@@ -62,6 +69,7 @@ export function EventCard({
   leaveBy,
   busySlots,
   readOnly = false,
+  posterSrc,
   onChange,
   onDownloadIcs,
   onOpenGoogle,
@@ -74,7 +82,33 @@ export function EventCard({
   const shouldCollapseDesc = !readOnly && (event.description?.length ?? 0) > 80 && !descExpanded;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
+    <div className="flex overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm">
+      {/* Poster image — left panel */}
+      {posterSrc ? (
+        <img
+          src={posterSrc}
+          alt="Uploaded flyer"
+          className="w-2/5 shrink-0 object-cover self-stretch"
+          style={{ minHeight: 180 }}
+        />
+      ) : (
+        <div
+          className="w-2/5 shrink-0 self-stretch"
+          style={{
+            minHeight: 180,
+            background: 'linear-gradient(160deg, var(--goldy-maroon-500) 0%, var(--goldy-maroon-700) 100%)',
+          }}
+        >
+          <div className="flex h-full flex-col items-center justify-center gap-1 p-4 text-center opacity-30">
+            <div className="text-3xl font-black text-white">EVENT</div>
+            <div className="h-px w-8 bg-white" />
+            <div className="text-xs font-semibold uppercase tracking-widest text-white">Flyer</div>
+          </div>
+        </div>
+      )}
+
+      {/* Info panel — right side */}
+      <div className="flex flex-1 flex-col gap-3 p-4 min-w-0">
       {(conflict || relevance || orgMatch) && (
         <div className="flex flex-wrap gap-1.5">
           {conflict && <ConflictBadge conflict={conflict} />}
@@ -95,7 +129,7 @@ export function EventCard({
         </div>
         <span
           className={cn(
-            'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium ring-1 ring-inset',
+            'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium',
             CONFIDENCE_STYLES[event.confidence],
           )}
         >
@@ -109,21 +143,14 @@ export function EventCard({
 
       <div className="grid grid-cols-2 gap-3">
         <LabeledField label="start">
-          <input
-            value={event.start}
-            readOnly={readOnly}
-            onChange={(e) => patch('start', e.target.value)}
-            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
-          />
+          <span className={cn('text-sm font-bold', readOnly && 'pointer-events-none')}>
+            {formatTime12h(event.start)}
+          </span>
         </LabeledField>
         <LabeledField label="end">
-          <input
-            value={event.end ?? ''}
-            readOnly={readOnly}
-            placeholder="—"
-            onChange={(e) => patch('end', e.target.value || null)}
-            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
-          />
+          <span className={cn('text-sm font-bold', readOnly && 'pointer-events-none')}>
+            {event.end ? formatTime12h(event.end) : '—'}
+          </span>
         </LabeledField>
       </div>
 
@@ -160,27 +187,27 @@ export function EventCard({
       </LabeledField>
 
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="inline-flex h-5 items-center rounded-full border border-border px-2 text-xs font-medium capitalize">
+        <span className="inline-flex h-5 items-center rounded-full bg-muted/60 px-2 text-xs font-medium capitalize">
           {event.category}
         </span>
         {event.hasFreeFood && (
-          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-amber-500/10 px-2 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-500/30 dark:text-amber-400">
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-amber-500/10 px-2 text-xs font-medium text-amber-700 ring-amber-500/30 dark:text-amber-400">
             <Utensils aria-hidden size={10} /> free food
           </span>
         )}
         {event.venueSetting && (
-          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-teal-500/30 dark:text-teal-400">
             <MapPin aria-hidden size={10} /> {event.venueSetting}
           </span>
         )}
         {event.crowdSize && (
-          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-1 ring-inset ring-teal-500/30 dark:text-teal-400">
+          <span className="inline-flex h-5 items-center gap-1 rounded-full bg-teal-500/10 px-2 text-xs font-medium text-teal-700 ring-teal-500/30 dark:text-teal-400">
             <Users aria-hidden size={10} /> ~{event.crowdSize === 'small' ? '<30' : event.crowdSize === 'medium' ? '30-100' : '100+'}
           </span>
         )}
         {event.dressCode && (
           <span
-            className="inline-flex h-5 items-center gap-1 rounded-full bg-violet-500/10 px-2 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 dark:text-violet-400"
+            className="inline-flex h-5 items-center gap-1 rounded-full bg-violet-500/10 px-2 text-xs font-medium text-violet-700 ring-violet-500/30 dark:text-violet-400"
             title={`Dress code: ${event.dressCode}`}
           >
             <Shirt aria-hidden size={10} /> {event.dressCode}
@@ -188,7 +215,7 @@ export function EventCard({
         )}
         {event.room && (
           <span
-            className="inline-flex h-5 items-center gap-1 rounded-full bg-sky-500/10 px-2 text-xs font-medium text-sky-700 ring-1 ring-inset ring-sky-500/30 dark:text-sky-400"
+            className="inline-flex h-5 items-center gap-1 rounded-full bg-sky-500/10 px-2 text-xs font-medium text-sky-700 ring-sky-500/30 dark:text-sky-400"
             title={event.room}
           >
             <DoorOpen aria-hidden size={10} /> {event.room}
@@ -200,7 +227,7 @@ export function EventCard({
       {noticings.length > 0 && (() => {
         const ranked = rankChips(noticings, interests ?? []);
         return (
-          <div className="space-y-2 border-t border-border/40 pt-3">
+          <div className="space-y-2 pt-3">
             <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">worth noticing</div>
             <div className="flex flex-wrap gap-1.5">
               {ranked.map((r) => (
@@ -217,7 +244,7 @@ export function EventCard({
 
       {campusMatch && <CampusMatchBadge match={campusMatch} />}
 
-      <div className="-mx-1 flex flex-col gap-2 border-t border-border/60 pt-3">
+      <div className="-mx-1 flex flex-col gap-2 pt-3">
         <Button size="default" variant="default" disabled={readOnly} onClick={onDownloadIcs} className="w-full">
           <CalendarPlus aria-hidden size={15} /> Add to Calendar
         </Button>
@@ -230,6 +257,7 @@ export function EventCard({
           </Button>
         </div>
       </div>
+      </div> {/* end info panel */}
     </div>
   );
 }
@@ -239,7 +267,7 @@ function RelevanceBadge({ relevance }: { relevance: RelevanceScore }) {
   return (
     <div
       className={cn(
-        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium ring-1 ring-inset',
+        'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium',
         RELEVANCE_STYLES[tone],
       )}
       title={relevance.reason}
@@ -257,7 +285,7 @@ function OrgMatchBadge({ match }: { match: OrgMatch }) {
       href={match.url || '#'}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center gap-1.5 rounded-md bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-500/30 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
+      className="flex items-center gap-1.5 rounded-md bg-violet-500/10 px-3 py-1.5 text-xs font-medium text-violet-700 ring-violet-500/30 transition-colors hover:bg-violet-500/20 dark:text-violet-400"
     >
       <GraduationCap aria-hidden size={14} />
       <span>
@@ -272,7 +300,7 @@ function OrgMatchBadge({ match }: { match: OrgMatch }) {
 
 function CampusMatchBadge({ match }: { match: CampusMatch }) {
   return (
-    <div className="rounded-lg bg-sky-500/5 p-3 ring-1 ring-inset ring-sky-500/20">
+    <div className="rounded-lg bg-sky-500/5 p-3 ring-sky-500/20">
       <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-400">
         <Building2 aria-hidden size={14} />
         <span>Found on UMN Events Calendar</span>

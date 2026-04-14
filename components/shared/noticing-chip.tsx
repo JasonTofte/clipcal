@@ -28,7 +28,7 @@ export function NoticingChip({ noticing, priority = 'secondary', className }: No
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
-        priority === 'priority' ? PRIORITY_STYLE : `ring-1 ring-inset ${NOTICING_STYLES[noticing.tone]}`,
+        priority === 'priority' ? PRIORITY_STYLE : NOTICING_STYLES[noticing.tone],
         className,
       )}
     >

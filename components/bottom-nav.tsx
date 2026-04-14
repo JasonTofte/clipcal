@@ -10,6 +10,7 @@ type Tab = { href: string; label: string; Icon: LucideIcon };
 const TABS: Tab[] = [
   { href: '/feed', label: 'Feed', Icon: LayoutList },
   { href: '/', label: 'Upload', Icon: Camera },
+  { href: '/feed', label: 'Schedule', Icon: LayoutList },
   { href: '/browse', label: 'Browse', Icon: Search },
   { href: '/profile', label: 'Profile', Icon: User },
 ];
@@ -25,7 +26,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed bottom-0 inset-x-0 z-30 border-t border-border bg-[var(--surface-paper)] shadow-[0_-8px_20px_-8px_rgba(90,20,0,0.12)] backdrop-blur"
+      className="fixed bottom-0 inset-x-0 z-30 bg-[var(--surface-paper)] shadow-[0_-8px_20px_-8px_rgba(90,20,0,0.12)] backdrop-blur"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <ul className="mx-auto flex max-w-2xl items-stretch justify-around">

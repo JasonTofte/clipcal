@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Atkinson_Hyperlegible, Fredoka } from "next/font/google";
+import { Geist, Geist_Mono, Atkinson_Hyperlegible, Plus_Jakarta_Sans } from "next/font/google";
 import { BottomNav } from "@/components/bottom-nav";
 import { GoldyHeader } from "@/components/goldy-header";
 import "./globals.css";
@@ -7,6 +7,7 @@ import "./globals.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -28,11 +29,11 @@ const atkinson = Atkinson_Hyperlegible({
   display: "swap",
 });
 
-// Kept for backwards-compat with any remaining Fredoka references
-// (component-level cleanup will remove). Not on the critical path.
-const fredoka = Fredoka({
+// Display/heading font. Plus Jakarta Sans Extra Bold matches the tight,
+// geometric boldness seen in modern mobile app UIs.
+const jakartaSans = Plus_Jakarta_Sans({
   variable: "--font-fredoka",
-  weight: ["500", "700"],
+  weight: ["400", "600", "700", "800"],
   subsets: ["latin"],
   display: "swap",
 });
@@ -67,7 +68,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${atkinson.variable} ${fredoka.variable} antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${atkinson.variable} ${jakartaSans.variable} h-full antialiased`}
     >
       <body
         className="min-h-dvh flex flex-col pb-[calc(env(safe-area-inset-bottom)+56px)]"

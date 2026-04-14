@@ -15,6 +15,7 @@ import type { LeaveByInfo } from '@/lib/leave-by';
 type Props = {
   events: Event[];
   sourceNotes: string | null;
+  posterUrl?: string | null;
   relevance: RelevanceScore[] | null;
   campusMatches: (CampusMatch | null)[] | null;
   orgMatches: (OrgMatch | null)[] | null;
@@ -38,6 +39,7 @@ function openInNewTab(url: string) {
 export function HomeSuccessView({
   events,
   sourceNotes,
+  posterUrl,
   relevance,
   campusMatches,
   orgMatches,
@@ -69,6 +71,7 @@ export function HomeSuccessView({
         <EventCard
           key={idx}
           event={event}
+          posterSrc={posterUrl}
           conflict={conflicts[idx]}
           relevance={relevance?.[idx] ?? null}
           campusMatch={campusMatches?.[idx] ?? null}
