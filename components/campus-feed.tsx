@@ -2,19 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import type { CampusFeedEvent, CampusFeedResponse } from '@/app/api/campus-feed/route';
+import { CampusEventList } from '@/components/campus-event-list';
 import { loadProfileFromStorage } from '@/lib/profile';
-import { scoreEvent, scoreTone, formatScoreBadge } from '@/lib/relevance';
-
-const TONE_STYLES: Record<'high' | 'medium' | 'low', { bg: string; fg: string }> = {
-  high: { bg: 'var(--goldy-gold-100)', fg: 'var(--goldy-maroon-700)' },
-  medium: { bg: 'var(--surface-calm)', fg: 'var(--muted-foreground)' },
-  low: { bg: 'transparent', fg: 'var(--muted-foreground)' },
-};
 
 export function CampusFeed() {
   const [events, setEvents] = useState<CampusFeedEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [interests, setInterests] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const profile = loadProfileFromStorage();
@@ -36,82 +31,56 @@ export function CampusFeed() {
     })();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="size-3 animate-spin rounded-full border-[2px] border-muted-foreground/20 border-t-muted-foreground" />
-          Loading campus events…
-        </div>
-      </div>
-    );
-  }
-
-  if (events.length === 0) return null;
+  if (loading || events.length === 0) return null;
 
   return (
-    <div className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-      <div className="mb-3 flex items-center justify-between">
+    <section className="mt-8" aria-labelledby="campus-feed-heading">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls="campus-feed-list"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-muted/30"
+        style={{ borderColor: 'var(--border)' }}
+      >
         <div className="flex items-center gap-2">
           <span className="text-base" aria-hidden>🏛️</span>
-          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <h2
+            id="campus-feed-heading"
+            className="text-sm font-bold"
+            style={{ color: 'var(--foreground)' }}
+          >
             Happening on Campus
+          </h2>
+          <span
+            className="text-[11px]"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            {events.length} live
           </span>
         </div>
-        <span className="font-mono text-[10px] text-muted-foreground/60">
-          live · events.tc.umn.edu
+        <span
+          aria-hidden
+          className="text-xs transition-transform"
+          style={{
+            color: 'var(--muted-foreground)',
+            transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          ▾
         </span>
-      </div>
-
-      <ul className="space-y-2">
-        {events.map((event) => {
-          const score = scoreEvent(event, interests);
-          const tone = score === null ? null : scoreTone(score);
-          return (
-          <li key={event.id}>
-            <a
-              href={event.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group flex items-start gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
-            >
-              {event.thumbnail && (
-                <img
-                  src={event.thumbnail}
-                  alt=""
-                  className="mt-0.5 size-8 shrink-0 rounded object-cover"
-                />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium group-hover:text-primary">
-                  {event.title}
-                </p>
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-                  <span>{event.date_display}</span>
-                  {event.location && (
-                    <>
-                      <span className="text-border">·</span>
-                      <span className="truncate">{event.location}</span>
-                    </>
-                  )}
-                  {event.cost && event.cost.toLowerCase() === 'free' && (
-                    <>
-                      <span className="text-border">·</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">Free</span>
-                    </>
-                  )}
-                </div>
-                {event.group_title && (
-                  <p className="mt-0.5 truncate text-[10px] text-muted-foreground/60">
-                    {event.group_title}
-                  </p>
-                )}
-              </div>
-            </a>
-          </li>
-          );
-        })}
-      </ul>
-    </div>
+      </button>
+      {open && (
+        <div id="campus-feed-list" className="mt-3">
+          <CampusEventList events={events} interests={interests} />
+          <p
+            className="mt-3 text-center text-[10px] font-mono"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            events.tc.umn.edu · live
+          </p>
+        </div>
+      )}
+    </section>
   );
 }

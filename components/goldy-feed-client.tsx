@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CampusFeed } from '@/components/campus-feed';
 import { WeekStrip } from '@/components/week-strip';
 import { DayRail } from '@/components/day-rail';
 import { GoldyEventRow } from '@/components/goldy-event-row';
@@ -522,6 +523,8 @@ export function GoldyFeedClient() {
           </div>
         )}
       </section>
+
+      <CampusFeed />
 
       {undo && (
         <div
