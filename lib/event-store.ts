@@ -13,7 +13,7 @@ export type StoredEventBatch = z.infer<typeof StoredEventBatchSchema>;
 
 const StoredBatchArraySchema = z.array(StoredEventBatchSchema);
 
-export const EVENT_STORE_KEY = 'clipcal_parsed_events';
+export const EVENT_STORE_KEY = 'showup_parsed_events';
 
 function generateId(): string {
   // Not crypto-grade; just needs to be unique within a session.
@@ -51,6 +51,17 @@ export function appendBatch(
   const existing = loadBatches();
   saveBatches([...existing, batch]);
   return batch;
+}
+
+export function updateEventInBatch(batchId: string, eventIndex: number, updated: Event): void {
+  const existing = loadBatches();
+  const next = existing.map((b) => {
+    if (b.id !== batchId) return b;
+    const events = [...b.events];
+    events[eventIndex] = updated;
+    return { ...b, events };
+  });
+  saveBatches(next);
 }
 
 export function markBatchCommitted(batchId: string): void {

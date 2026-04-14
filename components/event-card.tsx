@@ -70,7 +70,10 @@ export function EventCard({
     onChange({ ...event, [key]: value });
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10">
+    <div className={cn(
+      'flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1',
+      event.starred ? 'ring-amber-400/70 bg-amber-500/5' : 'ring-foreground/10',
+    )}>
       {(conflict || relevance) && (
         <div className="flex flex-wrap gap-1.5">
           {conflict && <ConflictBadge conflict={conflict} />}
@@ -90,14 +93,27 @@ export function EventCard({
             aria-label="Event title"
           />
         </div>
-        <span
-          className={cn(
-            'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium ring-1 ring-inset',
-            CONFIDENCE_STYLES[event.confidence],
-          )}
-        >
-          {event.confidence}
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => patch('starred', !event.starred)}
+            aria-label={event.starred ? 'Unstar event' : 'Star event'}
+            className={cn(
+              'text-lg leading-none transition-colors',
+              event.starred ? 'text-amber-400' : 'text-muted-foreground/40 hover:text-amber-300',
+            )}
+          >
+            {event.starred ? '★' : '☆'}
+          </button>
+          <span
+            className={cn(
+              'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium ring-1 ring-inset',
+              CONFIDENCE_STYLES[event.confidence],
+            )}
+          >
+            {event.confidence}
+          </span>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">

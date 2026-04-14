@@ -2,8 +2,8 @@
 # Configure Pi Zero 2W as a WiFi access point (no internet, no router required).
 #
 # After running this:
-#   SSID:     ClipCal-Display
-#   Password: clipcal2026
+#   SSID:     ShowUppie-Display
+#   Password: showuppie2026
 #   Pi IP:    10.42.0.1
 #   Sync URL: http://10.42.0.1:8080/
 #
@@ -13,8 +13,8 @@
 # To UNDO: sudo bash ap_setup.sh --undo
 set -euo pipefail
 
-SSID="ClipCal-Display"
-PASSPHRASE="clipcal2026"
+SSID="ShowUppie-Display"
+PASSPHRASE="showuppie2026"
 PI_IP="10.42.0.1"
 IFACE="wlan0"
 
@@ -22,13 +22,13 @@ if [[ "${1:-}" == "--undo" ]]; then
   echo "Removing AP configuration..."
   sudo systemctl stop hostapd dnsmasq 2>/dev/null || true
   sudo systemctl disable hostapd dnsmasq 2>/dev/null || true
-  sudo rm -f /etc/hostapd/hostapd.conf /etc/dnsmasq.d/clipcal.conf
+  sudo rm -f /etc/hostapd/hostapd.conf /etc/dnsmasq.d/showuppie.conf
   sudo ip addr del "${PI_IP}/24" dev "${IFACE}" 2>/dev/null || true
   echo "AP removed. Reboot to restore normal WiFi."
   exit 0
 fi
 
-echo "=== ClipCal WiFi AP setup ==="
+echo "=== ShowUppie WiFi AP setup ==="
 echo "SSID: ${SSID}  Password: ${PASSPHRASE}  IP: ${PI_IP}"
 
 # 1. Install deps
@@ -65,8 +65,8 @@ EOF
 sudo sed -i 's|^#\?DAEMON_CONF=.*|DAEMON_CONF="/etc/hostapd/hostapd.conf"|' /etc/default/hostapd
 
 # 5. dnsmasq config — spoof ALL DNS to Pi IP so iOS triggers captive portal
-sudo tee /etc/dnsmasq.d/clipcal.conf > /dev/null <<EOF
-# ClipCal AP — DHCP + DNS spoof for captive portal
+sudo tee /etc/dnsmasq.d/showuppie.conf > /dev/null <<EOF
+# ShowUppie AP — DHCP + DNS spoof for captive portal
 interface=${IFACE}
 dhcp-range=10.42.0.10,10.42.0.50,12h
 # Redirect all DNS queries to Pi so iOS shows captive portal banner

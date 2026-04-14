@@ -1,0 +1,15 @@
+[Unit]
+Description=ClipCal e-ink display server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Environment=HOME=/home/eltonskreations
+WorkingDirectory=/home/eltonskreations/clipcal/pi
+ExecStart=/home/eltonskreations/clipcal/pi/.venv/bin/python3 /home/eltonskreations/clipcal/pi/main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

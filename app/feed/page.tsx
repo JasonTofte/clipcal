@@ -1,26 +1,36 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { Dropzone } from '@/components/dropzone';
 import { EventCard } from '@/components/event-card';
+import { EinkSyncButton } from '@/components/eink-sync-button';
 import { Button } from '@/components/ui/button';
 import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
+  appendBatch,
   loadBatches,
   markBatchCommitted,
+  updateEventInBatch,
   type StoredEventBatch,
 } from '@/lib/event-store';
-import { EinkSyncButton } from '@/components/eink-sync-button';
 import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings } from '@/lib/noticings';
-import { loadProfileFromStorage, type Profile } from '@/lib/profile';
-import type { Event } from '@/lib/schema';
+import { loadProfileFromStorage } from '@/lib/profile';
+import { decodeQRFromFile } from '@/lib/qr-decode';
+import { syncToEinkWifi } from '@/lib/ble-sync';
+import type { Event, Extraction } from '@/lib/schema';
 import { cn } from '@/lib/utils';
 
 type FilterKey = 'all' | 'free-food' | 'no-conflicts' | 'this-week';
+type UploadState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'done'; count: number }
+  | { status: 'error'; message: string };
 
 type FeedRow = {
   batchId: string;
@@ -30,20 +40,89 @@ type FeedRow = {
   icsCommitted: boolean;
 };
 
-const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
+const DEMO_MODE_STORAGE_KEY = 'showup_demo_mode';
 const FORGOTTEN_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
+
+async function compressImage(file: File, maxBytes = 4.5 * 1024 * 1024): Promise<File> {
+  if (file.size <= maxBytes) return file;
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const scale = Math.min(1, Math.sqrt(maxBytes / file.size));
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(
+        (blob) => resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file),
+        'image/jpeg', 0.85,
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
 
 export default function FeedPage() {
   const [batches, setBatches] = useState<StoredEventBatch[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [demoMode, setDemoMode] = useState<boolean>(true);
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [uploadState, setUploadState] = useState<UploadState>({ status: 'idle' });
+  const [einkSync, setEinkSync] = useState<'idle' | 'syncing' | 'done' | 'error'>('idle');
 
   useEffect(() => {
     setBatches(loadBatches());
-    setProfile(loadProfileFromStorage());
+    loadProfileFromStorage();
     const storedDemo = window.localStorage.getItem(DEMO_MODE_STORAGE_KEY);
     if (storedDemo !== null) setDemoMode(storedDemo === 'true');
+  }, []);
+
+  const handleFiles = useCallback(async (files: File[]) => {
+    if (files.length === 0) return;
+    setUploadState({ status: 'loading' });
+    setEinkSync('idle');
+
+    const rawFile = files[0];
+    const file = await compressImage(rawFile);
+    const fd = new FormData();
+    fd.append('image', file);
+    const qrUrl = await decodeQRFromFile(rawFile);
+
+    try {
+      const response = await fetch('/api/extract', { method: 'POST', body: fd });
+      const json: unknown = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errMsg =
+          typeof json === 'object' && json !== null && 'error' in json &&
+          typeof (json as { error: unknown }).error === 'string'
+            ? (json as { error: string }).error
+            : `HTTP ${response.status}`;
+        setUploadState({ status: 'error', message: errMsg });
+        return;
+      }
+
+      const extraction = json as Extraction;
+      if (qrUrl) {
+        extraction.events = extraction.events.map((e) => ({ ...e, signupUrl: qrUrl }));
+      }
+      appendBatch(extraction.events, extraction.sourceNotes);
+      setBatches(loadBatches());
+      setUploadState({ status: 'done', count: extraction.events.length });
+
+      // Auto-sync to e-ink
+      setEinkSync('syncing');
+      syncToEinkWifi(extraction.events)
+        .then(() => setEinkSync('done'))
+        .catch(() => setEinkSync('error'));
+
+      // Reset upload state after 3s so user can scan another
+      setTimeout(() => setUploadState({ status: 'idle' }), 3000);
+    } catch (err) {
+      setUploadState({ status: 'error', message: err instanceof Error ? err.message : 'network error' });
+    }
   }, []);
 
   const rows: FeedRow[] = useMemo(
@@ -83,14 +162,10 @@ export default function FeedPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, filter, demoMode]);
 
-  const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      // Primary: addedAt desc (most recent first). Relevance sort would
-      // require fetching /api/relevance across all batches which we do
-      // not persist — Session 5 keeps that as a stretch.
-      return b.addedAt.localeCompare(a.addedAt);
-    });
-  }, [filtered]);
+  const sorted = useMemo(
+    () => [...filtered].sort((a, b) => b.addedAt.localeCompare(a.addedAt)),
+    [filtered],
+  );
 
   const forgotten = useMemo(() => {
     const nowMs = Date.now();
@@ -112,48 +187,86 @@ export default function FeedPage() {
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-10">
       <header className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">Feed</h1>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">ShowUp</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything you&rsquo;ve extracted. Filter by what matters.
+            Snap a flyer, know if you should go.
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <EinkSyncButton events={rows.map((r) => r.event)} />
           <Link
-            href="/"
+            href="/interview"
             className="text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
           >
-            back to upload
+            profile
           </Link>
         </div>
       </header>
 
+      {/* Upload section */}
+      <div className="mb-6">
+        {uploadState.status === 'idle' && (
+          <Dropzone onFiles={handleFiles} />
+        )}
+        {uploadState.status === 'loading' && (
+          <div className="flex items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card p-6">
+            <div className="size-6 animate-spin rounded-full border-[3px] border-primary/20 border-t-primary" aria-hidden />
+            <p className="text-sm text-muted-foreground">Claude is reading your flyer…</p>
+          </div>
+        )}
+        {uploadState.status === 'done' && (
+          <div className="flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
+            <p className="text-sm text-muted-foreground">
+              ✓ {uploadState.count} event{uploadState.count !== 1 ? 's' : ''} added
+            </p>
+            <button
+              className="text-xs text-muted-foreground underline decoration-dotted underline-offset-4 hover:text-foreground"
+              onClick={() => setUploadState({ status: 'idle' })}
+            >
+              scan another
+            </button>
+          </div>
+        )}
+        {uploadState.status === 'error' && (
+          <div className="flex items-center justify-between rounded-2xl bg-destructive/10 px-4 py-3 ring-1 ring-destructive/20">
+            <p className="text-sm text-destructive">{uploadState.message}</p>
+            <button
+              className="text-xs text-destructive underline decoration-dotted underline-offset-4"
+              onClick={() => setUploadState({ status: 'idle' })}
+            >
+              try again
+            </button>
+          </div>
+        )}
+        {einkSync !== 'idle' && (
+          <p className="mt-2 text-xs font-mono text-muted-foreground">
+            {einkSync === 'syncing' && '▦ syncing display…'}
+            {einkSync === 'done'    && '▦ display updated ✓'}
+            {einkSync === 'error'   && '▦ display sync failed — is Pi on the same network?'}
+          </p>
+        )}
+      </div>
+
+      {/* Filter pills */}
       <div className="mb-4 flex flex-wrap gap-2">
         <FilterPill active={filter === 'all'} onClick={() => setFilter('all')}>
           all ({rows.length})
         </FilterPill>
-        <FilterPill
-          active={filter === 'free-food'}
-          onClick={() => setFilter('free-food')}
-        >
+        <FilterPill active={filter === 'free-food'} onClick={() => setFilter('free-food')}>
           🍕 free food
         </FilterPill>
-        <FilterPill
-          active={filter === 'no-conflicts'}
-          onClick={() => setFilter('no-conflicts')}
-        >
+        <FilterPill active={filter === 'no-conflicts'} onClick={() => setFilter('no-conflicts')}>
           ✓ no conflicts
         </FilterPill>
-        <FilterPill
-          active={filter === 'this-week'}
-          onClick={() => setFilter('this-week')}
-        >
+        <FilterPill active={filter === 'this-week'} onClick={() => setFilter('this-week')}>
           this week
         </FilterPill>
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState />
+        <p className="text-sm text-muted-foreground text-center py-10">
+          No flyers scanned yet — snap one above.
+        </p>
       ) : (
         <div className="flex flex-col gap-4">
           {forgotten.length > 0 && filter === 'all' && (
@@ -162,8 +275,7 @@ export default function FeedPage() {
                 You screenshotted these a while ago
               </h2>
               <p className="mb-3 text-xs text-muted-foreground">
-                Added more than 7 days ago and never added to your calendar. Not a
-                nag — just a noticing.
+                Added more than 7 days ago and never added to your calendar. Not a nag — just a noticing.
               </p>
               <ul className="space-y-1 text-sm">
                 {forgotten.map((row) => (
@@ -171,9 +283,7 @@ export default function FeedPage() {
                     <span className="text-muted-foreground">·</span>
                     <span>
                       <span className="font-medium">{row.event.title}</span>
-                      <span className="ml-2 text-xs text-muted-foreground">
-                        {daysAgoLabel(row.addedAt)}
-                      </span>
+                      <span className="ml-2 text-xs text-muted-foreground">{daysAgoLabel(row.addedAt)}</span>
                     </span>
                   </li>
                 ))}
@@ -192,7 +302,10 @@ export default function FeedPage() {
                 relevance={null}
                 noticings={generateNoticings(row.event, { demoCalendar: activeCalendar })}
                 leaveBy={computeLeaveBy(row.event)}
-                onChange={() => undefined /* feed rows are read-only for Session 5 */}
+                onChange={(updated) => {
+                  updateEventInBatch(row.batchId, row.eventIndex, updated);
+                  setBatches(loadBatches());
+                }}
                 onDownloadIcs={() => handleDownloadIcs(row)}
                 onOpenGoogle={() => window.open(googleCalendarUrl(row.event), '_blank', 'noopener,noreferrer')}
                 onOpenOutlook={() => window.open(outlookCalendarUrl(row.event), '_blank', 'noopener,noreferrer')}
@@ -202,17 +315,27 @@ export default function FeedPage() {
         </div>
       )}
 
-      <footer className="mt-10 border-t border-border/50 pt-4 text-center text-[10px] font-mono text-muted-foreground">
-        inform · don&rsquo;t decide
+      <footer className="mt-10 flex items-center justify-between border-t border-border/50 pt-4 text-xs text-muted-foreground">
+        <label className="flex cursor-pointer items-center gap-2 select-none">
+          <input
+            type="checkbox"
+            checked={demoMode}
+            onChange={(e) => {
+              setDemoMode(e.target.checked);
+              window.localStorage.setItem(DEMO_MODE_STORAGE_KEY, String(e.target.checked));
+            }}
+            className="size-3.5 rounded border-border"
+          />
+          <span>Demo mode <span className="text-muted-foreground/60">(fake calendar)</span></span>
+        </label>
+        <span className="font-mono text-[10px]">inform · don&rsquo;t decide</span>
       </footer>
     </main>
   );
 }
 
 function FilterPill({
-  active,
-  onClick,
-  children,
+  active, onClick, children,
 }: {
   active: boolean;
   onClick: () => void;
@@ -231,24 +354,6 @@ function FilterPill({
     >
       {children}
     </button>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card p-10 text-center">
-      <div className="text-4xl" aria-hidden>
-        📭
-      </div>
-      <p className="text-sm text-muted-foreground">
-        No flyers extracted yet. Head back to the upload page.
-      </p>
-      <Link href="/">
-        <Button size="sm" variant="default">
-          Upload a flyer
-        </Button>
-      </Link>
-    </div>
   );
 }
 

@@ -64,32 +64,32 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      onClick={openPicker}
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
       aria-label="Drop a flyer, paste an image, or click to upload"
       className={cn(
-        'group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors',
+        'relative group flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed p-10 text-center transition-colors',
         'border-border bg-card',
         !disabled && 'cursor-pointer hover:bg-muted/50',
         dragActive && 'border-primary bg-primary/5',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
+      {/* Gallery picker */}
       <input
         ref={inputRef}
         type="file"
         accept={ACCEPT}
         multiple
-        hidden
         onChange={(e) => {
           const files = pickImageFiles(e.target.files);
           if (files.length > 0) onFiles(files);
           e.target.value = '';
         }}
         disabled={disabled}
+        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
       <div className="text-4xl" aria-hidden>
         📸
@@ -101,10 +101,29 @@ export function Dropzone({ onFiles, disabled = false }: DropzoneProps) {
         <p className="text-sm text-muted-foreground">
           JPG · PNG · WEBP · up to 5 MB
         </p>
-        <p className="text-xs text-muted-foreground/70">
+        <p className="text-xs text-muted-foreground/70 hidden sm:block">
           or press <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">⌘V</kbd> to paste
         </p>
       </div>
+      {/* Camera button — mobile only */}
+      <label
+        className="sm:hidden flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-4 py-2 text-sm font-medium cursor-pointer hover:bg-muted transition-colors"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <input
+          type="file"
+          accept={ACCEPT}
+          capture="environment"
+          onChange={(e) => {
+            const files = pickImageFiles(e.target.files);
+            if (files.length > 0) onFiles(files);
+            e.target.value = '';
+          }}
+          disabled={disabled}
+          className="hidden"
+        />
+        📷 Take photo
+      </label>
     </div>
   );
 }

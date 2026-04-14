@@ -25,6 +25,7 @@ export const EventSchema = z.object({
   timezone: z.string(),
   confidence: Confidence,
   signupUrl: z.string().nullable().optional(),
+  starred: z.boolean().optional(),
 });
 
 export const ExtractionSchema = z.object({

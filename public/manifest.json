@@ -1,6 +1,6 @@
 {
-  "name": "ClipCal",
-  "short_name": "ClipCal",
+  "name": "ShowUp",
+  "short_name": "ShowUp",
   "description": "Your campus copilot. Snap a flyer, know if you should go.",
   "start_url": "/",
   "display": "standalone",

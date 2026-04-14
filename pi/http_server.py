@@ -1,5 +1,5 @@
 """
-ClipCal HTTP sync server — iOS fallback for devices without Web Bluetooth.
+ShowUppie HTTP sync server — iOS fallback for devices without Web Bluetooth.
 
 Endpoints:
   GET  /            Captive-portal sync page (paste payload here)
@@ -42,7 +42,7 @@ _SYNC_PAGE = """<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ClipCal Display Sync</title>
+  <title>ShowUppie Display Sync</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -76,13 +76,13 @@ _SYNC_PAGE = """<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>▦ ClipCal Display</h1>
+  <h1>▦ ShowUppie Display</h1>
   {% if ok %}
     <p class="status">Display updated.</p>
   {% elif error %}
     <p class="status">{{ error }}</p>
   {% else %}
-    <p class="sub">Paste your sync code from the ClipCal app.</p>
+    <p class="sub">Paste your sync code from the ShowUppie app.</p>
   {% endif %}
   <form method="POST" action="/sync-form">
     <textarea name="payload" placeholder='{"p":{"t":"..."},"e":[...],"ts":...}'
@@ -91,7 +91,7 @@ _SYNC_PAGE = """<!DOCTYPE html>
     <button type="submit">Sync display</button>
   </form>
   <div class="steps">
-    <span>1.</span> Open ClipCal in your regular browser<br>
+    <span>1.</span> Open ShowUppie in your regular browser<br>
     <span>2.</span> Tap <b>Copy iOS sync code</b> on the Feed page<br>
     <span>3.</span> Come back here and paste it above
   </div>
@@ -131,7 +131,7 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
             return render_template_string(_SYNC_PAGE, ok=True, error=None, payload=None)
         except json.JSONDecodeError:
             return render_template_string(
-                _SYNC_PAGE, ok=False, error="Invalid sync code — copy it again from ClipCal.", payload=raw
+                _SYNC_PAGE, ok=False, error="Invalid sync code — copy it again from ShowUppie.", payload=raw
             )
         except Exception as exc:
             log.exception("sync_form render error: %s", exc)

@@ -65,7 +65,7 @@ describe('buildIcsFilename', () => {
   });
 
   it('falls back to a generic name for multi-event exports', () => {
-    expect(buildIcsFilename([baseEvent, baseEvent])).toBe('clipcal-events.ics');
+    expect(buildIcsFilename([baseEvent, baseEvent])).toBe('showup-events.ics');
   });
 
   it('strips punctuation from the slug', () => {

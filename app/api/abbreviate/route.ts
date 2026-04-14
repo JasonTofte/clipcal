@@ -9,8 +9,8 @@ const MODEL_ID = 'claude-haiku-4-5-20251001';
 const AbbreviatedEventSchema = z.object({
   events: z.array(
     z.object({
-      shortTitle: z.string().max(20),
-      shortLoc: z.string().max(14).nullable(),
+      shortTitle: z.string().transform((s) => (s.length > 20 ? s.slice(0, 19) + '…' : s)),
+      shortLoc: z.string().transform((s) => (s.length > 14 ? s.slice(0, 13) + '…' : s)).nullable(),
     }),
   ),
 });

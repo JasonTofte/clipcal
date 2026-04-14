@@ -7,7 +7,7 @@
  */
 
 const EINK_PI_URL =
-  process.env.NEXT_PUBLIC_EINK_PI_URL ?? 'http://10.0.0.140:8080';
+  process.env.NEXT_PUBLIC_EINK_PI_URL ?? 'http://lightpi.local:8080';
 
 import type { Event } from '@/lib/schema';
 
@@ -16,9 +16,9 @@ const WRITE_CHAR_UUID        = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 
 // Compact JSON sent to the Pi — target <512 bytes
 export interface EinkPayload {
-  p: { t: string; tm: string; l: string; d?: string }; // priority event
-  e: Array<{ t: string; tm: string; l?: string }>;     // rest of day
-  ts: number;                                           // unix seconds
+  p: { t: string; tm: string; l: string; d?: string; x?: true; s?: true }; // priority (x=past, s=starred)
+  e: Array<{ t: string; tm: string; l?: string; x?: true; s?: true }>;     // rest (x=past, s=starred)
+  ts: number;                                                                // unix seconds
 }
 
 // ─── capability detection ────────────────────────────────────────────────────
@@ -30,13 +30,27 @@ export function isBleSupported(): boolean {
 // ─── payload builder (shared by both transports) ────────────────────────────
 
 export async function buildPayload(events: Event[]): Promise<EinkPayload> {
-  const todayEvents = filterUpcoming(events);
-  if (todayEvents.length === 0) throw new Error('No upcoming events to sync.');
+  if (events.length === 0) throw new Error('No events to sync.');
 
-  const abbreviated = await abbreviateEvents(todayEvents);
-  const priorityEvent = todayEvents[0];
-  const priorityAbbr  = abbreviated[0];
-  const restAbbr      = abbreviated.slice(1);
+  const now = new Date();
+  const isPast = (e: Event) =>
+    new Date(e.start) < now && (e.end == null || new Date(e.end) < now);
+
+  // Sort all events by start time
+  const sorted = [...events].sort(
+    (a, b) => new Date(a.start).getTime() - new Date(b.start).getTime(),
+  );
+
+  // Priority = first starred upcoming → first upcoming → last event if all past
+  const upcoming = sorted.filter((e) => !isPast(e));
+  const starredUpcoming = upcoming.filter((e) => e.starred);
+  const priorityEvent = starredUpcoming[0] ?? upcoming[0] ?? sorted[sorted.length - 1];
+  const priorityIdx = sorted.indexOf(priorityEvent);
+  const rest = sorted.filter((_, i) => i !== priorityIdx);
+
+  const abbreviated = await abbreviateEvents(sorted);
+  const priorityAbbr = abbreviated[priorityIdx];
+  const restAbbr = abbreviated.filter((_, i) => i !== priorityIdx);
 
   const payload: EinkPayload = {
     p: {
@@ -44,16 +58,19 @@ export async function buildPayload(events: Event[]): Promise<EinkPayload> {
       tm: formatTime(priorityEvent.start),
       l:  priorityAbbr.shortLoc ?? '',
       d:  durationLabel(priorityEvent.start, priorityEvent.end),
+      ...(isPast(priorityEvent) ? { x: true as const } : {}),
+      ...(priorityEvent.starred   ? { s: true as const } : {}),
     },
-    e: todayEvents.slice(1).map((evt, i) => ({
+    e: rest.map((evt, i) => ({
       t:  restAbbr[i]?.shortTitle ?? truncate(evt.title, 20),
       tm: formatTime(evt.start),
       ...(restAbbr[i]?.shortLoc ? { l: restAbbr[i].shortLoc ?? undefined } : {}),
+      ...(isPast(evt)  ? { x: true as const } : {}),
+      ...(evt.starred  ? { s: true as const } : {}),
     })),
     ts: Math.floor(Date.now() / 1000),
   };
 
-  // Trim until it fits one BLE write / URL paste
   while (JSON.stringify(payload).length > 510 && payload.e.length > 0) {
     payload.e.pop();
   }
@@ -103,13 +120,6 @@ export async function syncToEinkWifi(events: Event[]): Promise<void> {
 }
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
-
-function filterUpcoming(events: Event[]): Event[] {
-  const now = new Date();
-  return events
-    .filter((e) => new Date(e.start) >= now || (e.end != null && new Date(e.end) > now))
-    .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
-}
 
 function formatTime(iso: string): string {
   const d = new Date(iso);

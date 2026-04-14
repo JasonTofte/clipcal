@@ -23,7 +23,7 @@ export const ProfileSchema = z.object({
 
 export type Profile = z.infer<typeof ProfileSchema>;
 
-export const PROFILE_STORAGE_KEY = 'clipcal_profile';
+export const PROFILE_STORAGE_KEY = 'showup_profile';
 
 export function loadProfileFromStorage(): Profile | null {
   if (typeof window === 'undefined') return null;

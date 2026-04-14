@@ -77,7 +77,7 @@ export default function InterviewPage() {
       <header className="mb-6">
         <h1 className="font-heading text-2xl font-semibold tracking-tight">Set up your profile</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          A few short questions. ClipCal uses this to highlight events that actually fit you — it
+          A few short questions. ShowUp uses this to highlight events that actually fit you — it
           never auto-declines anything.
         </p>
       </header>
