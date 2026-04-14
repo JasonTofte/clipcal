@@ -222,16 +222,7 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-10">
-      <header className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your campus copilot. Snap a flyer, know if you should go.
-          </p>
-        </div>
-      </header>
-
+    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-6">
       {demoMode && <TodaySnapshot busySlots={DEMO_CALENDAR} />}
 
       <div className="flex-1">

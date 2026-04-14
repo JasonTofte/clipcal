@@ -12,8 +12,8 @@ import { formatScoreBadge, scoreTone } from '@/lib/relevance';
 import type { CampusMatch } from '@/app/api/campus-match/route';
 import type { OrgMatch } from '@/app/api/campus-orgs/route';
 import type { BusySlot } from '@/lib/demo-calendar';
-import { DayShape } from '@/components/day-shape';
 import { TemporalBar } from '@/components/temporal-bar';
+import { formatTimeRange, toDatetimeLocal, fromDatetimeLocal } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { ConflictBadge, LeaveByClock, NoticingChip, TimezoneBadge } from '@/components/shared';
 import { cn } from '@/lib/utils';
@@ -107,25 +107,17 @@ export function EventCard({
 
       {leaveBy && <LeaveByClock info={leaveBy} />}
 
-      <div className="grid grid-cols-2 gap-3">
-        <LabeledField label="start">
-          <input
-            value={event.start}
-            readOnly={readOnly}
-            onChange={(e) => patch('start', e.target.value)}
-            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
-          />
-        </LabeledField>
-        <LabeledField label="end">
-          <input
-            value={event.end ?? ''}
-            readOnly={readOnly}
-            placeholder="—"
-            onChange={(e) => patch('end', e.target.value || null)}
-            className={cn(inputCls, 'font-mono text-xs', readOnly && 'pointer-events-none')}
-          />
-        </LabeledField>
-      </div>
+      <WhenField
+        start={event.start}
+        end={event.end}
+        readOnly={!!readOnly}
+        busySlots={busySlots}
+        onChangeStart={(v) => patch('start', v)}
+        onChangeEnd={(v) => patch('end', v)}
+        inputCls={inputCls}
+      />
+
+
 
       <LabeledField label="location">
         <input
@@ -229,21 +221,17 @@ export function EventCard({
         );
       })()}
 
-      {busySlots && busySlots.length > 0 && (
-        <DayShape event={event} busySlots={busySlots} />
-      )}
-
       {campusMatch && <CampusMatchBadge match={campusMatch} />}
 
       <div className="-mx-1 flex flex-col gap-2 border-t border-border/60 pt-3">
-        <Button size="default" variant="default" disabled={readOnly} onClick={onDownloadIcs} className="w-full">
+        <Button size="default" variant="default" onClick={onDownloadIcs} className="w-full">
           <CalendarPlus aria-hidden size={15} /> Add to Calendar
         </Button>
         <div className="flex gap-2">
-          <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenGoogle} className="flex-1">
+          <Button size="sm" variant="outline" onClick={onOpenGoogle} className="flex-1">
             Google
           </Button>
-          <Button size="sm" variant="outline" disabled={readOnly} onClick={onOpenOutlook} className="flex-1">
+          <Button size="sm" variant="outline" onClick={onOpenOutlook} className="flex-1">
             Outlook
           </Button>
         </div>
@@ -289,60 +277,125 @@ function OrgMatchBadge({ match }: { match: OrgMatch }) {
 }
 
 function CampusMatchBadge({ match }: { match: CampusMatch }) {
+  const isFree = match.cost?.toLowerCase() === 'free';
   return (
-    <div className="rounded-lg bg-sky-500/5 p-3 ring-1 ring-inset ring-sky-500/20">
-      <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-sky-700 dark:text-sky-400">
-        <Building2 aria-hidden size={14} />
-        <span>Found on UMN Events Calendar</span>
-      </div>
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
       <a
         href={match.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="block text-sm font-medium text-foreground hover:text-primary transition-colors"
+        className="inline-flex items-center gap-1 font-medium text-sky-700 hover:underline dark:text-sky-400"
       >
-        {match.title}
+        <Building2 aria-hidden size={12} />
+        Also on UMN Events Calendar →
       </a>
-      <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
-        {match.group_title && <span>{match.group_title}</span>}
-        {match.location && (
-          <>
-            {match.group_title && <span className="text-border">·</span>}
-            <span>{match.location}</span>
-          </>
-        )}
-        {match.cost && (
-          <>
-            <span className="text-border">·</span>
-            <span className={match.cost.toLowerCase() === 'free' ? 'text-emerald-600 dark:text-emerald-400' : ''}>
-              {match.cost}
-            </span>
-          </>
-        )}
-        {match.has_registration && (
-          <>
-            <span className="text-border">·</span>
-            <a
-              href={match.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sky-600 hover:underline dark:text-sky-400"
-            >
-              RSVP
-            </a>
-          </>
+      {isFree && (
+        <span className="text-emerald-600 dark:text-emerald-400">Free</span>
+      )}
+      {match.has_registration && (
+        <a
+          href={match.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sky-600 hover:underline dark:text-sky-400"
+        >
+          RSVP
+        </a>
+      )}
+      {match.event_types.slice(0, 3).map((t) => (
+        <span
+          key={t}
+          className="inline-flex h-4 items-center rounded-full bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
+        >
+          {t}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function WhenField({
+  start,
+  end,
+  readOnly,
+  busySlots,
+  onChangeStart,
+  onChangeEnd,
+  inputCls,
+}: {
+  start: string;
+  end: string | null;
+  readOnly: boolean;
+  busySlots?: BusySlot[];
+  onChangeStart: (v: string) => void;
+  onChangeEnd: (v: string | null) => void;
+  inputCls: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const { dateLabel, timeLabel, durationLabel } = formatTimeRange(start, end);
+
+  let dayContext: string | null = null;
+  if (busySlots && busySlots.length > 0) {
+    const s = new Date(start);
+    if (!Number.isNaN(s.getTime())) {
+      const dayStart = new Date(s);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(dayStart);
+      dayEnd.setDate(dayEnd.getDate() + 1);
+      const count = busySlots.filter((b) => b.start < dayEnd && b.end > dayStart).length;
+      if (count === 1) dayContext = '1 other event on your calendar that day';
+      else if (count > 1) dayContext = `${count} other events on your calendar that day`;
+    }
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-foreground">
+            {dateLabel}
+            <span className="mx-1.5 text-muted-foreground">·</span>
+            {timeLabel || <span className="text-muted-foreground">time TBD</span>}
+          </div>
+          {(durationLabel || dayContext) && (
+            <div className="mt-0.5 text-[11px] text-muted-foreground">
+              {durationLabel}
+              {durationLabel && dayContext && <span className="mx-1.5">·</span>}
+              {dayContext}
+            </div>
+          )}
+        </div>
+        {!readOnly && (
+          <button
+            type="button"
+            onClick={() => setEditing((v) => !v)}
+            className="shrink-0 text-[11px] text-muted-foreground underline decoration-dotted underline-offset-2 hover:text-foreground"
+          >
+            {editing ? 'done' : 'edit'}
+          </button>
         )}
       </div>
-      {match.event_types.length > 0 && (
-        <div className="mt-1.5 flex flex-wrap gap-1">
-          {match.event_types.slice(0, 3).map((t) => (
-            <span
-              key={t}
-              className="inline-flex h-4 items-center rounded-full bg-sky-500/10 px-1.5 text-[10px] text-sky-600 dark:text-sky-400"
-            >
-              {t}
-            </span>
-          ))}
+
+      {!readOnly && editing && (
+        <div className="grid grid-cols-2 gap-2">
+          <LabeledField label="start">
+            <input
+              type="datetime-local"
+              value={toDatetimeLocal(start)}
+              onChange={(e) => onChangeStart(fromDatetimeLocal(e.target.value))}
+              className={cn(inputCls, 'text-xs')}
+            />
+          </LabeledField>
+          <LabeledField label="end">
+            <input
+              type="datetime-local"
+              value={end ? toDatetimeLocal(end) : ''}
+              onChange={(e) =>
+                onChangeEnd(e.target.value ? fromDatetimeLocal(e.target.value) : null)
+              }
+              className={cn(inputCls, 'text-xs')}
+            />
+          </LabeledField>
         </div>
       )}
     </div>
