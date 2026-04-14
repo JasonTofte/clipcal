@@ -222,7 +222,7 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>

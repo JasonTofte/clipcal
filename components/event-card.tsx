@@ -200,8 +200,26 @@ export function EventCard({
       {noticings.length > 0 && (() => {
         const ranked = rankChips(noticings, interests ?? []);
         return (
-          <div className="space-y-2 border-t border-border/40 pt-3">
-            <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">worth noticing</div>
+          <div
+            className="space-y-2 rounded-xl border p-3"
+            style={{
+              background: 'var(--goldy-gold-50)',
+              borderColor: 'var(--goldy-gold-200)',
+            }}
+          >
+            <div
+              className="flex items-center gap-1.5 text-sm font-bold"
+              style={{ color: 'var(--goldy-maroon-700)' }}
+            >
+              <span aria-hidden>👀</span>
+              <span>Worth noticing</span>
+              <span
+                className="ml-auto text-[11px] font-semibold"
+                style={{ color: 'var(--goldy-maroon-600)' }}
+              >
+                {ranked.length}
+              </span>
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {ranked.map((r) => (
                 <NoticingChip key={r.rankKey} noticing={r} priority={r.priority} />
