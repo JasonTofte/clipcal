@@ -82,10 +82,30 @@ export function EventCard({
   const shouldCollapseDesc = !readOnly && (event.description?.length ?? 0) > 80 && !descExpanded;
 
   return (
-    <div className={cn(
-      'flex overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm ring-1',
-      event.starred ? 'ring-amber-400/70 bg-amber-500/5' : 'ring-transparent',
-    )}>
+    <div className="relative flex overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm">
+      {event.starred && (
+        <button
+          type="button"
+          onClick={() => patch('starred', false)}
+          aria-label="Unstar event"
+          aria-pressed={true}
+          className="absolute cursor-pointer border-0 z-10"
+          style={{
+            top: '14px',
+            right: '-38px',
+            transform: 'rotate(38deg)',
+            background: 'var(--goldy-gold-500)',
+            color: 'var(--goldy-maroon-700)',
+            padding: '3px 42px',
+            fontSize: '9px',
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            boxShadow: '0 2px 6px -1px rgba(230, 180, 34, 0.45)',
+          }}
+        >
+          ★ FAVORITE
+        </button>
+      )}
       {/* Poster image — left panel */}
       {posterSrc ? (
         <img
