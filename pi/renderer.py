@@ -1,5 +1,5 @@
 """
-ClipCal e-ink display renderer.
+ShowUp e-ink display renderer.
 Target: Waveshare 2.13" V4 — 250×122px landscape, black/white.
 
 Layout (pixel rows, landscape):
@@ -113,7 +113,7 @@ def render_waiting() -> Image.Image:
     draw = ImageDraw.Draw(img)
     font = _load_font(_FONT_CONDENSED_BOLD, 14)
     small = _load_font(_FONT_CONDENSED, 10)
-    draw.text((10, 40), "ClipCal", font=font, fill=0)
+    draw.text((10, 40), "ShowUp", font=font, fill=0)
     draw.text((10, 58), "waiting for phone…", font=small, fill=0)
     return img
 

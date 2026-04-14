@@ -1,4 +1,4 @@
-# ClipCal — Engineering & Design Insights
+# ShowUp — Engineering & Design Insights
 
 Non-obvious decisions, hard-won lessons, and design rationale that would otherwise live only in commit messages or be lost. Each entry uses the template below.
 
@@ -19,7 +19,7 @@ Non-obvious decisions, hard-won lessons, and design rationale that would otherwi
 
 **Context:**
 
-Early design directions for ClipCal's "ADHD-friendly" layer treated sensory accommodation as a fixed system: one set of surfaces would be "calm" (low-contrast, muted palette) and another "vibrant" (full UMN maroon/gold). The intent was good, but the implementation pattern is wrong — and Tiimo's Apple Design Award citations explain exactly why.
+Early design directions for ShowUp's "ADHD-friendly" layer treated sensory accommodation as a fixed system: one set of surfaces would be "calm" (low-contrast, muted palette) and another "vibrant" (full UMN maroon/gold). The intent was good, but the implementation pattern is wrong — and Tiimo's Apple Design Award citations explain exactly why.
 
 Tiimo won the Apple Design Award in both 2024 and 2025. The award language in both years explicitly cited *user-controllable* sensory environments as the design rationale. Not a designer-chosen "calm mode" that the system imposes. The control itself is the design.
 
@@ -57,6 +57,6 @@ The distinction between "calm preset baked by designer" and "calm toggle owned b
 
 **Follow-up:**
 
-- The strongest version of this insight requires co-design sessions with ADHD students to validate that the toggle is discoverable, labeled in language that resonates, and actually used. That falsifiable step is explicitly deferred from this cycle and logged as a required follow-up before ClipCal can claim "Tiimo-caliber" accessibility in public marketing.
+- The strongest version of this insight requires co-design sessions with ADHD students to validate that the toggle is discoverable, labeled in language that resonates, and actually used. That falsifiable step is explicitly deferred from this cycle and logged as a required follow-up before ShowUp can claim "Tiimo-caliber" accessibility in public marketing.
 - Future: custom color picker (Tiimo's 3,000-color system) would extend the toggle pattern into granular user control. Deferred; requires its own design cycle.
 - Insight for ADR extraction: the `[data-calm="true"]` cascade pattern is the same architecture as PR #24's `.goldy-theme` token promotion. When the same architectural pattern solves two distinct problems (brand unification, sensory accommodation), it is evidence the pattern is load-bearing for this codebase and should be treated as a first-class convention.

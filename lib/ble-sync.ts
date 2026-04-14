@@ -1,5 +1,5 @@
 /**
- * ClipCal → Pi Zero e-ink sync
+ * ShowUp → Pi Zero e-ink sync
  *
  * Two transports, same payload format:
  *   WiFi — POST to Pi HTTP server (works on Chrome/Edge/Firefox; iOS
@@ -137,7 +137,7 @@ export async function syncToEinkBle(events: Event[]): Promise<void> {
   const payload = await buildPayload(events);
 
   const device = await bt.requestDevice({
-    filters: [{ name: 'ClipCal' }],
+    filters: [{ name: 'ShowUp' }],
     optionalServices: [BLE_SERVICE_UUID],
   });
 

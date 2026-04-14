@@ -90,7 +90,7 @@ export default function ProfilePage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-primary">Pick your interests</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Tap what you&rsquo;re into. ClipCal uses this to highlight events that fit you — never
+            Tap what you&rsquo;re into. ShowUp uses this to highlight events that fit you — never
             auto-declines anything. Prefer a chat? Toggle to interview mode below.
           </p>
         </div>

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ClipCal Pi Zero — main entry point.
+ShowUp Pi Zero — main entry point.
 
 Wiring (Waveshare 2.13" V4 HAT — uses default GPIO SPI pins):
   RST  → GPIO 17   DC  → GPIO 25
@@ -49,7 +49,7 @@ log = logging.getLogger("main")
 FULL_REFRESH_INTERVAL = 10
 
 
-class ClipCalDisplay:
+class ShowUpDisplay:
     def __init__(self) -> None:
         self._epd = epd2in13_V4.EPD()
         self._partial_count = 0
@@ -90,7 +90,7 @@ class ClipCalDisplay:
 
 
 async def main() -> None:
-    display = ClipCalDisplay()
+    display = ShowUpDisplay()
     display.init()
 
     def on_payload(payload: dict) -> None:
@@ -102,7 +102,7 @@ async def main() -> None:
     try:
         server = BleServer(on_payload=on_payload)
         await server.start()
-        log.info("BLE advertising as 'ClipCal'")
+        log.info("BLE advertising as 'ShowUp'")
     except Exception as exc:
         log.warning("BLE unavailable (%s) — running HTTP-only", exc)
         server = None
@@ -121,7 +121,7 @@ async def main() -> None:
             loop.add_signal_handler(sig, stop_event.set)
 
     if server:
-        log.info("Ready.  BLE: 'ClipCal' · HTTP: 0.0.0.0:8080")
+        log.info("Ready.  BLE: 'ShowUp' · HTTP: 0.0.0.0:8080")
         await server.run_forever()
     else:
         log.info("Ready.  HTTP-only: 0.0.0.0:8080")

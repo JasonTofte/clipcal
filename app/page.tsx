@@ -24,6 +24,7 @@ import {
   fetchOrgMatches,
 } from '@/lib/extraction-client';
 import { useDemoMode } from '@/hooks/use-demo-mode';
+import { resetDemoData } from '@/lib/demo-reset';
 import { usePasteFiles } from '@/hooks/use-paste-files';
 import { useShareTarget } from '@/hooks/use-share-target';
 
@@ -266,7 +267,7 @@ export default function Home() {
         )}
       </div>
 
-      <footer className="mt-10 flex items-center justify-between border-t border-border/50 pt-4 text-xs text-muted-foreground">
+      <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border/50 pt-4 text-xs text-muted-foreground">
         <label className="flex cursor-pointer items-center gap-2 select-none">
           <input
             type="checkbox"
@@ -275,10 +276,20 @@ export default function Home() {
             className="size-3.5 rounded border-border"
           />
           <span>
-            Demo mode <span className="text-muted-foreground/60">(fake calendar)</span>
+            Demo calendar <span className="text-muted-foreground/60">(fake calendar)</span>
           </span>
         </label>
-        <span className="font-mono text-[10px]">inform · don&rsquo;t decide</span>
+        <button
+          type="button"
+          onClick={() => {
+            resetDemoData();
+            window.location.reload();
+          }}
+          className="rounded border border-border/60 px-2 py-1 text-[11px] text-muted-foreground hover:bg-muted"
+        >
+          Reset demo data
+        </button>
+        <span className="ml-auto font-mono text-[10px]">inform · don&rsquo;t decide</span>
       </footer>
     </main>
   );
