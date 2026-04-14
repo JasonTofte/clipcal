@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GoldyAvatar } from '@/components/goldy-avatar';
+import { resetDemoData } from '@/lib/demo-reset';
 
 // Small, muted contextual subtitle per page. Keeps the mascot
 // contextual without shouting.
@@ -37,7 +38,7 @@ export function GoldyHeader() {
       <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-2.5">
         <Link
           href="/feed"
-          aria-label="Gopherly home"
+          aria-label="ShowUp home"
           className="flex shrink-0 items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           style={{
             // @ts-expect-error - custom property for focus ring
@@ -50,7 +51,7 @@ export function GoldyHeader() {
               className="goldy-display text-base font-bold tracking-tight sm:text-lg"
               style={{ color: 'var(--goldy-maroon-600)' }}
             >
-              Gopherly
+              ShowUp
             </span>
             <span
               className="text-[10px] sm:text-[11px]"
@@ -60,6 +61,18 @@ export function GoldyHeader() {
             </span>
           </span>
         </Link>
+        <button
+          type="button"
+          onClick={() => {
+            resetDemoData();
+            window.location.reload();
+          }}
+          aria-label="Reset demo data"
+          className="ml-auto shrink-0 rounded border px-2 py-1 text-[11px] font-medium hover:bg-muted"
+          style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+        >
+          Reset demo
+        </button>
       </div>
     </header>
   );
