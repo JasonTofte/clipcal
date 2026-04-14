@@ -15,6 +15,7 @@ import {
   loadBatches,
   markBatchCommitted,
   markBatchUncommitted,
+  updateEventInBatch,
   type StoredEventBatch,
 } from '@/lib/event-store';
 import { triggerIcsDownload } from '@/lib/ics';
@@ -309,6 +310,14 @@ export function GoldyFeedClient() {
     armUndo({ kind: 'hide', rowKey: key, title: row.event.title });
   };
 
+  const handleToggleStar = (row: FeedRow) => {
+    updateEventInBatch(row.batchId, row.eventIndex, {
+      ...row.event,
+      starred: !row.event.starred,
+    });
+    setBatches(loadBatches());
+  };
+
   const handleUndo = () => {
     if (!undo) return;
     if (undo.kind === 'add') {
@@ -397,6 +406,10 @@ export function GoldyFeedClient() {
         onHide={(event) => {
           const hit = visibleRanked.find((r) => r.row.event === event);
           if (hit) handleHide(hit.row);
+        }}
+        onToggleStar={(event) => {
+          const hit = visibleRanked.find((r) => r.row.event === event);
+          if (hit) handleToggleStar(hit.row);
         }}
       />
 
