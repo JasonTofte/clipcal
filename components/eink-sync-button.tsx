@@ -7,7 +7,7 @@ import type { Event } from '@/lib/schema';
 
 type SyncStatus = 'idle' | 'syncing' | 'done' | 'error';
 
-// Sync ClipCal's upcoming events to a Pi Zero e-ink display. Hidden when
+// Sync ShowUp's upcoming events to a Pi Zero e-ink display. Hidden when
 // NEXT_PUBLIC_EINK_PI_URL is unset (PR A ships with no UI mount; PR B
 // wires it into /feed).
 //

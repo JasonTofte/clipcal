@@ -16,7 +16,7 @@ export type GeocodeResponse =
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h — addresses are stable.
 const CACHE_MAX_ENTRIES = 500;
 const MAX_Q_LENGTH = 300;
-const UA = 'ClipCal/1.0 (https://github.com/JasonTofte/clipcal)';
+const UA = 'ShowUp/1.0 (https://github.com/JasonTofte/clipcal)';
 
 type CacheEntry = { lat: number; lng: number; display: string; at: number };
 const cache = new Map<string, CacheEntry>();

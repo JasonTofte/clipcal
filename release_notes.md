@@ -6,7 +6,7 @@
 
 **Product thesis shift: "Inform, don't decide" is no longer a tagline — it is now grounded in cited research.**
 
-This cycle raises ClipCal from "ADHD-flavored vibes" to falsifiable neuro-inclusion. The framing comes from the Ottawa Decision Support Framework (O'Connor et al.), which measures decisional conflict reduction as an outcome, and from cognitive offloading research (Risko & Gilbert 2016), which explains why visible time structure reduces working-memory load for ADHD users. Tiimo's 2024 and 2025 Apple Design Award wins validated the pattern in shipping software: the award language explicitly cited user-controllable sensory environments as the design rationale, not fixed presets.
+This cycle raises ShowUp from "ADHD-flavored vibes" to falsifiable neuro-inclusion. The framing comes from the Ottawa Decision Support Framework (O'Connor et al.), which measures decisional conflict reduction as an outcome, and from cognitive offloading research (Risko & Gilbert 2016), which explains why visible time structure reduces working-memory load for ADHD users. Tiimo's 2024 and 2025 Apple Design Award wins validated the pattern in shipping software: the award language explicitly cited user-controllable sensory environments as the design rationale, not fixed presets.
 
 What this means in practice: every change this cycle has a citation, not just a rationale.
 
@@ -77,7 +77,7 @@ Until now `/feed` was the only page wearing the Goldy brand; `/`, `/browse`, and
 
 **Design decision (Option 6 — hybrid):** We compared 7 commentary-generation strategies via `/deep-r`. Industry pattern is clear — Duolingo, Pokémon GO buddy, Siri humor all use hand-authored strings for short, high-frequency mascot copy; LLMs are reserved for long session-amortized dialog where voice drift matters less. We authored variants with LLM assist offline, human-curated, and ship them as a static JSON bank. Zero runtime cost, zero privacy concern (calendar data never leaves the browser), no offline breakage.
 
-**Accessibility.** Goldy speech bubbles carry `role="note"`. Inline decorative avatars inside already-labeled regions use `aria-hidden` so screen readers don't announce "Goldy Gopher" mid-sentence. Header uses a semantic `<h1>` ("Gopherly"); section headings are `<h2>` with `aria-labelledby`. Tap targets ≥44 px on all primary controls.
+**Accessibility.** Goldy speech bubbles carry `role="note"`. Inline decorative avatars inside already-labeled regions use `aria-hidden` so screen readers don't announce "Goldy Gopher" mid-sentence. Header uses a semantic `<h1>` ("ShowUp"); section headings are `<h2>` with `aria-labelledby`. Tap targets ≥44 px on all primary controls.
 
 **Timezone-correct late-night bucket.** Uses `Intl.DateTimeFormat` with the event's own `timezone` field (defaults to `America/Chicago`) instead of UTC hours — a 10 PM Central event was previously never flagged.
 

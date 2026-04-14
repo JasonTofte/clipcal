@@ -1,8 +1,11 @@
-# ClipCal
+# ShowUp
 
 > Your campus copilot. Snap a flyer, know if you should go.
 
-ClipCal is an AI-powered flyer → calendar web app with a decision-support UX layer grounded in the [Ottawa Decision Support Framework](https://pubmed.ncbi.nlm.nih.gov/32428429/) and cognitive-offloading theory ([Risko & Gilbert 2016](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(16)30098-5)). Built for a hackathon (Apr 10 – Apr 13, 2026).
+ShowUp is an AI-powered flyer → calendar web app with a decision-support UX layer grounded in the [Ottawa Decision Support Framework](https://pubmed.ncbi.nlm.nih.gov/32428429/) and cognitive-offloading theory ([Risko & Gilbert 2016](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(16)30098-5)). Built for a hackathon (Apr 10 – Apr 13, 2026).
+
+**Live demo:** https://clipcal-six.vercel.app/feed
+**Demo video:** _coming soon_
 
 **Status:** Hackathon build · Session 1 complete (scaffold + Claude vision extraction proven end-to-end)
 
@@ -22,7 +25,7 @@ ClipCal is an AI-powered flyer → calendar web app with a decision-support UX l
 
 **Inform, don't decide** is not our invention — it's the core principle of the [Ottawa Decision Support Framework](https://pubmed.ncbi.nlm.nih.gov/32428429/) applied to campus events. Decisional conflict is reduced by giving users information *and* control, not by choosing for them. Paired with the cognitive-offloading literature ([Risko & Gilbert 2016](https://www.cell.com/trends/cognitive-sciences/abstract/S1364-6613(16)30098-5)) that frames why externalizing time (the leave-by clock, proportional Day Rail) lowers working-memory load. Pattern analysis of [Tiimo](https://www.tiimoapp.com/resource-hub/sensory-design-neurodivergent-accessibility) (Apple Design Award 2024/2025), Goblin Tools, and Sunsama anchors the shipped UX. Every feature surfaces trade-offs so your brain can make a better call — no paternalism, no streak shame, no auto-rejecting events.
 
-> **Honest caveat:** ClipCal ships Tiimo-*inspired* accessibility, not Tiimo-*caliber*. The distinction requires co-design sessions with ADHD/autistic students, which are logged as a required follow-up before any public marketing claim.
+> **Honest caveat:** ShowUp ships Tiimo-*inspired* accessibility, not Tiimo-*caliber*. The distinction requires co-design sessions with ADHD/autistic students, which are logged as a required follow-up before any public marketing claim.
 
 See [`docs/brief.md`](docs/brief.md) for the full product brief and [`mockups/index.html`](mockups/index.html) for three design directions.
 

@@ -14,6 +14,9 @@ import { pickGoldyLine } from '@/lib/goldy-commentary';
 import type { Event } from '@/lib/schema';
 import type { CampusFeedResponse } from '@/app/api/campus-feed/route';
 import { LeaveByNotifyChip } from '@/components/leave-by-notify-chip';
+import { geocodeCached } from '@/lib/geocode';
+import { loadProfileFromStorage, type Profile } from '@/lib/profile';
+import { UMN_CAMPUS, walkMinutesOrNull } from '@/lib/distance';
 
 // Hero takes a payload in two modes:
 //  • when an event lives in the ranked feed, caller passes that payload
@@ -167,9 +170,48 @@ export function OneThingHero({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [events, ranked, liveFallback, nowOverride, tick]);
 
+  // Resolve a real walk time for the selected event. Profile's homeBase
+  // is the origin when set; otherwise we fall back to UMN campus. If the
+  // event location fails to geocode or resolves to a mis-match (distance
+  // over the cap in walkMinutesOrNull), we leave walkMin null and fall
+  // back to the default-padded leaveBy from the payload.
+  const [profile, setProfile] = useState<Profile | null>(null);
+  useEffect(() => {
+    setProfile(loadProfileFromStorage());
+  }, []);
+  const originLat = profile?.homeBase?.lat ?? null;
+  const originLng = profile?.homeBase?.lng ?? null;
+  const eventLocation = payload?.event.location ?? null;
+  const [walkMin, setWalkMin] = useState<number | null>(null);
+  useEffect(() => {
+    if (!eventLocation) {
+      setWalkMin(null);
+      return;
+    }
+    let cancelled = false;
+    void geocodeCached(eventLocation).then((hit) => {
+      if (cancelled) return;
+      if (!hit) {
+        setWalkMin(null);
+        return;
+      }
+      const origin =
+        originLat !== null && originLng !== null
+          ? { lat: originLat, lng: originLng }
+          : UMN_CAMPUS;
+      setWalkMin(walkMinutesOrNull(origin, { lat: hit.lat, lng: hit.lng }));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [eventLocation, originLat, originLng]);
+
   if (!payload) return null;
 
-  const { event, line, leaveBy, phase, minutesToStart, isLiveFallback } = payload;
+  const resolvedLeaveBy =
+    walkMin !== null ? computeLeaveBy(payload.event, walkMin) : payload.leaveBy;
+  const { event, line, phase, minutesToStart, isLiveFallback } = payload;
+  const leaveBy = resolvedLeaveBy;
   const isUrgent = phase === 'urgent' || phase === 'leaving-now';
 
   return (
@@ -208,10 +250,14 @@ export function OneThingHero({
       >
         {event.title}
       </h2>
-      <p className="mt-1 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+      <p className="mt-2 text-base font-semibold" style={{ color: 'var(--goldy-maroon-600)' }}>
         {formatEventWhen(event.start)}
-        {event.location ? ` · ${event.location}` : ''}
       </p>
+      {event.location && (
+        <p className="mt-0.5 text-sm" style={{ color: 'var(--muted-foreground)' }}>
+          {event.location}
+        </p>
+      )}
 
       {leaveBy ? (
         <LeaveByPanel leaveBy={leaveBy} phase={phase} minutesToStart={minutesToStart} />

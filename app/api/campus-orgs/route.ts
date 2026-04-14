@@ -87,7 +87,12 @@ async function fetchAndCacheIcs(): Promise<IcsEvent[]> {
   }
   const text = new TextDecoder('utf-8').decode(buf);
   const events = parseIcs(text);
-  icsCache = { events, fetchedAt: Date.now() };
+  // Only cache when parsing actually produced events. A malformed/empty
+  // upstream body returns [] from parseIcs; caching that for 15 min would
+  // stop any org-match lookups from working until the TTL expires.
+  if (events.length > 0) {
+    icsCache = { events, fetchedAt: Date.now() };
+  }
   return events;
 }
 

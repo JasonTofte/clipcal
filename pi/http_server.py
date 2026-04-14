@@ -1,5 +1,5 @@
 """
-ClipCal HTTP sync server — iOS fallback for devices without Web Bluetooth.
+ShowUp HTTP sync server — iOS fallback for devices without Web Bluetooth.
 
 Endpoints:
   GET  /            Captive-portal sync page (paste payload here)
@@ -61,7 +61,7 @@ _SYNC_PAGE = """<!DOCTYPE html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ClipCal Display Sync</title>
+  <title>ShowUp Display Sync</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -95,13 +95,13 @@ _SYNC_PAGE = """<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <h1>▦ ClipCal Display</h1>
+  <h1>▦ ShowUp Display</h1>
   {% if ok %}
     <p class="status">Display updated.</p>
   {% elif error %}
     <p class="status">{{ error }}</p>
   {% else %}
-    <p class="sub">Paste your sync code from the ClipCal app.</p>
+    <p class="sub">Paste your sync code from the ShowUp app.</p>
   {% endif %}
   <form method="POST" action="/sync-form">
     <textarea name="payload" placeholder='{"p":{"t":"..."},"e":[...],"ts":...}'
@@ -110,7 +110,7 @@ _SYNC_PAGE = """<!DOCTYPE html>
     <button type="submit">Sync display</button>
   </form>
   <div class="steps">
-    <span>1.</span> Open ClipCal in your regular browser<br>
+    <span>1.</span> Open ShowUp in your regular browser<br>
     <span>2.</span> Tap <b>Copy iOS sync code</b> on the Feed page<br>
     <span>3.</span> Come back here and paste it above
   </div>
@@ -123,7 +123,7 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
     app.config["PROPAGATE_EXCEPTIONS"] = False
     app.config["MAX_CONTENT_LENGTH"] = MAX_PAYLOAD_BYTES
 
-    # CORS: /sync is reached from the ClipCal web app running on the user's
+    # CORS: /sync is reached from the ShowUp web app running on the user's
     # phone via the Pi's captive-portal origin. Restricting to the Pi origin
     # (http://10.42.0.1:8080) is tighter than "*" but keeps programmatic
     # callers on the same AP functional. Private-network preflight requires
@@ -167,7 +167,7 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
     def sync_form() -> str:
         """Form POST from the sync page (pastes payload text)."""
         # Captive-portal form accepts the token alongside the payload so the
-        # user can paste both from the ClipCal app in one copy.
+        # user can paste both from the ShowUp app in one copy.
         submitted_token = request.form.get("token", "").strip()
         if not _token_ok(submitted_token):
             return render_template_string(
@@ -180,7 +180,7 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
             return render_template_string(_SYNC_PAGE, ok=True, error=None, payload=None)
         except json.JSONDecodeError:
             return render_template_string(
-                _SYNC_PAGE, ok=False, error="Invalid sync code — copy it again from ClipCal.", payload=raw
+                _SYNC_PAGE, ok=False, error="Invalid sync code — copy it again from ShowUp.", payload=raw
             )
         except Exception as exc:
             log.exception("sync_form render error: %s", exc)

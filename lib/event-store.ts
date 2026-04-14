@@ -32,9 +32,16 @@ export function loadBatches(): StoredEventBatch[] {
   }
 }
 
+// Cross-component signal: writers call saveBatches(); any mounted component
+// that displays saved events listens for `clipcal:batches-updated` and
+// reloads. The browser's native `storage` event only fires across tabs, not
+// within the same document, so we dispatch a custom event.
+export const BATCHES_UPDATED_EVENT = 'clipcal:batches-updated';
+
 function saveBatches(batches: StoredEventBatch[]): void {
   if (typeof window === 'undefined') return;
   window.localStorage.setItem(EVENT_STORE_KEY, JSON.stringify(batches));
+  window.dispatchEvent(new CustomEvent(BATCHES_UPDATED_EVENT));
 }
 
 export function appendBatch(
@@ -67,6 +74,11 @@ export function markBatchUncommitted(batchId: string): void {
     b.id === batchId ? { ...b, icsCommitted: false } : b,
   );
   saveBatches(next);
+}
+
+export function removeBatch(batchId: string): void {
+  const existing = loadBatches();
+  saveBatches(existing.filter((b) => b.id !== batchId));
 }
 
 export function clearAllBatches(): void {

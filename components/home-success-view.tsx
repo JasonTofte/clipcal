@@ -95,11 +95,6 @@ export function HomeSuccessView({
         <Button onClick={onReset} variant="outline" className="w-fit">
           Upload another
         </Button>
-        {canRetryWithSonnet && (
-          <Button variant="secondary" className="w-fit" onClick={onRetryWithSonnet}>
-            Try with stronger model
-          </Button>
-        )}
       </div>
     </div>
   );

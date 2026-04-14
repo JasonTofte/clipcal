@@ -10,6 +10,7 @@ import { OneThingHero } from '@/components/one-thing-hero';
 import { FeedOverflowMenu } from '@/components/feed-overflow-menu';
 import { DEMO_CALENDAR, computeDemoFeedEvents } from '@/lib/demo-calendar';
 import {
+  BATCHES_UPDATED_EVENT,
   EVENT_STORE_KEY,
   loadBatches,
   markBatchCommitted,
@@ -138,6 +139,15 @@ export function GoldyFeedClient() {
       if (undoTimerRef.current) window.clearTimeout(undoTimerRef.current);
       if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current);
     };
+  }, []);
+
+  // Live-refresh when any other component writes to the event store
+  // (e.g. the campus-feed checkmark saves a new batch). Avoids a manual
+  // page refresh to see the newly-saved event.
+  useEffect(() => {
+    const onUpdate = () => setBatches(loadBatches());
+    window.addEventListener(BATCHES_UPDATED_EVENT, onUpdate);
+    return () => window.removeEventListener(BATCHES_UPDATED_EVENT, onUpdate);
   }, []);
 
   const rows: FeedRow[] = useMemo(
@@ -397,6 +407,7 @@ export function GoldyFeedClient() {
         onSelectDay={setSelectedDayIdx}
         now={nowOverride ?? undefined}
       />
+
 
       <CampusFeed />
 

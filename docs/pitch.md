@@ -1,4 +1,4 @@
-# ClipCal -- Pitch Deck
+# ShowUp -- Pitch Deck
 
 *Your campus copilot. Snap a flyer, know if you should go.*
 
@@ -18,7 +18,7 @@ Not because they don't want to. Because the flyer gets screenshotted and dies in
 
 ## Slide 2: The Current Solutions Fail
 
-| Feature | Apple iOS 26 | Google Lens | Photo2Calendar | Corq | **ClipCal** |
+| Feature | Apple iOS 26 | Google Lens | Photo2Calendar | Corq | **ShowUp** |
 |---------|-------------|-------------|----------------|------|-------------|
 | Multi-event extraction | 1/image | 1/image | 1/image | N/A | **Yes (array)** |
 | Conflict detection | No | No | No | No | **Yes (freebusy)** |
@@ -33,11 +33,11 @@ Not because they don't want to. Because the flyer gets screenshotted and dies in
 - *"Crashes constantly and half the events are wrong"* -- App Store, 2024
 - *"Limited to only the events the school decides to post"* -- App Store, 2023
 
-ClipCal works with ANY flyer. From any source. On any device.
+ShowUp works with ANY flyer. From any source. On any device.
 
 ---
 
-## Slide 3: What ClipCal Does
+## Slide 3: What ShowUp Does
 
 **Paste any flyer. Get everything you need to decide.**
 
@@ -86,7 +86,7 @@ Grounded in:
 - **Next.js 16** on Vercel -- zero-config deployment, Edge Runtime
 - **UMN LiveWhale API** -- live campus events, CORS-enabled, no auth required
 - **GopherLink ICS** -- student org events via server-side proxy
-- **PWA with share target** -- Android users share screenshots directly to ClipCal
+- **PWA with share target** -- Android users share screenshots directly to ShowUp
 - **Stateless architecture** -- no accounts, no database, localStorage only. Privacy by default.
 
 ---
@@ -108,7 +108,7 @@ No competitor combines these:
 - **33%** feel disconnected due to awareness, not interest
 - **#1** most-requested campus app feature: events calendar
 - **$10-12** documented student app price ceiling -- $1 is trivially acceptable
-- **500+ universities** use Localist/LiveWhale -- ClipCal's campus adapter could work at any of them
+- **500+ universities** use Localist/LiveWhale -- ShowUp's campus adapter could work at any of them
 
 ---
 

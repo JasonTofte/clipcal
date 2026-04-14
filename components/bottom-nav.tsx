@@ -8,10 +8,10 @@ import type { LucideIcon } from 'lucide-react';
 type Tab = { href: string; label: string; Icon: LucideIcon };
 
 const TABS: Tab[] = [
+  { href: '/profile', label: 'Profile', Icon: User },
   { href: '/feed', label: 'Schedule', Icon: LayoutList },
   { href: '/', label: 'Upload', Icon: Camera },
   { href: '/browse', label: 'Browse', Icon: Search },
-  { href: '/profile', label: 'Profile', Icon: User },
 ];
 
 function isActive(pathname: string | null, href: string): boolean {

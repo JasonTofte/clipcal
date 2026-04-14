@@ -1,4 +1,4 @@
-# ClipCal — Full Build Plan
+# ShowUp — Full Build Plan
 
 > **Hackathon:** Fri Apr 10 (today) → Mon Apr 13, 2026 · 5:45 PM deadline
 > **Current state:** scaffolded + researched, zero app code yet
@@ -168,7 +168,7 @@ lib/
 
 ## Session 4 — Sun AM · AI Chat Interviewer + Relevance Scoring
 
-**Goal:** Ship the personalization layer that turns ClipCal from utility → story.
+**Goal:** Ship the personalization layer that turns ShowUp from utility → story.
 **Time budget:** 4–5 hours
 **Session start:** `claude-clip feature/chat-interviewer`
 
@@ -250,7 +250,7 @@ lib/
 1. **5 guaranteed-to-work test flyers** — curate, save to `/public/demo-flyers/`. Pre-validate extraction on each.
 2. **Demo script** (`docs/demo-script.md`) — 3-minute walkthrough:
    - *"60% of college students never attend a campus event. Not because they don't want to — because the flyer dies in their camera roll."* (cite Inside Higher Ed)
-   - *"I'm Jason. I built ClipCal — the only mobile web flyer scanner with a conflict-aware, ADHD-supportive design."*
+   - *"I'm Jason. I built ShowUp — the only mobile web flyer scanner with a conflict-aware, ADHD-supportive design."*
    - Live demo: paste flyer → see match score + noticings + leave-by
    - Show the "forgotten events" feed
    - Close with the design principle: *"inform, don't decide"*
@@ -274,11 +274,11 @@ lib/
 
 > **Hook (15 sec):** *"60% of college students never attend a campus event. Not because they don't want to. Because the flyer they screenshotted dies in their camera roll. One of our users said 'I take screenshots and forget about them.'"*
 >
-> **Show (60 sec):** *"ClipCal runs on any phone's browser — no install. Watch."* → paste flyer → JSON extracts in 3 seconds → show match score + noticings chips + leave-by clock. *"Green badge: I'm free. Red chip: I have CSCI 5801 at the same time — but the noticing below tells me that class is usually recorded. ClipCal doesn't decide for me. It just shows me what my brain needs."*
+> **Show (60 sec):** *"ShowUp runs on any phone's browser — no install. Watch."* → paste flyer → JSON extracts in 3 seconds → show match score + noticings chips + leave-by clock. *"Green badge: I'm free. Red chip: I have CSCI 5801 at the same time — but the noticing below tells me that class is usually recorded. ShowUp doesn't decide for me. It just shows me what my brain needs."*
 >
 > **Differentiator (45 sec):** *"Apple's iOS 26 feature extracts one event per image. Google Lens is one-shot. Photo2Calendar is iOS only. None of them know your campus, none of them check your calendar for conflicts, and none of them are built for ADHD brains. We do all four."*
 >
-> **Close (30 sec):** *"Our design principle is inform, don't decide. Grounded in cognitive offloading research and the Ottawa Decision Support Framework. No auto-decline, no streak shame, no 'we recommend.' We surface the trade-offs. You make the call. ClipCal is live at clipcal.vercel.app — try it with any flyer."*
+> **Close (30 sec):** *"Our design principle is inform, don't decide. Grounded in cognitive offloading research and the Ottawa Decision Support Framework. No auto-decline, no streak shame, no 'we recommend.' We surface the trade-offs. You make the call. ShowUp is live at clipcal.vercel.app — try it with any flyer."*
 
 Total: ~2:30.
 
@@ -356,7 +356,7 @@ Total: ~2:30.
 Paste this into the next Claude session to start fast:
 
 ```
-I'm starting Session 1 of the ClipCal hackathon. Read docs/plan.md in full,
+I'm starting Session 1 of the ShowUp hackathon. Read docs/plan.md in full,
 then classify via Sherlock Step 0 and present all three workflow options with
 your recommendation. Goal: scaffold Next.js + prove Claude vision extraction
 works on a real flyer. This is the feasibility gate. Use Claude Haiku 4.5 via

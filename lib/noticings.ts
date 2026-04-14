@@ -1,6 +1,6 @@
 import type { Event } from '@/lib/schema';
 import type { BusySlot } from '@/lib/demo-calendar';
-import { walkMinutes, UMN_CAMPUS } from '@/lib/distance';
+import { walkMinutesOrNull, UMN_CAMPUS } from '@/lib/distance';
 
 export type NoticingTone = 'info' | 'heads-up' | 'delight';
 
@@ -64,7 +64,7 @@ export function generateNoticings(
       walkMin = context.hardcodedWalkMinutes;
     } else if (context.destinationCoords) {
       const origin = context.originCoords ?? UMN_CAMPUS;
-      walkMin = walkMinutes(origin, context.destinationCoords);
+      walkMin = walkMinutesOrNull(origin, context.destinationCoords);
     }
     if (walkMin !== null) {
       const label = context.originCoords

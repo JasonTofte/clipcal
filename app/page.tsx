@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
 import { decodeQRFromFile } from '@/lib/qr-decode';
+import { downscaleIfNeeded } from '@/lib/image-downscale';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { appendBatch, markBatchCommitted } from '@/lib/event-store';
 import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings, type LatLng } from '@/lib/noticings';
+import { walkMinutesOrNull, UMN_CAMPUS } from '@/lib/distance';
 import { geocodeCached } from '@/lib/geocode';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import type { RelevanceScore } from '@/lib/relevance';
@@ -59,15 +61,16 @@ export default function Home() {
 
   const handleFiles = useCallback(async (files: File[], model?: 'sonnet') => {
     if (files.length === 0) return;
-    const file = files[0];
-    lastFileRef.current = file;
+    const originalFile = files[0];
+    lastFileRef.current = originalFile;
     if (posterUrlRef.current) URL.revokeObjectURL(posterUrlRef.current);
-    posterUrlRef.current = URL.createObjectURL(file);
+    posterUrlRef.current = URL.createObjectURL(originalFile);
     setState({
       status: 'loading',
       message: model === 'sonnet' ? 'Retrying with Claude Sonnet…' : LOADING_MESSAGE,
     });
 
+    const file = await downscaleIfNeeded(originalFile);
     const formData = new FormData();
     formData.append('image', file);
     if (model) formData.append('model', model);
@@ -79,7 +82,7 @@ export default function Home() {
       // as `signupUrl` — surfaced as a link chip in the event card.
       const [response, qrUrl] = await Promise.all([
         fetch('/api/extract', { method: 'POST', body: formData }),
-        decodeQRFromFile(file).catch(() => null),
+        decodeQRFromFile(originalFile).catch(() => null),
       ]);
       const json: unknown = await response.json().catch(() => null);
 
@@ -90,7 +93,9 @@ export default function Home() {
           'error' in json &&
           typeof (json as { error: unknown }).error === 'string'
             ? (json as { error: string }).error
-            : `HTTP ${response.status}`;
+            : response.status === 413
+              ? 'Image too large — try a smaller photo'
+              : `HTTP ${response.status}`;
         setState({ status: 'error', message: errMsg });
         return;
       }
@@ -205,8 +210,17 @@ export default function Home() {
     [events, activeCalendar, originCoords, locationCoords],
   );
   const leaveByPerEvent = useMemo(
-    () => events.map((event) => computeLeaveBy(event)),
-    [events],
+    () =>
+      events.map((event) => {
+        // Prefer the real computed walk time when we have resolved coords.
+        // Falls back to computeLeaveBy's internal 12-min default otherwise
+        // (unknown location or geocode pending/failed/out-of-range).
+        const dest = event.location ? locationCoords.get(event.location) ?? null : null;
+        const origin = originCoords ?? UMN_CAMPUS;
+        const walk = dest ? walkMinutesOrNull(origin, dest) : null;
+        return walk !== null ? computeLeaveBy(event, walk) : computeLeaveBy(event);
+      }),
+    [events, originCoords, locationCoords],
   );
 
   const handleDownloadIcs = (event: Event) => {
@@ -223,10 +237,10 @@ export default function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
+    <main className="mx-auto flex min-h-dvh w-full min-w-0 max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
         <div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-primary">ClipCal</h1>
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-primary">ShowUp</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Your campus copilot. Snap a flyer, know if you should go.
           </p>
@@ -284,7 +298,7 @@ export default function Home() {
             className="size-3.5 rounded border-border"
           />
           <span>
-            Demo mode <span className="text-muted-foreground/60">(fake calendar)</span>
+            Demo calendar <span className="text-muted-foreground/60">(fake calendar)</span>
           </span>
         </label>
         <span className="font-mono text-[10px]">inform · don&rsquo;t decide</span>

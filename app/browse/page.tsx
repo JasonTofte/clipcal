@@ -171,7 +171,7 @@ export default function BrowsePage() {
   };
 
   return (
-    <main className="mx-auto flex min-h-[100dvh] max-w-2xl flex-col px-4 pt-4 pb-24">
+    <main className="mx-auto flex min-h-[100dvh] w-full min-w-0 max-w-2xl flex-col px-4 pt-4 pb-24">
       <header className="mb-4">
         <h1
           className="font-heading text-2xl font-extrabold tracking-tight"
@@ -197,7 +197,17 @@ export default function BrowsePage() {
         <FilterGroup label="When">
           <ChipRow ariaLabel="Date window">
             {DATE_WINDOW_OPTIONS.map((w) => (
-              <Chip key={w} active={window_ === w} onClick={() => setWindow(w)}>
+              <Chip
+                key={w}
+                active={window_ === w}
+                onClick={() => {
+                  setWindow(w);
+                  setTimesOfDay(new Set());
+                  setFlags(new Set());
+                  setEventTypes(new Set());
+                  setInterestsOnly(false);
+                }}
+              >
                 {DATE_WINDOW_LABELS[w]}
               </Chip>
             ))}
