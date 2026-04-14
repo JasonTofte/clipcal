@@ -7,6 +7,7 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { buildGoldyWhy, bucketLabel } from '@/lib/goldy-why';
 import { flyerClass } from '@/lib/flyer-class';
 import { formatEventWhen } from '@/lib/format';
+import { CalendarPlus, ExternalLink, Trophy } from 'lucide-react';
 
 type Props = {
   event: Event;
@@ -80,7 +81,8 @@ export function GoldyEventCard({
               'linear-gradient(to right, var(--goldy-maroon-500) 0%, var(--goldy-maroon-500) 65%, var(--goldy-maroon-600) 100%)',
           }}
         >
-          <span className="truncate">🏆 Goldy&apos;s top pick · Ski-U-Mah!</span>
+          <Trophy aria-hidden size={12} className="shrink-0" />
+          <span className="truncate">Goldy&apos;s top pick · Ski-U-Mah!</span>
         </div>
       )}
 
@@ -220,9 +222,9 @@ export function GoldyEventCard({
               >
                 {hasConflict
                   ? armed
-                    ? '📅 Confirm — add anyway'
+                    ? 'Confirm — add anyway'
                     : 'Add anyway · you decide'
-                  : '📅 Add to Calendar'}
+                  : 'Add to Calendar'}
               </button>
               {onHide && (
                 <button
@@ -250,7 +252,7 @@ export function GoldyEventCard({
                   minHeight: 32,
                 }}
               >
-                <span aria-hidden>🔗</span>
+                <ExternalLink aria-hidden size={12} />
                 Sign up via flyer QR
               </a>
             )}

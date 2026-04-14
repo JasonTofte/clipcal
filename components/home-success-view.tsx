@@ -94,7 +94,7 @@ export function HomeSuccessView({
         </Button>
         {canRetryWithSonnet && (
           <Button variant="secondary" className="w-fit" onClick={onRetryWithSonnet}>
-            🔬 Try with stronger model
+            Try with stronger model
           </Button>
         )}
       </div>

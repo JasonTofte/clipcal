@@ -3,6 +3,7 @@
 import type { Event } from '@/lib/schema';
 import type { GoldyContext } from '@/lib/goldy-commentary';
 import { useSwipeReveal } from '@/lib/use-swipe-reveal';
+import { CalendarPlus, ExternalLink } from 'lucide-react';
 
 // Compact horizontal list-item. Replaces the stacked thick-card look
 // on /feed's "rest of the week" list. Left column is day + time,
@@ -101,7 +102,7 @@ export function GoldyEventRow({
             transition: isDragging ? 'none' : 'opacity 180ms ease-out',
           }}
         >
-          <span aria-hidden className="mr-2 text-base">📅</span>
+          <CalendarPlus aria-hidden size={16} className="mr-2 shrink-0" />
           {addCommitted ? 'Release to add' : 'Add'}
         </div>
         {/* Hide reveal — appears under the swiping row when dragged left. */}
@@ -194,7 +195,7 @@ export function GoldyEventRow({
               minHeight: 32,
             }}
           >
-            <span aria-hidden>🔗</span>
+            <ExternalLink aria-hidden size={10} />
             Sign up
           </a>
         )}

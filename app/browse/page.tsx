@@ -213,7 +213,7 @@ export default function BrowsePage() {
       {/* What's on */}
       <ChipRow ariaLabel="What's on">
         <Chip active={flags.has('free-food')} onClick={() => toggleFlag('free-food')}>
-          🍕 Free food
+          Free food
         </Chip>
         <Chip active={flags.has('free-cost')} onClick={() => toggleFlag('free-cost')}>
           $0 Free
@@ -468,7 +468,8 @@ function EventList({
   events: LiveWhaleEvent[];
   interests: string[];
 }) {
-  const sorted = [...events].sort((a, b) => a.date_iso.localeCompare(b.date_iso));
+  const deduped = Array.from(new Map(events.map((e) => [e.id, e])).values());
+  const sorted = deduped.sort((a, b) => a.date_iso.localeCompare(b.date_iso));
   return (
     <ul className="flex flex-col gap-2">
       {sorted.map((e) => {
@@ -536,7 +537,7 @@ function EventList({
                         color: 'var(--goldy-maroon-700)',
                       }}
                     >
-                      🍕 free food
+                      free food
                     </span>
                   )}
                   {isFree && (

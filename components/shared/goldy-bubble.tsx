@@ -69,7 +69,7 @@ export function GoldyBubble({
           aria-hidden
           className="grid size-8 shrink-0 place-items-center rounded-full bg-white/60 text-lg shadow-inner"
         >
-          🐿️
+          G
         </span>
       )}
       <div className="min-w-0 flex-1">{children}</div>
