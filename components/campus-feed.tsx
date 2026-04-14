@@ -248,6 +248,7 @@ export function CampusFeed() {
   const [interests, setInterests] = useState<string[]>([]);
   const [listMode, setListMode] = useState(false);
   const [dismissed, setDismissed] = useState<Set<number>>(new Set());
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     const profile = loadProfileFromStorage();
@@ -269,18 +270,7 @@ export function CampusFeed() {
     })();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="rounded-2xl bg-card p-4 ring-1 ring-foreground/10">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <div className="size-3 animate-spin rounded-full border-[2px] border-muted-foreground/20 border-t-muted-foreground" />
-          Loading campus events…
-        </div>
-      </div>
-    );
-  }
-
-  if (events.length === 0) return null;
+  if (loading || events.length === 0) return null;
 
   const remaining = events.filter((_, i) => !dismissed.has(i));
   const allDone = remaining.length === 0;
@@ -297,7 +287,44 @@ export function CampusFeed() {
   };
 
   return (
-    <div>
+    <section className="mt-8" aria-labelledby="campus-feed-heading">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls="campus-feed-body"
+        className="flex w-full items-center justify-between gap-2 rounded-xl border bg-card px-4 py-3 text-left transition-colors hover:bg-muted/30"
+        style={{ borderColor: 'var(--border)' }}
+      >
+        <div className="flex items-center gap-2">
+          <span className="text-base" aria-hidden>🏛️</span>
+          <h2
+            id="campus-feed-heading"
+            className="text-sm font-bold"
+            style={{ color: 'var(--foreground)' }}
+          >
+            Happening on Campus
+          </h2>
+          <span
+            className="text-[11px]"
+            style={{ color: 'var(--muted-foreground)' }}
+          >
+            {events.length} live
+          </span>
+        </div>
+        <span
+          aria-hidden
+          className="text-xs transition-transform"
+          style={{
+            color: 'var(--muted-foreground)',
+            transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          ▾
+        </span>
+      </button>
+      {!expanded ? null : (
+      <div id="campus-feed-body" className="mt-3">
       {/* header */}
       <div className="mb-3 flex items-center justify-between">
         <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--goldy-maroon-600)' }}>
@@ -388,6 +415,8 @@ export function CampusFeed() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+      )}
+    </section>
   );
 }

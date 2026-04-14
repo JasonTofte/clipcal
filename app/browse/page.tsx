@@ -195,7 +195,17 @@ export default function BrowsePage() {
       {/* Date window */}
       <ChipRow ariaLabel="Date window">
         {DATE_WINDOW_OPTIONS.map((w) => (
-          <Chip key={w} active={window_ === w} onClick={() => setWindow(w)}>
+          <Chip
+            key={w}
+            active={window_ === w}
+            onClick={() => {
+              setWindow(w);
+              setTimesOfDay(new Set());
+              setFlags(new Set());
+              setEventTypes(new Set());
+              setInterestsOnly(false);
+            }}
+          >
             {DATE_WINDOW_LABELS[w]}
           </Chip>
         ))}

@@ -1,6 +1,5 @@
 'use client';
 
-import { CampusFeed } from '@/components/campus-feed';
 import { Dropzone } from '@/components/dropzone';
 import { GoldyBubble } from '@/components/shared';
 
@@ -18,7 +17,6 @@ export function HomeIdleView({ onFiles }: Props) {
         </p>
       </GoldyBubble>
       <Dropzone onFiles={onFiles} />
-      <CampusFeed />
     </div>
   );
 }
