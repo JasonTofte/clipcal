@@ -88,7 +88,8 @@ clipcal/
 - **Fri Apr 10** — Research + mockups + scaffold
 - **Sat Apr 11** — Core extraction flow + conflict detection
 - **Sun Apr 12** — AI chat interviewer + ADHD "noticings" layer + polish
-- **Mon Apr 13 (5:45 PM)** — Demo
+- **Mon Apr 13** — Hackathon demo
+- **Tue Apr 14** — Contest demo
 
 ## License
 
