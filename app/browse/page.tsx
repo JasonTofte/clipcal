@@ -174,7 +174,7 @@ export default function BrowsePage() {
     <main className="mx-auto flex min-h-[100dvh] w-full min-w-0 max-w-2xl flex-col px-4 pt-4 pb-24">
       <header className="mb-4">
         <h1
-          className="text-2xl font-bold tracking-tight"
+          className="font-heading text-2xl font-extrabold tracking-tight"
           style={{ color: 'var(--foreground)' }}
         >
           What&rsquo;s on campus
@@ -192,68 +192,75 @@ export default function BrowsePage() {
         <EventSearch value={q} onChange={setQ} />
       </div>
 
-      {/* Date window */}
-      <ChipRow ariaLabel="Date window">
-        {DATE_WINDOW_OPTIONS.map((w) => (
-          <Chip
-            key={w}
-            active={window_ === w}
-            onClick={() => {
-              setWindow(w);
-              setTimesOfDay(new Set());
-              setFlags(new Set());
-              setEventTypes(new Set());
-              setInterestsOnly(false);
-            }}
-          >
-            {DATE_WINDOW_LABELS[w]}
-          </Chip>
-        ))}
-      </ChipRow>
+      {/* Filter bar */}
+      <div className="mb-4 rounded-2xl bg-card p-4 shadow-sm">
+        <FilterGroup label="When">
+          <ChipRow ariaLabel="Date window">
+            {DATE_WINDOW_OPTIONS.map((w) => (
+              <Chip
+                key={w}
+                active={window_ === w}
+                onClick={() => {
+                  setWindow(w);
+                  setTimesOfDay(new Set());
+                  setFlags(new Set());
+                  setEventTypes(new Set());
+                  setInterestsOnly(false);
+                }}
+              >
+                {DATE_WINDOW_LABELS[w]}
+              </Chip>
+            ))}
+          </ChipRow>
+        </FilterGroup>
 
-      {/* Time of day */}
-      <ChipRow ariaLabel="Time of day">
-        {TIME_OPTIONS.map((t) => (
-          <Chip key={t} active={timesOfDay.has(t)} onClick={() => toggleTime(t)}>
-            {timeLabel(t)}
-          </Chip>
-        ))}
-      </ChipRow>
+        <FilterGroup label="Time">
+          <ChipRow ariaLabel="Time of day">
+            {TIME_OPTIONS.map((t) => (
+              <Chip key={t} active={timesOfDay.has(t)} onClick={() => toggleTime(t)}>
+                {timeLabel(t)}
+              </Chip>
+            ))}
+          </ChipRow>
+        </FilterGroup>
 
-      {/* What's on */}
-      <ChipRow ariaLabel="What's on">
-        <Chip active={flags.has('free-food')} onClick={() => toggleFlag('free-food')}>
-          Free food
-        </Chip>
-        <Chip active={flags.has('free-cost')} onClick={() => toggleFlag('free-cost')}>
-          $0 Free
-        </Chip>
-        <Chip
-          active={flags.has('registration')}
-          onClick={() => toggleFlag('registration')}
-        >
-          ✓ Registration
-        </Chip>
-        {interests.length > 0 && (
-          <Chip active={interestsOnly} onClick={() => setInterestsOnly((v) => !v)}>
-            ★ My interests
-          </Chip>
-        )}
-      </ChipRow>
-
-      {/* Event types — only render when results return some */}
-      {availableTypes.length > 0 && (
-        <ChipRow ariaLabel="Event type">
-          {availableTypes.map((t) => (
-            <Chip key={t} active={eventTypes.has(t)} onClick={() => toggleType(t)}>
-              {t}
+        <FilterGroup label="What's on">
+          <ChipRow ariaLabel="What's on">
+            <Chip active={flags.has('free-food')} onClick={() => toggleFlag('free-food')}>
+              Free food
             </Chip>
-          ))}
-        </ChipRow>
-      )}
+            <Chip active={flags.has('free-cost')} onClick={() => toggleFlag('free-cost')}>
+              $0 Free
+            </Chip>
+            <Chip
+              active={flags.has('registration')}
+              onClick={() => toggleFlag('registration')}
+            >
+              Registration
+            </Chip>
+            {interests.length > 0 && (
+              <Chip active={interestsOnly} onClick={() => setInterestsOnly((v) => !v)}>
+                My interests
+              </Chip>
+            )}
+          </ChipRow>
+        </FilterGroup>
+
+        {availableTypes.length > 0 && (
+          <FilterGroup label="Type">
+            <ChipRow ariaLabel="Event type">
+              {availableTypes.map((t) => (
+                <Chip key={t} active={eventTypes.has(t)} onClick={() => toggleType(t)}>
+                  {t}
+                </Chip>
+              ))}
+            </ChipRow>
+          </FilterGroup>
+        )}
+      </div>
 
       {/* Active-filter summary + view toggle */}
-      <div className="mt-1 mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div
           className="text-xs"
           style={{ color: 'var(--muted-foreground)' }}
@@ -289,10 +296,9 @@ export default function BrowsePage() {
 
       {errored && !loading && (
         <p
-          className="mb-3 rounded-xl border px-3 py-2 text-xs"
+          className="mb-3 rounded-xl px-3 py-2 text-xs"
           style={{
             background: '#FBEEEC',
-            borderColor: 'rgba(179,58,43,0.25)',
             color: '#9C2C20',
           }}
         >
@@ -301,10 +307,7 @@ export default function BrowsePage() {
       )}
 
       {!loading && !errored && visibleEvents.length === 0 && events.length > 0 && (
-        <div
-          className="rounded-2xl border bg-card p-6 text-center"
-          style={{ borderColor: 'var(--border)' }}
-        >
+        <div className="rounded-2xl bg-card p-6 text-center shadow-sm">
           <p className="text-sm" style={{ color: 'var(--muted-foreground)' }}>
             {events.length} event{events.length === 1 ? '' : 's'} loaded but{' '}
             <strong style={{ color: 'var(--foreground)' }}>none match</strong> your
@@ -313,11 +316,9 @@ export default function BrowsePage() {
           <button
             type="button"
             onClick={clearAllFilters}
-            className="mt-3 inline-flex min-h-[40px] items-center rounded-full border px-4 py-1.5 text-sm font-semibold"
+            className="mt-3 inline-flex min-h-[40px] items-center rounded-full bg-muted px-4 py-1.5 text-sm font-semibold"
             style={{
-              borderColor: 'var(--goldy-maroon-500)',
               color: 'var(--goldy-maroon-600)',
-              background: 'white',
             }}
           >
             Clear filters
@@ -327,11 +328,8 @@ export default function BrowsePage() {
 
       {!loading && !errored && events.length === 0 && (
         <p
-          className="rounded-2xl border bg-card p-6 text-sm text-center"
-          style={{
-            borderColor: 'var(--border)',
-            color: 'var(--muted-foreground)',
-          }}
+          className="rounded-2xl bg-card p-6 text-sm text-center shadow-sm"
+          style={{ color: 'var(--muted-foreground)' }}
         >
           No events found in this window. Try a different date or keyword.
         </p>
@@ -374,16 +372,27 @@ export default function BrowsePage() {
         </>
       )}
 
-      <footer
-        className="mt-8 border-t pt-4 text-center text-[10px] font-mono"
-        style={{
-          borderColor: 'var(--border)',
-          color: 'var(--muted-foreground)',
-        }}
-      >
+      <footer className="mt-8 pt-4 text-center text-[10px] font-mono" style={{ color: 'var(--muted-foreground)' }}>
         events.tc.umn.edu · live
       </footer>
     </main>
+  );
+}
+
+function FilterGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-3 last:mb-0">
+      <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest" style={{ color: 'var(--muted-foreground)' }}>
+        {label}
+      </p>
+      {children}
+    </div>
   );
 }
 
@@ -398,7 +407,7 @@ function ChipRow({
     <div
       role="group"
       aria-label={ariaLabel}
-      className="scrollbar-hide -mx-4 mb-2 flex gap-1.5 overflow-x-auto px-4"
+      className="scrollbar-hide flex gap-1.5 overflow-x-auto"
       style={{ scrollSnapType: 'x proximity' }}
     >
       {children}
@@ -420,13 +429,12 @@ function Chip({
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      className="press inline-flex shrink-0 items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors"
+      className="inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold transition-colors"
       style={{
         scrollSnapAlign: 'start',
-        minHeight: 36,
-        background: active ? 'var(--goldy-maroon-500)' : 'var(--surface-paper)',
+        minHeight: 32,
+        background: active ? 'var(--goldy-maroon-500)' : 'var(--muted)',
         color: active ? 'white' : 'var(--muted-foreground)',
-        borderColor: active ? 'var(--goldy-maroon-500)' : 'var(--border)',
       }}
     >
       {children}
@@ -445,8 +453,7 @@ function ViewToggle({
     <div
       role="radiogroup"
       aria-label="View mode"
-      className="inline-flex gap-1 rounded-full border p-1"
-      style={{ background: 'var(--surface-paper)', borderColor: 'var(--border)' }}
+      className="inline-flex gap-1 rounded-full bg-muted p-1"
     >
       {(['list', 'calendar'] as ViewMode[]).map((v) => (
         <button
@@ -499,8 +506,7 @@ function EventList({
               href={e.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-start gap-3 rounded-2xl border bg-card p-3 transition-shadow hover:shadow-md"
-              style={{ borderColor: 'var(--border)' }}
+              className="flex items-start gap-3 rounded-2xl bg-card p-3 shadow-sm transition-shadow hover:shadow-md"
             >
               <div className="w-12 shrink-0 text-xs leading-tight">
                 <div style={{ color: 'var(--muted-foreground)' }}>{day}</div>

@@ -265,19 +265,6 @@ export function OneThingHero({
         <NoLocationPanel minutesToStart={minutesToStart} />
       )}
 
-      <p
-        className="mt-4 text-[15px] leading-relaxed"
-        style={{ color: 'var(--foreground)' }}
-      >
-        <span
-          className="mr-1 inline-block rounded-md px-1.5 py-0.5 align-middle text-[9px] font-bold uppercase tracking-wider"
-          style={{ background: 'var(--goldy-maroon-500)', color: 'white' }}
-        >
-          goldy
-        </span>
-        {line}
-      </p>
-
       <div className="mt-5 space-y-2">
         {onAddToCalendar && (
           <button

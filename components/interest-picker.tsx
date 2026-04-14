@@ -123,7 +123,7 @@ export function InterestPicker() {
 
   if (saved) {
     return (
-      <div className="rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-700 ring-1 ring-emerald-500/30 dark:text-emerald-400">
+      <div className="rounded-xl bg-emerald-500/10 p-4 text-sm text-emerald-700 dark:text-emerald-400">
         Got it — {selected.size} interests saved. Taking you back.
       </div>
     );
@@ -142,10 +142,10 @@ export function InterestPicker() {
               type="button"
               onClick={() => toggle(opt.label)}
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition-colors',
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 selected.has(opt.label)
-                  ? 'bg-primary text-primary-foreground ring-primary'
-                  : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted',
               )}
             >
               {opt.label}
@@ -165,10 +165,10 @@ export function InterestPicker() {
               type="button"
               onClick={() => setStage(stage === opt.value ? null : opt.value)}
               className={cn(
-                'rounded-full px-3 py-1.5 text-sm font-medium ring-1 ring-inset transition-colors',
+                'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
                 stage === opt.value
-                  ? 'bg-primary text-primary-foreground ring-primary'
-                  : 'bg-background text-muted-foreground ring-border hover:bg-muted/50',
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-muted',
               )}
             >
               {opt.label}
@@ -186,7 +186,7 @@ export function InterestPicker() {
           value={homeInput}
           onChange={(e) => setHomeInput(e.target.value)}
           placeholder="e.g. 3005 University Ave SE, Minneapolis"
-          className="w-full rounded-xl border bg-background px-3 py-2 text-sm ring-1 ring-inset ring-border focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-xl bg-muted/40 px-3 py-2 text-sm focus:outline-none focus:bg-muted/60"
           autoComplete="street-address"
           inputMode="text"
         />

@@ -29,10 +29,10 @@ export function TimezoneBadge({ timezone, className }: TimezoneBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex h-5 items-center gap-1 rounded-full px-2 text-[10px] font-semibold ring-1 ring-inset',
+        'inline-flex h-5 items-center gap-1 rounded-full px-2 text-[10px] font-semibold',
         mismatch
-          ? 'bg-amber-500/10 text-amber-800 ring-amber-500/40'
-          : 'bg-muted text-muted-foreground ring-border',
+          ? 'bg-amber-500/10 text-amber-800'
+          : 'bg-muted text-muted-foreground',
         className,
       )}
       title={

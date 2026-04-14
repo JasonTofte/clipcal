@@ -11,7 +11,7 @@ export function ConflictBadge({ conflict, className }: ConflictBadgeProps) {
     return (
       <div
         className={cn(
-          'flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-500/30 dark:text-emerald-400',
+          'flex items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400',
           className,
         )}
       >
@@ -23,7 +23,7 @@ export function ConflictBadge({ conflict, className }: ConflictBadgeProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-1.5 rounded-md bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-500/30 dark:text-rose-400',
+        'flex items-center gap-1.5 rounded-md bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-700 dark:text-rose-400',
         className,
       )}
     >

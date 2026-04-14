@@ -27,8 +27,8 @@ export function EventCalendarGrid({
   const cells = buildMonthGrid(monthStart, events);
 
   return (
-    <div className="rounded-xl ring-1 ring-border">
-      <div className="grid grid-cols-7 border-b border-border bg-muted/30 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-xl overflow-hidden shadow-sm">
+      <div className="grid grid-cols-7 bg-muted/30 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
         {WEEKDAYS_SUN_FIRST.map((d) => (
           <div key={d} className="px-2 py-1.5 text-center">
             {d}
@@ -43,7 +43,7 @@ export function EventCalendarGrid({
             <div
               key={i}
               className={cn(
-                'min-h-[88px] border-b border-r border-border p-1.5 text-[11px]',
+                'min-h-[88px] p-1.5 text-[11px]',
                 !cell.inMonth && 'bg-muted/20 text-muted-foreground/50',
               )}
             >
