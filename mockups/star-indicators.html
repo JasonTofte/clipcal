@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShowUp — Star Indicator Options</title>
+<style>
+  :root {
+    --cream: #FBF4E8;
+    --paper: #FEFCF6;
+    --maroon-50: #F9EAEC;
+    --maroon-100: #F2D4D9;
+    --maroon-500: #7A0019;
+    --maroon-600: #660015;
+    --maroon-700: #4D0010;
+    --gold-300: #F5D77A;
+    --gold-400: #F2C94C;
+    --gold-500: #E6B429;
+    --amber: rgb(251, 191, 36);
+    --amber-tint: rgba(251, 191, 36, 0.08);
+    --amber-ring: rgba(251, 191, 36, 0.70);
+    --muted: rgba(26, 18, 16, 0.55);
+    --text: #1A1210;
+    --border: rgba(26, 18, 16, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 80px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--maroon-700);
+  }
+  p.sub {
+    margin: 0 0 28px;
+    color: var(--muted);
+    max-width: 640px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 28px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .option {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .option-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .option-label strong {
+    color: var(--text);
+    font-size: 14px;
+    display: block;
+    letter-spacing: 0;
+    text-transform: none;
+    margin-top: 2px;
+  }
+
+  /* ─── Shared hero card ─── */
+  .card {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 1px 2px rgba(26,18,16,0.04), 0 10px 30px -12px rgba(122,0,25,0.12);
+    overflow: hidden;
+  }
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--maroon-600);
+  }
+  .eyebrow .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--maroon-500);
+  }
+  .title {
+    margin-top: 6px;
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .when {
+    margin-top: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--maroon-600);
+  }
+  .loc {
+    margin-top: 2px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .leaveby {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--maroon-100);
+    background: var(--maroon-50);
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .leaveby .label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--maroon-600);
+  }
+  .leaveby .time {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--maroon-600);
+    margin-top: 4px;
+    letter-spacing: -0.02em;
+  }
+  .leaveby .sub {
+    font-size: 13px;
+    color: var(--maroon-700);
+    margin-top: 4px;
+  }
+  .leaveby .walk {
+    font-size: 11px;
+    color: var(--maroon-700);
+    font-weight: 600;
+  }
+  .cta {
+    margin-top: 16px;
+    width: 100%;
+    padding: 12px;
+    background: var(--maroon-500);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: default;
+  }
+
+  /* ── Star button variants ── */
+  .star-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION A — Current baseline (shipped)  */
+  /* ══════════════════════════════════════ */
+  .card-a {
+    background: var(--amber-tint);
+    border-color: var(--amber-ring);
+  }
+  .card-a .star-btn {
+    color: var(--amber);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION B — Eyebrow swap "YOUR PICK"     */
+  /* ══════════════════════════════════════ */
+  .card-b {
+    background: var(--amber-tint);
+    border-color: var(--amber-ring);
+  }
+  .card-b .eyebrow {
+    color: var(--gold-500);
+  }
+  .card-b .eyebrow .star-dot {
+    width: 16px;
+    height: 16px;
+    color: var(--amber);
+    font-size: 16px;
+    line-height: 1;
+    display: inline-block;
+  }
+  .card-b .star-btn {
+    color: var(--amber);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION C — Left edge stripe              */
+  /* ══════════════════════════════════════ */
+  .card-c {
+    border-color: var(--border);
+    padding-left: 24px;
+  }
+  .card-c::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--gold-400), var(--gold-500));
+  }
+  .card-c .star-btn {
+    color: var(--amber);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION D — Thicker ring + gold glow     */
+  /* ══════════════════════════════════════ */
+  .card-d {
+    border: 2px solid var(--amber-ring);
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.18),
+                0 10px 30px -12px rgba(230, 180, 41, 0.35);
+  }
+  .card-d .star-btn {
+    color: var(--amber);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION E — Corner ribbon "FAVORITE"     */
+  /* ══════════════════════════════════════ */
+  .card-e {
+    border-color: var(--border);
+  }
+  .card-e::after {
+    content: "FAVORITE";
+    position: absolute;
+    top: 14px;
+    right: -38px;
+    transform: rotate(38deg);
+    background: var(--gold-500);
+    color: var(--maroon-700);
+    padding: 3px 44px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+  }
+  .card-e .star-btn { display: none; }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION F — Inline star in title         */
+  /* ══════════════════════════════════════ */
+  .card-f {
+    background: var(--amber-tint);
+    border-color: var(--amber-ring);
+  }
+  .card-f .title .inline-star {
+    color: var(--amber);
+    margin-right: 6px;
+  }
+  .card-f .star-btn {
+    /* smaller, less prominent since title carries the marker */
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    color: var(--amber);
+    background: transparent;
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION G — Gold gradient wash            */
+  /* ══════════════════════════════════════ */
+  .card-g {
+    background: linear-gradient(135deg, #FEF3CC 0%, #F8DE88 100%);
+    border-color: var(--gold-500);
+  }
+  .card-g .eyebrow {
+    color: var(--maroon-700);
+  }
+  .card-g .eyebrow .dot {
+    background: var(--maroon-700);
+  }
+  .card-g .leaveby {
+    background: rgba(255, 255, 255, 0.55);
+    border-color: rgba(122, 0, 25, 0.15);
+  }
+  .card-g .star-btn {
+    color: var(--maroon-700);
+    background: rgba(255, 255, 255, 0.5);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION H — Recommended combo            */
+  /* Eyebrow swap + left stripe + keep star  */
+  /* ══════════════════════════════════════ */
+  .card-h {
+    background: var(--amber-tint);
+    border-color: var(--amber-ring);
+    padding-left: 24px;
+  }
+  .card-h::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--gold-400), var(--gold-500));
+  }
+  .card-h .eyebrow {
+    color: var(--gold-500);
+  }
+  .card-h .eyebrow .star-dot {
+    color: var(--amber);
+    font-size: 14px;
+    line-height: 1;
+  }
+  .card-h .star-btn {
+    color: var(--amber);
+    background: rgba(251, 191, 36, 0.12);
+  }
+
+  /* ══════════════════════════════════════ */
+  /* OPTION I — Unstarred reference          */
+  /* ══════════════════════════════════════ */
+  .card-i .star-btn {
+    color: var(--muted);
+    background: transparent;
+  }
+</style>
+</head>
+<body>
+
+<h1>Star indicator — visual comparison</h1>
+<p class="sub">
+  Same hero card, eight star treatments. The last card is the unstarred baseline
+  for reference. Pick the one that reads as "favorite" from across the room without
+  feeling noisy. Recommendation: Option H (combo).
+</p>
+
+<div class="grid">
+
+  <!-- OPTION A -->
+  <div class="option">
+    <div class="option-label">A. Current (shipped)<strong>Corner star + thin amber ring + faint tint</strong></div>
+    <div class="card card-a">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION B -->
+  <div class="option">
+    <div class="option-label">B. Eyebrow swap<strong>"★ YOUR PICK" replaces "NEXT UP"</strong></div>
+    <div class="card card-b">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="star-dot">★</span>YOUR PICK</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION C -->
+  <div class="option">
+    <div class="option-label">C. Left-edge gold stripe<strong>5 px vertical gold bar (Gmail-important pattern)</strong></div>
+    <div class="card card-c">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION D -->
+  <div class="option">
+    <div class="option-label">D. Thicker ring + glow<strong>2 px amber border + soft gold halo</strong></div>
+    <div class="card card-d">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION E -->
+  <div class="option">
+    <div class="option-label">E. Corner ribbon<strong>Diagonal "FAVORITE" banner (retail-y)</strong></div>
+    <div class="card card-e">
+      <button class="star-btn">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION F -->
+  <div class="option">
+    <div class="option-label">F. Inline star in title<strong>★ lives in reading order, before title</strong></div>
+    <div class="card card-f">
+      <button class="star-btn" aria-label="Unstar">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title"><span class="inline-star">★</span>SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION G -->
+  <div class="option">
+    <div class="option-label">G. Gold gradient wash<strong>Whole card colorized (matches Pi "*" vibe)</strong></div>
+    <div class="card card-g">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP · YOUR PICK</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION H — Recommended combo -->
+  <div class="option">
+    <div class="option-label">H. Combo (recommended)<strong>Eyebrow swap + left stripe + tint + corner star</strong></div>
+    <div class="card card-h">
+      <button class="star-btn" aria-label="Starred">★</button>
+      <div class="eyebrow"><span class="star-dot">★</span>YOUR PICK</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+  <!-- OPTION I — Unstarred reference -->
+  <div class="option">
+    <div class="option-label">I. Unstarred (reference)<strong>What an un-starred card looks like today</strong></div>
+    <div class="card card-i">
+      <button class="star-btn" aria-label="Star event">☆</button>
+      <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+      <div class="title">SERU Pizza Party — Rapson</div>
+      <div class="when">Wed, Apr 15 · 11:00 AM</div>
+      <div class="loc">Rapson, HGA Gallery</div>
+      <div class="leaveby">
+        <div>
+          <div class="label">LEAVE BY</div>
+          <div class="time">10:48 AM</div>
+          <div class="sub">in 16h 56m</div>
+        </div>
+        <div class="walk">12-min walk</div>
+      </div>
+      <button class="cta">Add to calendar</button>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

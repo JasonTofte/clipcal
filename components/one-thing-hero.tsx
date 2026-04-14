@@ -224,27 +224,47 @@ export function OneThingHero({
       role="region"
       aria-labelledby="next-up-title"
       aria-live={isUrgent ? 'assertive' : 'polite'}
-      className="relative mb-5 rounded-3xl border p-5"
+      className="relative mb-5 overflow-hidden rounded-3xl border p-5"
       style={{
-        background: isStarred ? 'rgba(251, 191, 36, 0.05)' : 'var(--surface-paper)',
-        borderColor: isStarred ? 'rgba(251, 191, 36, 0.7)' : 'var(--border)',
+        background: 'var(--surface-paper)',
+        borderColor: 'var(--border)',
         boxShadow:
           '0 1px 2px rgba(26,18,16,0.04), 0 10px 30px -12px rgba(122,0,25,0.12)',
       }}
     >
-      {canStar && (
+      {canStar && isStarred && (
         <button
           type="button"
           onClick={() => onToggleStar!(event)}
-          aria-label={isStarred ? 'Unstar event' : 'Star event'}
-          aria-pressed={isStarred}
-          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none transition-colors"
+          aria-label="Unstar event"
+          aria-pressed={true}
+          className="absolute cursor-pointer border-0"
           style={{
-            color: isStarred ? 'rgb(251, 191, 36)' : 'var(--muted-foreground)',
-            background: isStarred ? 'rgba(251, 191, 36, 0.12)' : 'transparent',
+            top: '18px',
+            right: '-44px',
+            transform: 'rotate(38deg)',
+            background: 'var(--goldy-gold-500)',
+            color: 'var(--goldy-maroon-700)',
+            padding: '4px 48px',
+            fontSize: '10px',
+            fontWeight: 800,
+            letterSpacing: '0.14em',
+            boxShadow: '0 2px 6px -1px rgba(230, 180, 34, 0.45)',
           }}
         >
-          {isStarred ? '★' : '☆'}
+          ★ FAVORITE
+        </button>
+      )}
+      {canStar && !isStarred && (
+        <button
+          type="button"
+          onClick={() => onToggleStar!(event)}
+          aria-label="Star event"
+          aria-pressed={false}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none transition-colors hover:bg-muted/60"
+          style={{ color: 'var(--muted-foreground)' }}
+        >
+          ☆
         </button>
       )}
       <div
