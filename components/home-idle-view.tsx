@@ -58,7 +58,10 @@ export function HomeIdleView({ demoMode, onFiles }: Props) {
             relevance={TEASER_RELEVANCE}
             campusMatch={null}
             orgMatch={null}
-            noticings={generateNoticings(TEASER_EVENT, { demoCalendar: DEMO_CALENDAR })}
+            noticings={generateNoticings(TEASER_EVENT, {
+              demoCalendar: DEMO_CALENDAR,
+              hardcodedWalkMinutes: 8,
+            })}
             leaveBy={computeLeaveBy(TEASER_EVENT)}
             busySlots={DEMO_CALENDAR}
             readOnly

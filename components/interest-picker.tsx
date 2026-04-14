@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import {
   loadProfileFromStorage,
   saveProfileToStorage,
+  type HomeBase,
   type Profile,
 } from '@/lib/profile';
+import { geocode } from '@/lib/geocode';
 import { cn } from '@/lib/utils';
 
 const INTEREST_OPTIONS = [
@@ -45,6 +47,9 @@ export function InterestPicker() {
   const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [stage, setStage] = useState<string | null>(null);
+  const [homeInput, setHomeInput] = useState('');
+  const [savedHome, setSavedHome] = useState<HomeBase | null>(null);
+  const [homeStatus, setHomeStatus] = useState<'idle' | 'geocoding' | 'error'>('idle');
   const [saved, setSaved] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -56,9 +61,38 @@ export function InterestPicker() {
     if (existing) {
       setSelected(new Set(existing.interests));
       setStage(existing.stage ?? null);
+      if (existing.homeBase) {
+        setHomeInput(existing.homeBase.address);
+        setSavedHome(existing.homeBase);
+      }
     }
     setHydrated(true);
   }, []);
+
+  // Geocode the home address when the user pauses typing. Stores the
+  // resolved lat/lng on `savedHome`; bare address-only state clears the
+  // saved coords so a partially-edited address doesn't keep stale coords.
+  useEffect(() => {
+    const trimmed = homeInput.trim();
+    if (!trimmed) {
+      setSavedHome(null);
+      setHomeStatus('idle');
+      return;
+    }
+    if (savedHome && savedHome.address === trimmed) return;
+    const handle = window.setTimeout(async () => {
+      setHomeStatus('geocoding');
+      const hit = await geocode(trimmed);
+      if (hit) {
+        setSavedHome({ address: trimmed, lat: hit.lat, lng: hit.lng });
+        setHomeStatus('idle');
+      } else {
+        setSavedHome(null);
+        setHomeStatus('error');
+      }
+    }, 600);
+    return () => window.clearTimeout(handle);
+  }, [homeInput, savedHome]);
 
   function toggle(interest: string) {
     setSelected((prev) => {
@@ -80,6 +114,7 @@ export function InterestPicker() {
       preferences:
         existing?.preferences ?? { showTradeoffs: true, surfaceNoticings: true },
       vibe: existing?.vibe ?? null,
+      homeBase: savedHome,
     };
     saveProfileToStorage(profile);
     setSaved(true);
@@ -141,6 +176,35 @@ export function InterestPicker() {
             </button>
           ))}
         </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          Home base (optional)
+        </p>
+        <input
+          type="text"
+          value={homeInput}
+          onChange={(e) => setHomeInput(e.target.value)}
+          placeholder="e.g. 3005 University Ave SE, Minneapolis"
+          className="w-full rounded-xl border bg-background px-3 py-2 text-sm ring-1 ring-inset ring-border focus:outline-none focus:ring-2 focus:ring-primary"
+          autoComplete="street-address"
+          inputMode="text"
+        />
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {homeStatus === 'geocoding' && 'Looking up coordinates…'}
+          {homeStatus === 'error' && (
+            <span className="text-rose-600">Couldn&apos;t find that address. Walk times will use UMN campus instead.</span>
+          )}
+          {homeStatus === 'idle' && savedHome && (
+            <>
+              ✓ Saved. Walk times will be measured from this address.
+            </>
+          )}
+          {homeStatus === 'idle' && !savedHome && (
+            <>Walk times on event cards will start from here. Leave empty to use UMN campus as the reference.</>
+          )}
+        </p>
       </div>
 
       {hydrated && selected.size > 0 && (
