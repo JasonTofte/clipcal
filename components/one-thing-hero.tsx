@@ -36,6 +36,7 @@ type Props = {
   onAddToCalendar?: (event: Event) => void;
   onSnooze?: (event: Event, minutes: number) => void;
   onHide?: (event: Event) => void;
+  onToggleStar?: (event: Event) => void;
 };
 
 const TICK_MS = 30_000;
@@ -46,6 +47,7 @@ export function OneThingHero({
   onAddToCalendar,
   onSnooze,
   onHide,
+  onToggleStar,
 }: Props) {
   const [tick, setTick] = useState(0);
   // Live-fallback: when the user has uploaded nothing AND nothing in
@@ -214,6 +216,9 @@ export function OneThingHero({
   const leaveBy = resolvedLeaveBy;
   const isUrgent = phase === 'urgent' || phase === 'leaving-now';
 
+  const isStarred = !!event.starred;
+  const canStar = !isLiveFallback && !!onToggleStar;
+
   return (
     <section
       role="region"
@@ -221,12 +226,27 @@ export function OneThingHero({
       aria-live={isUrgent ? 'assertive' : 'polite'}
       className="relative mb-5 rounded-3xl border p-5"
       style={{
-        background: 'var(--surface-paper)',
-        borderColor: 'var(--border)',
+        background: isStarred ? 'rgba(251, 191, 36, 0.05)' : 'var(--surface-paper)',
+        borderColor: isStarred ? 'rgba(251, 191, 36, 0.7)' : 'var(--border)',
         boxShadow:
           '0 1px 2px rgba(26,18,16,0.04), 0 10px 30px -12px rgba(122,0,25,0.12)',
       }}
     >
+      {canStar && (
+        <button
+          type="button"
+          onClick={() => onToggleStar!(event)}
+          aria-label={isStarred ? 'Unstar event' : 'Star event'}
+          aria-pressed={isStarred}
+          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-2xl leading-none transition-colors"
+          style={{
+            color: isStarred ? 'rgb(251, 191, 36)' : 'var(--muted-foreground)',
+            background: isStarred ? 'rgba(251, 191, 36, 0.12)' : 'transparent',
+          }}
+        >
+          {isStarred ? '★' : '☆'}
+        </button>
+      )}
       <div
         className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest"
         style={{ color: 'var(--goldy-maroon-600)' }}
