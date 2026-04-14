@@ -25,8 +25,11 @@ function makeSlot(title: string, startIso: string, endIso: string): BusySlot {
 const EMPTY_CONTEXT = { demoCalendar: [] as BusySlot[] };
 
 describe('generateNoticings', () => {
-  it('returns the walk noticing when a location is present', () => {
-    const result = generateNoticings(makeEvent(), EMPTY_CONTEXT);
+  it('returns the walk noticing when destinationCoords is provided', () => {
+    const result = generateNoticings(makeEvent(), {
+      demoCalendar: [],
+      destinationCoords: { lat: 44.9740, lng: -93.2353 }, // near Coffman
+    });
     expect(result.some((n) => n.icon === '🚶' && /walk/i.test(n.text))).toBe(true);
   });
 
@@ -35,13 +38,38 @@ describe('generateNoticings', () => {
     expect(result.some((n) => n.icon === '🚶')).toBe(false);
   });
 
-  it('respects a custom hardcodedWalkMinutes value', () => {
+  it('omits the walk noticing when destinationCoords is not yet resolved (no fabrication)', () => {
+    // Event has a location string but geocode hasn't resolved yet.
+    const result = generateNoticings(makeEvent(), EMPTY_CONTEXT);
+    expect(result.some((n) => n.icon === '🚶')).toBe(false);
+  });
+
+  it('respects a custom hardcodedWalkMinutes value (test-only override)', () => {
     const result = generateNoticings(makeEvent(), {
       demoCalendar: [],
       hardcodedWalkMinutes: 7,
     });
     const walk = result.find((n) => n.icon === '🚶');
     expect(walk?.text).toContain('7-min');
+  });
+
+  it('labels walk as "from campus" when originCoords is absent (UMN fallback)', () => {
+    const result = generateNoticings(makeEvent(), {
+      demoCalendar: [],
+      destinationCoords: { lat: 44.9720, lng: -93.2353 },
+    });
+    const walk = result.find((n) => n.icon === '🚶');
+    expect(walk?.text).toMatch(/from campus/);
+  });
+
+  it('labels walk as "to {location}" when originCoords is set (home address)', () => {
+    const result = generateNoticings(makeEvent(), {
+      demoCalendar: [],
+      originCoords: { lat: 44.96, lng: -93.25 },
+      destinationCoords: { lat: 44.9720, lng: -93.2353 },
+    });
+    const walk = result.find((n) => n.icon === '🚶');
+    expect(walk?.text).toMatch(/walk to/);
   });
 
   it('flags "first open {day}" when nothing is busy on that day', () => {

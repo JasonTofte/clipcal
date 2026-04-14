@@ -13,12 +13,23 @@ export const ProfilePreferences = z.object({
   surfaceNoticings: z.boolean(),
 });
 
+// Geocoded "home base" for walk-distance computation. Optional/null — when
+// absent, consumers fall back to UMN campus center.
+export const HomeBase = z.object({
+  address: z.string(),
+  lat: z.number(),
+  lng: z.number(),
+});
+export type HomeBase = z.infer<typeof HomeBase>;
+
 export const ProfileSchema = z.object({
   major: z.string().nullable(),
   stage: AcademicStage.nullable(),
   interests: z.array(z.string()),
   preferences: ProfilePreferences,
   vibe: z.string().nullable(),
+  // optional() so existing stored profiles without homeBase still parse.
+  homeBase: HomeBase.nullable().optional(),
 });
 
 export type Profile = z.infer<typeof ProfileSchema>;

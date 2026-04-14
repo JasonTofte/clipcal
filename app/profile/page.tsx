@@ -8,7 +8,7 @@ import { InterestPicker } from '@/components/interest-picker';
 import { CalmModeToggle } from '@/components/calm-mode-toggle';
 import { Button } from '@/components/ui/button';
 import { GoldyBubble } from '@/components/shared';
-import { ProfileSchema, saveProfileToStorage } from '@/lib/profile';
+import { ProfileSchema, loadProfileFromStorage, saveProfileToStorage } from '@/lib/profile';
 import { cn } from '@/lib/utils';
 
 type ProfileMode = 'pick' | 'chat';
@@ -67,7 +67,13 @@ export default function ProfilePage() {
         setExtractState({ status: 'error', message: 'profile did not match schema' });
         return;
       }
-      saveProfileToStorage(parsed.data);
+      // Preserve homeBase across interview-mode saves — the LLM extractor
+      // doesn't ask about addresses.
+      const existing = loadProfileFromStorage();
+      saveProfileToStorage({
+        ...parsed.data,
+        homeBase: existing?.homeBase ?? null,
+      });
       setExtractState({ status: 'saved' });
       setTimeout(() => router.push('/'), 900);
     } catch (err) {

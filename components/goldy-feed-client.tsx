@@ -348,8 +348,14 @@ export function GoldyFeedClient() {
 
   const handleCameraTap = (key: string) => {
     const el = cardRefs.current.get(key);
-    if (!el) return;
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // The top-ranked event lives inside OneThingHero (not the ranked list,
+    // which is .slice(1)), so its ref is never registered. Fall back to a
+    // top-of-page scroll so tapping its thumbnail always shows SOMETHING.
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
     if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current);
     setFlashKey(key);
     flashTimerRef.current = window.setTimeout(() => {

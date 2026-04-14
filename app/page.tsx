@@ -12,7 +12,8 @@ import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import { appendBatch, markBatchCommitted } from '@/lib/event-store';
 import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
-import { generateNoticings } from '@/lib/noticings';
+import { generateNoticings, type LatLng } from '@/lib/noticings';
+import { geocodeCached } from '@/lib/geocode';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import type { RelevanceScore } from '@/lib/relevance';
 import type { Event, Extraction } from '@/lib/schema';
@@ -154,9 +155,51 @@ export default function Home() {
     () => (demoMode ? events.map((e) => checkConflict(e, DEMO_CALENDAR)) : events.map(() => null)),
     [events, demoMode],
   );
+  // Geocoded coords per unique event location. Populated lazily by the
+  // useEffect below; absent entries mean "not yet resolved or lookup failed",
+  // which noticings treats as "no walk chip" rather than fabricating a time.
+  const [locationCoords, setLocationCoords] = useState<Map<string, LatLng | null>>(
+    () => new Map(),
+  );
+  useEffect(() => {
+    const unique = new Set<string>();
+    for (const ev of events) {
+      if (ev.location && !locationCoords.has(ev.location)) unique.add(ev.location);
+    }
+    if (unique.size === 0) return;
+    let cancelled = false;
+    void Promise.all(
+      Array.from(unique).map(async (loc) => {
+        const hit = await geocodeCached(loc);
+        return [loc, hit ? { lat: hit.lat, lng: hit.lng } : null] as const;
+      }),
+    ).then((results) => {
+      if (cancelled) return;
+      setLocationCoords((prev) => {
+        const next = new Map(prev);
+        for (const [loc, coords] of results) next.set(loc, coords);
+        return next;
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [events, locationCoords]);
+
+  const originCoords: LatLng | null = profile?.homeBase
+    ? { lat: profile.homeBase.lat, lng: profile.homeBase.lng }
+    : null;
+
   const noticingsPerEvent = useMemo(
-    () => events.map((event) => generateNoticings(event, { demoCalendar: activeCalendar })),
-    [events, activeCalendar],
+    () =>
+      events.map((event) =>
+        generateNoticings(event, {
+          demoCalendar: activeCalendar,
+          originCoords,
+          destinationCoords: event.location ? locationCoords.get(event.location) ?? null : null,
+        }),
+      ),
+    [events, activeCalendar, originCoords, locationCoords],
   );
   const leaveByPerEvent = useMemo(
     () => events.map((event) => computeLeaveBy(event)),

@@ -1,5 +1,6 @@
 import type { Event } from '@/lib/schema';
 import type { BusySlot } from '@/lib/demo-calendar';
+import { walkMinutes, UMN_CAMPUS } from '@/lib/distance';
 
 export type NoticingTone = 'info' | 'heads-up' | 'delight';
 
@@ -9,13 +10,22 @@ export type Noticing = {
   tone: NoticingTone;
 };
 
+export type LatLng = { lat: number; lng: number };
+
 export type NoticingContext = {
   demoCalendar: BusySlot[];
   now?: Date;
+  // Origin for walk-distance calculation. When null/omitted, consumers
+  // fall back to UMN campus center — "walk from campus" is a useful
+  // baseline for UMN students even without a home address set.
+  originCoords?: LatLng | null;
+  // Pre-geocoded destination for this specific event (keyed by location
+  // string in the caller, then threaded through here). When null/omitted,
+  // no walk chip is emitted — we refuse to fabricate a time.
+  destinationCoords?: LatLng | null;
+  // Back-compat override for tests; if set, ignores origin/destination.
   hardcodedWalkMinutes?: number;
 };
-
-const DEFAULT_WALK_MINUTES = 12;
 const BACK_TO_BACK_WINDOW_MIN = 15;
 const BUFFER_WINDOW_MIN = 45;
 const EARLY_CLASS_HOUR = 9;
@@ -41,14 +51,27 @@ export function generateNoticings(
 
   const noticings: Noticing[] = [];
 
-  // 1. Walk time — only when location is non-null.
+  // 1. Walk time — only when we can actually compute it. Either a caller-
+  //    supplied hardcodedWalkMinutes (tests), or both origin + destination
+  //    coordinates available. If the destination hasn't been geocoded yet
+  //    (still loading or lookup failed), we emit NO walk chip rather than
+  //    fabricate a time. Origin defaults to UMN campus center when the user
+  //    hasn't set a home address.
   if (event.location) {
-    const walkMin = context.hardcodedWalkMinutes ?? DEFAULT_WALK_MINUTES;
-    noticings.push({
-      icon: '🚶',
-      text: `${walkMin}-min walk to ${event.location}`,
-      tone: 'info',
-    });
+    const shortLoc = event.location.split(',')[0];
+    let walkMin: number | null = null;
+    if (context.hardcodedWalkMinutes !== undefined) {
+      walkMin = context.hardcodedWalkMinutes;
+    } else if (context.destinationCoords) {
+      const origin = context.originCoords ?? UMN_CAMPUS;
+      walkMin = walkMinutes(origin, context.destinationCoords);
+    }
+    if (walkMin !== null) {
+      const label = context.originCoords
+        ? `${walkMin}-min walk to ${shortLoc}`
+        : `${walkMin}-min walk from campus`;
+      noticings.push({ icon: '🚶', text: label, tone: 'info' });
+    }
   }
 
   // 2. First open {day} — if the event's day has no conflicting busy slots,

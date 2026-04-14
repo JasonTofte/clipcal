@@ -104,6 +104,14 @@ export const campusLimiter = createRateLimiter({
   windowMs: 60_000,
 });
 
+// Nominatim public API requests ≤1 req/sec/IP. We're the IP to them,
+// so the GLOBAL limit matters more than per-user. Cache hits bypass.
+export const geocodeLimiter = createRateLimiter({
+  perKeyLimit: 10,
+  globalLimit: 45, // <1/s avg to stay well within Nominatim's terms
+  windowMs: 60_000,
+});
+
 export function extractClientIp(headers: Headers): string {
   // Vercel's trusted header — set by the edge and not forwardable by the
   // client, so it resists spoofing when the app runs behind Vercel's proxy.
