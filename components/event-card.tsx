@@ -82,7 +82,10 @@ export function EventCard({
   const shouldCollapseDesc = !readOnly && (event.description?.length ?? 0) > 80 && !descExpanded;
 
   return (
-    <div className="flex overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm">
+    <div className={cn(
+      'flex overflow-hidden rounded-xl bg-card text-card-foreground shadow-sm ring-1',
+      event.starred ? 'ring-amber-400/70 bg-amber-500/5' : 'ring-transparent',
+    )}>
       {/* Poster image — left panel */}
       {posterSrc ? (
         <img
@@ -127,14 +130,27 @@ export function EventCard({
             aria-label="Event title"
           />
         </div>
-        <span
-          className={cn(
-            'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium',
-            CONFIDENCE_STYLES[event.confidence],
-          )}
-        >
-          {event.confidence}
-        </span>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => patch('starred', !event.starred)}
+            aria-label={event.starred ? 'Unstar event' : 'Star event'}
+            className={cn(
+              'text-lg leading-none transition-colors',
+              event.starred ? 'text-amber-400' : 'text-muted-foreground/40 hover:text-amber-300',
+            )}
+          >
+            {event.starred ? '★' : '☆'}
+          </button>
+          <span
+            className={cn(
+              'inline-flex h-5 items-center rounded-full px-2 text-xs font-medium',
+              CONFIDENCE_STYLES[event.confidence],
+            )}
+          >
+            {event.confidence}
+          </span>
+        </div>
       </div>
 
       <TemporalBar start={event.start} />

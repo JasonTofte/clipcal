@@ -13,12 +13,9 @@ to the Pi's WiFi AP.
 Run via main.py — do not execute directly.
 """
 
-import hmac
 import json
 import logging
-import os
 import threading
-from pathlib import Path
 from typing import Callable
 
 from flask import Flask, Response, redirect, render_template_string, request
@@ -29,8 +26,6 @@ log = logging.getLogger(__name__)
 # Static IP of the Pi when acting as a WiFi AP (set by ap_setup.sh)
 PI_AP_IP = "10.42.0.1"
 PORT = 8080
-MAX_PAYLOAD_BYTES = 16 * 1024  # Hard cap — e-ink payloads are <1KB in practice
-SYNC_TOKEN_PATH = Path("/etc/clipcal/sync_token")
 
 # Hosts that trigger iOS / Android captive-portal detection
 _CAPTIVE_HOSTS = {
@@ -41,20 +36,6 @@ _CAPTIVE_HOSTS = {
     "clients3.google.com",
     "connectivitycheck.android.com",
 }
-
-
-def _load_sync_token() -> str | None:
-    env = os.environ.get("CLIPCAL_SYNC_TOKEN")
-    if env:
-        return env.strip()
-    try:
-        if SYNC_TOKEN_PATH.exists():
-            token = SYNC_TOKEN_PATH.read_text(encoding="utf-8").strip()
-            return token or None
-    except OSError as exc:
-        log.warning("sync token read failed: %s", exc)
-    return None
-
 
 _SYNC_PAGE = """<!DOCTYPE html>
 <html lang="en">
@@ -121,30 +102,7 @@ _SYNC_PAGE = """<!DOCTYPE html>
 def create_app(on_payload: Callable[[dict], None]) -> Flask:
     app = Flask(__name__)
     app.config["PROPAGATE_EXCEPTIONS"] = False
-    app.config["MAX_CONTENT_LENGTH"] = MAX_PAYLOAD_BYTES
-
-    # CORS: /sync is reached from the ShowUp web app running on the user's
-    # phone via the Pi's captive-portal origin. Restricting to the Pi origin
-    # (http://10.42.0.1:8080) is tighter than "*" but keeps programmatic
-    # callers on the same AP functional. Private-network preflight requires
-    # the explicit Private-Network header added in after_request.
-    CORS(
-        app,
-        resources={r"/sync": {"origins": [f"http://{PI_AP_IP}:{PORT}"]}},
-    )
-
-    sync_token = _load_sync_token()
-    if not sync_token:
-        log.warning(
-            "No sync token configured — /sync will reject all writes. "
-            "Set CLIPCAL_SYNC_TOKEN or run ap_setup.sh to provision %s.",
-            SYNC_TOKEN_PATH,
-        )
-
-    def _token_ok(submitted: str | None) -> bool:
-        if not sync_token or not submitted:
-            return False
-        return hmac.compare_digest(sync_token, submitted.strip())
+    CORS(app, resources={r"/sync": {"origins": "*"}})
 
     @app.after_request
     def add_private_network_header(response: Response) -> Response:
@@ -166,13 +124,6 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
     @app.post("/sync-form")
     def sync_form() -> str:
         """Form POST from the sync page (pastes payload text)."""
-        # Captive-portal form accepts the token alongside the payload so the
-        # user can paste both from the ShowUp app in one copy.
-        submitted_token = request.form.get("token", "").strip()
-        if not _token_ok(submitted_token):
-            return render_template_string(
-                _SYNC_PAGE, ok=False, error="Missing or invalid sync token.", payload=None
-            )
         raw = request.form.get("payload", "").strip()
         try:
             payload = json.loads(raw)
@@ -191,9 +142,6 @@ def create_app(on_payload: Callable[[dict], None]) -> Flask:
     @app.post("/sync")
     def sync_json() -> Response:
         """JSON POST from programmatic callers (Capacitor app, curl, etc.)."""
-        submitted = request.headers.get("X-Sync-Token", "")
-        if not _token_ok(submitted):
-            return Response("unauthorized", status=401)
         try:
             payload = request.get_json(force=True)
             if not payload:
@@ -217,8 +165,6 @@ def start_in_thread(on_payload: Callable[[dict], None]) -> None:
 
     def _run() -> None:
         log.info("HTTP server listening on 0.0.0.0:%d", PORT)
-        # Flask dev server is intentional: single-user Pi on an isolated AP
-        # with hard payload cap + shared-secret auth. No gunicorn needed.
         flask_app.run(host="0.0.0.0", port=PORT, debug=False, use_reloader=False)
 
     thread = threading.Thread(target=_run, daemon=True, name="http-server")

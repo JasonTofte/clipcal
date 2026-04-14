@@ -42,6 +42,7 @@ export const EventSchema = z.object({
     })
     .nullable()
     .optional(),
+  starred: z.boolean().optional(),
 });
 
 export const ExtractionSchema = z.object({

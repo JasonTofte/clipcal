@@ -26,10 +26,12 @@ const NOTIFY_CHAR_UUID        = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 const BLE_CHUNK_SIZE = 20; // ATT default 23 minus 3-byte ATT header
 
 // Compact JSON sent to the Pi — target <512 bytes.
+// `s: true` marks a user-starred event; the Pi renderer prefixes starred
+// priority titles with "* " (see pi/renderer.py).
 export interface EinkPayload {
-  p: { t: string; tm: string; l: string; d?: string }; // priority event
-  e: Array<{ t: string; tm: string; l?: string }>;     // rest of day
-  ts: number;                                           // unix seconds
+  p: { t: string; tm: string; l: string; d?: string; s?: true }; // priority event
+  e: Array<{ t: string; tm: string; l?: string; s?: true }>;     // rest of day
+  ts: number;                                                      // unix seconds
 }
 
 // ─── capability detection ────────────────────────────────────────────────────
@@ -72,11 +74,13 @@ export async function buildPayload(events: Event[]): Promise<EinkPayload> {
       tm: formatTime(priorityEvent.start),
       l:  priorityAbbr.shortLoc ?? '',
       d:  durationLabel(priorityEvent.start, priorityEvent.end),
+      ...(priorityEvent.starred ? { s: true as const } : {}),
     },
     e: todayEvents.slice(1).map((evt, i) => ({
       t:  restAbbr[i]?.shortTitle ?? truncate(evt.title, 20),
       tm: formatTime(evt.start),
       ...(restAbbr[i]?.shortLoc ? { l: restAbbr[i].shortLoc ?? undefined } : {}),
+      ...(evt.starred ? { s: true as const } : {}),
     })),
     ts: Math.floor(Date.now() / 1000),
   };
