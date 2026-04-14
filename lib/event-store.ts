@@ -60,6 +60,17 @@ export function appendBatch(
   return batch;
 }
 
+export function updateEventInBatch(batchId: string, eventIndex: number, updated: Event): void {
+  const existing = loadBatches();
+  const next = existing.map((b) => {
+    if (b.id !== batchId) return b;
+    const events = [...b.events];
+    events[eventIndex] = updated;
+    return { ...b, events };
+  });
+  saveBatches(next);
+}
+
 export function markBatchCommitted(batchId: string): void {
   const existing = loadBatches();
   const next = existing.map((b) =>

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# ShowUp Pi Zero setup — run once after flashing Raspberry Pi OS Lite (64-bit)
+# ClipCal Pi Zero setup — run once after flashing Raspberry Pi OS Lite (64-bit)
 # Tested on Pi Zero 2 W with Raspberry Pi OS Bookworm
 set -euo pipefail
 
-echo "=== ShowUp Pi Zero setup ==="
+echo "=== ClipCal Pi Zero setup ==="
 
 # 1. Enable SPI (required for e-ink display)
 if ! grep -q "^dtparam=spi=on" /boot/firmware/config.txt 2>/dev/null &&

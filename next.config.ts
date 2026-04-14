@@ -67,6 +67,9 @@ const nextConfig: NextConfig = {
   // node-ical pulls in moment-timezone which Turbopack can't bundle cleanly
   // (BigInt usage in the runtime chunk). Keep it Node-resolved at runtime.
   serverExternalPackages: ['node-ical'],
+  // LAN dev origins so a phone can reach the Next.js dev server during Pi
+  // e-ink sync testing. Wildcards cover common home/campus NAT ranges.
+  allowedDevOrigins: ['192.168.*', '10.0.*', '10.59.*', '172.16.*', '172.20.*'],
   async headers() {
     return [
       {

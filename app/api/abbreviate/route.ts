@@ -19,19 +19,21 @@ const MODEL_ID = 'claude-haiku-4-5-20251001';
 const MAX_EVENTS = 50;
 const MAX_BODY_BYTES = 10_000;
 
-// 20 chars for title, 14 for location — fits the e-ink display column widths
-const AbbreviatedEventSchema = z.object({
-  events: z.array(
-    z.object({
-      shortTitle: z.string().max(20),
-      shortLoc: z.string().max(14).nullable(),
-    }),
-  ),
-});
-
 function truncate(s: string, n: number): string {
   return s.length <= n ? s : s.slice(0, n - 1) + '\u2026';
 }
+
+// 20 chars for title, 14 for location — fits the e-ink display column widths.
+// Transform-based coercion (vs .max() rejection) so an over-long LLM response
+// is truncated rather than failing the request.
+const AbbreviatedEventSchema = z.object({
+  events: z.array(
+    z.object({
+      shortTitle: z.string().transform((s) => truncate(s, 20)),
+      shortLoc: z.string().transform((s) => truncate(s, 14)).nullable(),
+    }),
+  ),
+});
 
 function localFallback(events: Event[]) {
   return {

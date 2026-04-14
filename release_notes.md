@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Star button + Pi Zero e-ink sidecar (PR #74 surgical split)
+
+A physical companion display for the feed, plus a way to tell it which event you actually care about.
+
+**What users see.** Each event card now has a small ★ in the top-right corner. Tap it once and the event gets an amber ring + a gold star — that's your "this is the one" marker. Tap again to unstar. The preference persists in `localStorage` alongside the rest of the event batch. When you push the feed to a paired Pi Zero e-ink display, the starred priority event shows up with a `* ` prefix on the tiny 250×122px screen, so you can glance at a battery-powered piece of paper on your desk and know what's next without unlocking your phone.
+
+**Pi Zero sidecar.** The hardware half of the earlier app-side sync transports (shipped in v1.0.3+) now has a reference implementation under `pi/`. A BLE GATT peripheral advertises as `ShowUp` (matching the app's Web Bluetooth filter), and a captive-portal HTTP server handles iOS Safari — which blocks HTTPS-to-LAN-HTTP mixed content so Web Bluetooth is not available. The renderer draws a priority-event hero (title + time + "leave by" + optional `*` for starred + optional strikethrough for past) followed by up to five row entries. First-time WiFi pairing uses the Pi's own AP mode (`ShowUp-Display` SSID, documented in `pi/ap_setup.sh`). A systemd unit (`pi/clipcal.service`) starts the display at boot.
+
+**`/api/abbreviate` robustness.** The route that shortens event titles/locations for the e-ink column widths previously threw a 500 if Claude Haiku returned a response one character too long. The fix is surgical: swap zod `.max(20)` for `.transform()` with the existing `truncate()` helper, so an over-long response shortens with an ellipsis instead of failing the whole request. All upstream hardening (`requireAnthropic` auth, per-user rate limit, 10 KB body cap, 50-event cap, prompt-safety fences) is preserved.
+
+**Why this PR is a split, not a merge.** PR #74 was 74 commits behind main and — unintentionally — would have shipped a second "clipcal → showup" rename affecting `localStorage` keys (wiping every existing user's saved events + profile), stripped the CSP security headers, removed the auth/rate-limit guards on `/api/abbreviate`, dropped BLE chunking and UTF-8-aware byte budgeting from `lib/ble-sync.ts`, and replaced the BarcodeDetector + `qr-scanner` QR decoder with a simpler but larger `jsqr`-based version. All of that is on main already, hardened, and worth keeping. This PR pulls only the additive hardware + star button pieces onto a clean branch from main and applies them surgically.
+
+**Held for a separate PR:** `app/feed/page.tsx` (would wipe the recent Schedule/Upload tab split), `app/page.tsx` → `/feed` redirect, `app/interview/page.tsx` resurrection (main removed it intentionally), `components/dropzone.tsx` (conflicts with recent upload polish), and `app/layout.tsx` branding tweaks.
+
+---
+
 ### Tiimo-Caliber cycle — falsifiable neuro-inclusion
 
 **Product thesis shift: "Inform, don't decide" is no longer a tagline — it is now grounded in cited research.**

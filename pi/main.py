@@ -22,6 +22,8 @@ import logging
 import signal
 import sys
 import os
+import threading
+import time as time_module
 
 # Waveshare library — clone to ~/e-Paper and point this path at it
 _WAVESHARE = os.path.expanduser("~/e-Paper/RaspberryPi_JetsonNano/python/lib")
@@ -37,7 +39,7 @@ except ImportError:
 
 from ble_server import BleServer
 from http_server import start_in_thread as start_http
-from renderer import render_from_payload, render_waiting
+from renderer import render_from_payload, render_waiting, render
 
 logging.basicConfig(
     level=logging.INFO,
@@ -54,6 +56,8 @@ class ShowUpDisplay:
         self._epd = epd2in13_V4.EPD()
         self._partial_count = 0
         self._initialized = False
+        self._last_payload: dict | None = None
+        self._lock = threading.Lock()
 
     def init(self) -> None:
         log.info("Initializing e-ink display (full refresh)")
@@ -64,15 +68,11 @@ class ShowUpDisplay:
         self._initialized = True
         log.info("Display ready")
 
-    def update(self, payload: dict) -> None:
-        """Render payload to display. Uses partial refresh most of the time."""
-        img = render_from_payload(payload)
+    def _do_refresh(self, img) -> None:
+        """Low-level refresh — caller must hold self._lock."""
         buf = self._epd.getbuffer(img)
-
         self._partial_count += 1
-        do_full = (self._partial_count % FULL_REFRESH_INTERVAL == 0)
-
-        if do_full:
+        if self._partial_count % FULL_REFRESH_INTERVAL == 0:
             log.info("Full refresh (count=%d)", self._partial_count)
             self._epd.init()
             self._epd.display(buf)
@@ -80,13 +80,28 @@ class ShowUpDisplay:
             log.info("Fast refresh (count=%d)", self._partial_count)
             self._epd.init_fast()
             self._epd.display_fast(buf)
-
         self._epd.sleep()
+
+    def update(self, payload: dict) -> None:
+        """Render new payload to display."""
+        with self._lock:
+            self._last_payload = payload
+            self._do_refresh(render_from_payload(payload))
+
+    def refresh_time(self) -> None:
+        """Re-render the current content with an updated clock. No-op if no payload yet."""
+        with self._lock:
+            if self._last_payload is None:
+                img = render_waiting()
+            else:
+                img = render_from_payload(self._last_payload)
+            self._do_refresh(img)
 
     def clear(self) -> None:
-        self._epd.init()
-        self._epd.Clear(0xFF)
-        self._epd.sleep()
+        with self._lock:
+            self._epd.init()
+            self._epd.Clear(0xFF)
+            self._epd.sleep()
 
 
 async def main() -> None:
@@ -109,6 +124,18 @@ async def main() -> None:
 
     # HTTP — for iOS / same-network browsers
     start_http(on_payload)
+
+    # Clock thread — re-renders every 60 s so the time stays current
+    def _clock_loop() -> None:
+        while True:
+            time_module.sleep(60)
+            try:
+                display.refresh_time()
+            except Exception as exc:
+                log.warning("Clock refresh failed: %s", exc)
+
+    threading.Thread(target=_clock_loop, daemon=True, name="clock").start()
+    log.info("Clock thread started — refreshing every 60s")
 
     # Graceful shutdown on SIGINT / SIGTERM
     loop = asyncio.get_event_loop()
