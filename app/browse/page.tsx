@@ -75,6 +75,7 @@ export default function BrowsePage() {
     const params = new URLSearchParams({
       startDate: range.startDate,
       endDate: range.endDate,
+      max: '200',
     });
     if (debouncedQ) params.set('q', debouncedQ);
 
