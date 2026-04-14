@@ -83,23 +83,9 @@ export function CampusFeed() {
                 />
               )}
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="truncate text-sm font-medium group-hover:text-primary">
-                    {event.title}
-                  </p>
-                  {score !== null && tone && (
-                    <span
-                      title="Match confidence based on your interests"
-                      className="inline-flex h-5 shrink-0 items-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums"
-                      style={{
-                        background: TONE_STYLES[tone].bg,
-                        color: TONE_STYLES[tone].fg,
-                      }}
-                    >
-                      {formatScoreBadge(score)}
-                    </span>
-                  )}
-                </div>
+                <p className="truncate text-sm font-medium group-hover:text-primary">
+                  {event.title}
+                </p>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground">
                   <span>{event.date_display}</span>
                   {event.location && (
