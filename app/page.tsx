@@ -222,12 +222,7 @@ export default function Home() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col px-4 py-10">
       <header className="mb-8 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">ClipCal</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your campus copilot. Snap a flyer, know if you should go.
-          </p>
-        </div>
+        <div />
         <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-muted-foreground">
           <Link
             href="/profile"
@@ -251,7 +246,7 @@ export default function Home() {
       )}
 
       <div className="flex-1">
-        {state.status === 'idle' && <HomeIdleView demoMode={demoMode} onFiles={handleFiles} />}
+        {state.status === 'idle' && <HomeIdleView onFiles={handleFiles} />}
 
         {state.status === 'loading' && <LoadingPanel message={state.message} />}
 

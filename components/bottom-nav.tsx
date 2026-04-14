@@ -6,9 +6,9 @@ import { usePathname } from 'next/navigation';
 type Tab = { href: string; label: string; icon: string };
 
 const TABS: Tab[] = [
+  { href: '/feed', label: 'Feed', icon: '📰' },
   { href: '/', label: 'Upload', icon: '📸' },
   { href: '/browse', label: 'Browse', icon: '🔎' },
-  { href: '/feed', label: 'Feed', icon: '📰' },
   { href: '/profile', label: 'Profile', icon: '👤' },
 ];
 
