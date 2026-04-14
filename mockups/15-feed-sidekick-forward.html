@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 15 · Feed Header — Sidekick-Forward</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP 15 — "Sidekick-forward" feed header
+    Research-grounded redesign of /feed:
+      • Goldy is persistent but SMALL: floating sidekick pill above
+        BottomNav, contextual tips that vary by state/time (Duolingo's
+        widget/push externalization pattern, translated inside-app).
+      • Top chrome collapses aggressively: greeting REMOVED; header
+        becomes date + one personality line "earned" by context
+        (streak, new-since-last-visit, weather hook).
+      • WeekStrip + 2 earned chips only (Free food, Near me). No
+        "Today" chip (WeekStrip owns it). No gameday chip.
+      • Same toggle relocation as #14 (EinkSync/CalmMode/LeaveByNotify).
+      • Chrome budget: ~140pt.
+    Bets on: brand differentiation via the mascot, repeat-visit warmth.
+    Risk: floating element competes with BottomNav; tip fatigue if
+    Goldy speaks every open. Hard rule: Goldy speaks ≤1x per session.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-500:#7A0019; --maroon-600:#5B0013; --maroon-700:#40000D;
+      --maroon-200:#E8C9CE;
+      --gold-400:#FFCC33; --gold-300:#FFE08A;
+      --cream:#FFFBF2; --ink:#1A1210; --muted:#6B5D58;
+      --paper:#FFFFFF; --border:#E7DFCE;
+    }
+    html,body{background:#1A1210;}
+    body{font-family:'Atkinson Hyperlegible','Inter',ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
+    .phone{width:375px;height:780px;border-radius:42px;background:var(--cream);
+           box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow:hidden;position:relative;
+           border:1px solid rgba(255,255,255,0.06);}
+    .phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+                 width:120px;height:24px;background:#000;border-radius:0 0 14px 14px;z-index:30;}
+    .phone-inner{position:absolute;inset:0;overflow-y:auto;padding-top:30px;padding-bottom:96px;}
+    .caption{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+             color:#8B7F76;font-weight:700;}
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;
+          font-size:12px;font-weight:600;min-height:32px;}
+    .event-card{background:var(--paper);border-radius:18px;padding:14px;
+                border:1px solid var(--border);}
+    .event-card + .event-card{margin-top:8px;}
+    .day{width:38px;height:44px;border-radius:12px;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;font-size:11px;color:var(--muted);}
+    .day.active{background:var(--maroon-500);color:var(--gold-400);}
+    .day .num{font-size:14px;font-weight:700;color:var(--ink);margin-top:1px;}
+    .day.active .num{color:var(--gold-400);}
+    /* Floating Goldy sidekick — lives above BottomNav */
+    .goldy-float{position:absolute;right:14px;bottom:84px;z-index:40;
+                 display:flex;align-items:center;gap:8px;
+                 background:var(--maroon-500);color:var(--gold-400);
+                 padding:8px 14px 8px 10px;border-radius:999px;
+                 box-shadow:0 12px 28px rgba(122,0,25,0.4);
+                 max-width:260px;font-size:12px;font-weight:600;line-height:1.25;}
+    .goldy-float .m{width:28px;height:28px;border-radius:50%;background:var(--gold-400);
+                    color:var(--maroon-700);display:grid;place-items:center;font-weight:800;flex:0 0 auto;}
+    .goldy-float .x{margin-left:4px;opacity:0.7;font-size:14px;}
+    .bottom-nav{position:absolute;left:0;right:0;bottom:0;height:68px;
+                background:var(--paper);border-top:1px solid var(--border);
+                display:flex;align-items:center;justify-content:space-around;
+                padding-bottom:12px;}
+    .bottom-nav button{font-size:11px;color:var(--muted);display:flex;flex-direction:column;
+                       align-items:center;gap:2px;}
+    .bottom-nav button.active{color:var(--maroon-600);font-weight:700;}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-4xl mx-auto px-5 sm:px-8 py-10">
+  <header class="mb-8">
+    <p class="caption text-[var(--gold-400)]">Mockup 15 · sidekick-forward</p>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2 text-white">Goldy, but smaller</h1>
+    <p class="text-[#B8ADA3] mt-2 max-w-2xl text-sm leading-relaxed">
+      Mascot persists as a floating tip pill above BottomNav, not a
+      bubble in the header. Header is all business — date, week, 2 earned
+      chips. Goldy speaks ≤1x per session to avoid tip fatigue.
+    </p>
+  </header>
+
+  <div class="phone mx-auto">
+    <div class="phone-notch"></div>
+    <div class="phone-inner px-4">
+
+      <div class="pt-4 flex items-center justify-between">
+        <div>
+          <p class="caption">Tue · Apr 14</p>
+          <h2 class="text-[20px] font-bold leading-tight mt-0.5">This week</h2>
+        </div>
+        <button aria-label="More" class="w-10 h-10 rounded-full grid place-items-center text-[var(--muted)] text-xl">⋯</button>
+      </div>
+
+      <div class="mt-3 flex gap-1.5 overflow-x-auto">
+        <div class="day"><span>Mon</span><span class="num">13</span></div>
+        <div class="day active"><span>Tue</span><span class="num">14</span></div>
+        <div class="day"><span>Wed</span><span class="num">15</span></div>
+        <div class="day"><span>Thu</span><span class="num">16</span></div>
+        <div class="day"><span>Fri</span><span class="num">17</span></div>
+        <div class="day"><span>Sat</span><span class="num">18</span></div>
+        <div class="day"><span>Sun</span><span class="num">19</span></div>
+      </div>
+
+      <!-- Only 2 earned chips — neither duplicates WeekStrip -->
+      <div class="mt-3 flex gap-2">
+        <button class="chip" style="background:white;border:1px solid var(--border);color:var(--maroon-600);">
+          🍕 Free food
+        </button>
+        <button class="chip" style="background:white;border:1px solid var(--border);color:var(--maroon-600);">
+          📍 &lt; 10 min walk
+        </button>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between">
+        <h3 class="text-sm font-bold">3 picks for Tuesday</h3>
+        <span class="text-[11px] text-[var(--muted)]">sorted by fit</span>
+      </div>
+
+      <div class="mt-3">
+        <article class="event-card">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="caption" style="color:var(--maroon-600);">6:30 PM · Coffman</p>
+              <h4 class="text-[15px] font-bold mt-1 leading-snug">Free pizza + Trivia Night</h4>
+              <p class="text-xs text-[var(--muted)] mt-1">8 min walk · free pizza confirmed</p>
+            </div>
+            <span class="chip" style="background:var(--gold-400);color:var(--maroon-700);font-size:11px;">94%</span>
+          </div>
+        </article>
+        <article class="event-card">
+          <p class="caption" style="color:var(--maroon-600);">8:00 PM · Northrop</p>
+          <h4 class="text-[15px] font-bold mt-1 leading-snug">Indie film screening: Past Lives</h4>
+          <p class="text-xs text-[var(--muted)] mt-1">12 min walk · matches your interests</p>
+        </article>
+        <article class="event-card">
+          <p class="caption" style="color:var(--maroon-600);">Wed · 7:00 PM</p>
+          <h4 class="text-[15px] font-bold mt-1 leading-snug">CSCI Hackathon kickoff</h4>
+        </article>
+      </div>
+    </div>
+
+    <!-- Goldy floats above BottomNav. Copy varies by context:
+         "You haven't been to anything this week — tonight's free pizza?"
+         After dismiss, stays quiet for the rest of the session. -->
+    <div class="goldy-float" role="status" aria-label="Goldy tip">
+      <span class="m" aria-hidden>M</span>
+      <span>Tonight's pick has free pizza — want me to notify you at 6:15?</span>
+      <button aria-label="Dismiss" class="x">×</button>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Primary">
+      <button><span>📸</span><span>Snap</span></button>
+      <button class="active"><span>✨</span><span>Feed</span></button>
+      <button><span>📅</span><span>Calendar</span></button>
+      <button><span>👤</span><span>Me</span></button>
+    </nav>
+  </div>
+
+  <section class="mt-8 max-w-2xl mx-auto text-[#B8ADA3] text-sm leading-relaxed">
+    <h3 class="text-white font-bold mb-2">What changed</h3>
+    <ul class="space-y-1 list-disc pl-5">
+      <li>Greeting bubble removed. Goldy lives in a floating tip pill above BottomNav.</li>
+      <li>Tip copy is state-aware (time of day, free-food present, attendance streak) and appears ≤1x per session.</li>
+      <li>WeekStrip + exactly 2 chips that add information the strip can't: Free food, walk-distance.</li>
+      <li>Same toggle relocation as #14.</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

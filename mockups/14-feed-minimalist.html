@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ClipCal · Mockup 14 · Feed Header — Minimalist</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!--
+    MOCKUP 14 — "Minimalist" feed header
+    Research-grounded redesign of /feed (see session deep-r):
+      • Kills the greeting bubble as a standalone card. Goldy voice
+        compresses into a single line above the WeekStrip.
+      • WeekStrip is the ONLY temporal affordance. Removes "Just today"
+        chip (duplicated tapping today) and "Just gameday" (low signal).
+      • Three toggles removed from above the fold:
+          - EinkSync → Settings (score 4, one-time-opt-in antipattern)
+          - CalmMode → overflow ⋯ in app bar (score 6)
+          - LeaveByNotify → inline chip on picks list (score 7, stays
+            task-relevant but lives WITH what it modifies)
+      • No category chips above content. A single "Filters" pill shows
+        active count; expands to bottom sheet on tap (Readwise/Artifact
+        pattern).
+      • Chrome budget: ~96pt (vs. current ~240pt+).
+    Bets on: trusting the ranker, thumb-first reachability.
+    Risk: loses mascot warmth; reads utilitarian.
+  -->
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon-500:#7A0019; --maroon-600:#5B0013; --maroon-700:#40000D;
+      --maroon-200:#E8C9CE;
+      --gold-400:#FFCC33; --gold-300:#FFE08A;
+      --cream:#FFFBF2; --ink:#1A1210; --muted:#6B5D58;
+      --paper:#FFFFFF; --border:#E7DFCE;
+    }
+    html,body{background:#1A1210;}
+    body{font-family:'Atkinson Hyperlegible','Inter',ui-sans-serif,system-ui,sans-serif;color:var(--ink);}
+    .phone{width:375px;height:780px;border-radius:42px;background:var(--cream);
+           box-shadow:0 30px 80px rgba(0,0,0,0.55);overflow:hidden;position:relative;
+           border:1px solid rgba(255,255,255,0.06);}
+    .phone-notch{position:absolute;top:0;left:50%;transform:translateX(-50%);
+                 width:120px;height:24px;background:#000;border-radius:0 0 14px 14px;z-index:30;}
+    .phone-inner{position:absolute;inset:0;overflow-y:auto;padding-top:30px;}
+    .caption{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+             color:#8B7F76;font-weight:700;}
+    .chip{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:999px;
+          font-size:12px;font-weight:600;min-height:32px;}
+    .event-card{background:var(--paper);border-radius:18px;padding:14px;
+                border:1px solid var(--border);}
+    .event-card + .event-card{margin-top:8px;}
+    .goldy-dot{width:22px;height:22px;border-radius:50%;background:var(--gold-400);
+               display:inline-flex;align-items:center;justify-content:center;
+               font-size:11px;color:var(--maroon-700);font-weight:700;flex:0 0 auto;}
+    .day{width:38px;height:44px;border-radius:12px;display:flex;flex-direction:column;
+         align-items:center;justify-content:center;font-size:11px;color:var(--muted);}
+    .day.active{background:var(--maroon-500);color:var(--gold-400);}
+    .day .num{font-size:14px;font-weight:700;color:var(--ink);margin-top:1px;}
+    .day.active .num{color:var(--gold-400);}
+  </style>
+</head>
+<body class="min-h-screen">
+<main class="max-w-4xl mx-auto px-5 sm:px-8 py-10">
+  <header class="mb-8">
+    <p class="caption text-[var(--gold-400)]">Mockup 14 · minimalist</p>
+    <h1 class="text-3xl sm:text-4xl font-bold mt-2 text-white">Trust the ranker</h1>
+    <p class="text-[#B8ADA3] mt-2 max-w-2xl text-sm leading-relaxed">
+      One-line Goldy voice. Week strip as the only temporal filter. All
+      toggles relocated. Chrome ~96pt. For users who already trust the picks.
+    </p>
+  </header>
+
+  <div class="phone mx-auto">
+    <div class="phone-notch"></div>
+    <div class="phone-inner px-4">
+
+      <!-- Sticky app bar: identity + overflow (top 40pt is stretch zone — passive only) -->
+      <div class="pt-4 flex items-center justify-between">
+        <div>
+          <p class="caption">Mon · Apr 13</p>
+          <h2 class="text-[20px] font-bold leading-tight mt-0.5">Your week</h2>
+        </div>
+        <button aria-label="More" class="w-10 h-10 rounded-full grid place-items-center text-[var(--muted)] text-xl">⋯</button>
+      </div>
+
+      <!-- Goldy one-liner — inline, no bubble -->
+      <div class="mt-3 flex items-center gap-2 text-[13px] leading-snug">
+        <span class="goldy-dot" aria-hidden>M</span>
+        <p class="text-stone-700">3 picks today — 1 has free food.</p>
+      </div>
+
+      <!-- WeekStrip as the only temporal control -->
+      <div class="mt-4 flex gap-1.5 overflow-x-auto">
+        <div class="day"><span>Mon</span><span class="num">13</span></div>
+        <div class="day active"><span>Tue</span><span class="num">14</span></div>
+        <div class="day"><span>Wed</span><span class="num">15</span></div>
+        <div class="day"><span>Thu</span><span class="num">16</span></div>
+        <div class="day"><span>Fri</span><span class="num">17</span></div>
+        <div class="day"><span>Sat</span><span class="num">18</span></div>
+        <div class="day"><span>Sun</span><span class="num">19</span></div>
+      </div>
+
+      <!-- Single Filters pill — collapses categories into a bottom sheet -->
+      <div class="mt-4 flex items-center justify-between">
+        <h3 class="text-sm font-bold">Picks for Tue</h3>
+        <button class="chip" style="background:white;border:1px solid var(--border);color:var(--maroon-600);">
+          ⚙ Filters
+        </button>
+      </div>
+
+      <!-- Picks list — LeaveByNotify lives inline on the first card -->
+      <div class="mt-3 pb-24">
+        <article class="event-card">
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="caption" style="color:var(--maroon-600);">6:30 PM · Coffman</p>
+              <h4 class="text-[15px] font-bold mt-1 leading-snug">Free pizza + Trivia Night</h4>
+            </div>
+            <span class="chip" style="background:var(--gold-400);color:var(--maroon-700);font-size:11px;">94%</span>
+          </div>
+          <div class="mt-2 flex items-center gap-2">
+            <button class="chip" style="background:var(--cream);border:1px solid var(--border);color:var(--muted);font-size:11px;">
+              🔔 Notify 15 min before
+            </button>
+            <button class="chip" style="background:var(--cream);border:1px solid var(--border);color:var(--muted);font-size:11px;">
+              + Calendar
+            </button>
+          </div>
+        </article>
+        <article class="event-card">
+          <p class="caption" style="color:var(--maroon-600);">8:00 PM · Northrop</p>
+          <h4 class="text-[15px] font-bold mt-1 leading-snug">Indie film screening: Past Lives</h4>
+          <p class="text-xs text-[var(--muted)] mt-1">12 min walk · matches your interests</p>
+        </article>
+        <article class="event-card">
+          <p class="caption" style="color:var(--maroon-600);">Wed · 7:00 PM</p>
+          <h4 class="text-[15px] font-bold mt-1 leading-snug">CSCI Hackathon kickoff</h4>
+        </article>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Design notes -->
+  <section class="mt-8 max-w-2xl mx-auto text-[#B8ADA3] text-sm leading-relaxed">
+    <h3 class="text-white font-bold mb-2">What changed</h3>
+    <ul class="space-y-1 list-disc pl-5">
+      <li>Greeting bubble → one inline line with Goldy dot avatar.</li>
+      <li>Chip row removed. WeekStrip owns temporal filtering.</li>
+      <li>Categories behind a single "Filters" pill (count badge when active).</li>
+      <li>CalmMode → overflow ⋯ · EinkSync → Settings · LeaveByNotify → inline chip on each event.</li>
+    </ul>
+  </section>
+</main>
+</body>
+</html>

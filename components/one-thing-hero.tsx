@@ -13,6 +13,7 @@ import type { GoldyContext } from '@/lib/goldy-commentary';
 import { pickGoldyLine } from '@/lib/goldy-commentary';
 import type { Event } from '@/lib/schema';
 import type { CampusFeedResponse } from '@/app/api/campus-feed/route';
+import { LeaveByNotifyChip } from '@/components/leave-by-notify-chip';
 
 // Hero takes a payload in two modes:
 //  • when an event lives in the ranked feed, caller passes that payload
@@ -277,6 +278,9 @@ export function OneThingHero({
               Not for me
             </button>
           )}
+        </div>
+        <div className="flex justify-center pt-1">
+          <LeaveByNotifyChip events={events} />
         </div>
       </div>
     </section>
