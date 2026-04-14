@@ -96,6 +96,19 @@ export function useSwipeReveal<T extends HTMLElement = HTMLElement>(
   // After we decide the gesture is vertical-dominant, we ignore the
   // rest of this pointer interaction and yield to scroll.
   const cancelledRef = useRef(false);
+  // Keep callbacks in refs so listeners don't re-bind every render
+  // (re-binding mid-gesture drops pointer events and breaks subsequent
+  // swipes on mobile).
+  const swipeRightRef = useRef(onSwipeRight);
+  const swipeLeftRef = useRef(onSwipeLeft);
+  swipeRightRef.current = onSwipeRight;
+  swipeLeftRef.current = onSwipeLeft;
+  const thresholdRef = useRef(threshold);
+  thresholdRef.current = threshold;
+  const cancelOnVerticalPxRef = useRef(cancelOnVerticalPx);
+  cancelOnVerticalPxRef.current = cancelOnVerticalPx;
+  const maxOffsetRef = useRef(maxOffset);
+  maxOffsetRef.current = maxOffset;
 
   const reset = useCallback(() => {
     setDx(0);
@@ -120,7 +133,13 @@ export function useSwipeReveal<T extends HTMLElement = HTMLElement>(
       const dxRaw = e.clientX - start.x;
       const dyRaw = e.clientY - start.y;
 
-      if (shouldCancelForScroll({ dx: dxRaw, dy: dyRaw, cancelOnVerticalPx })) {
+      if (
+        shouldCancelForScroll({
+          dx: dxRaw,
+          dy: dyRaw,
+          cancelOnVerticalPx: cancelOnVerticalPxRef.current,
+        })
+      ) {
         cancelledRef.current = true;
         setDx(0);
         setIsDragging(false);
@@ -140,9 +159,9 @@ export function useSwipeReveal<T extends HTMLElement = HTMLElement>(
         }
       }
 
-      setDx(clampOffset(dxRaw, maxOffset));
+      setDx(clampOffset(dxRaw, maxOffsetRef.current));
     },
-    [cancelOnVerticalPx, maxOffset],
+    [],
   );
 
   const onPointerUp = useCallback(
@@ -161,13 +180,13 @@ export function useSwipeReveal<T extends HTMLElement = HTMLElement>(
       const decision = swipeDecision({
         dxAtRelease: finalDx,
         cancelled: cancelledRef.current,
-        threshold,
+        threshold: thresholdRef.current,
       });
-      if (decision === 'right' && onSwipeRight) onSwipeRight();
-      if (decision === 'left' && onSwipeLeft) onSwipeLeft();
+      if (decision === 'right' && swipeRightRef.current) swipeRightRef.current();
+      if (decision === 'left' && swipeLeftRef.current) swipeLeftRef.current();
       reset();
     },
-    [onSwipeRight, onSwipeLeft, threshold, reset],
+    [reset],
   );
 
   const onPointerCancel = useCallback(() => {
