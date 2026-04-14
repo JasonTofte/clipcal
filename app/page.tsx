@@ -12,6 +12,7 @@ import { appendBatch, markBatchCommitted } from '@/lib/event-store';
 import { triggerIcsDownload } from '@/lib/ics';
 import { computeLeaveBy } from '@/lib/leave-by';
 import { generateNoticings, type LatLng } from '@/lib/noticings';
+import { walkMinutesOrNull, UMN_CAMPUS } from '@/lib/distance';
 import { geocodeCached } from '@/lib/geocode';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import type { RelevanceScore } from '@/lib/relevance';
@@ -204,8 +205,17 @@ export default function Home() {
     [events, activeCalendar, originCoords, locationCoords],
   );
   const leaveByPerEvent = useMemo(
-    () => events.map((event) => computeLeaveBy(event)),
-    [events],
+    () =>
+      events.map((event) => {
+        // Prefer the real computed walk time when we have resolved coords.
+        // Falls back to computeLeaveBy's internal 12-min default otherwise
+        // (unknown location or geocode pending/failed/out-of-range).
+        const dest = event.location ? locationCoords.get(event.location) ?? null : null;
+        const origin = originCoords ?? UMN_CAMPUS;
+        const walk = dest ? walkMinutesOrNull(origin, dest) : null;
+        return walk !== null ? computeLeaveBy(event, walk) : computeLeaveBy(event);
+      }),
+    [events, originCoords, locationCoords],
   );
 
   const handleDownloadIcs = (event: Event) => {

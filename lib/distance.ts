@@ -36,3 +36,17 @@ export function walkMinutes(
   const meters = haversineMeters(from, to);
   return Math.max(1, Math.ceil(meters / WALK_METERS_PER_MIN));
 }
+
+// If a destination geocodes far from the origin, it's almost certainly a
+// mis-geocode (e.g., "Room 101" matched some random US address), not a
+// genuine 200-km walk. Anything above this threshold is suppressed rather
+// than rendered as "12000-min walk".
+export const MAX_REASONABLE_WALK_MIN = 60;
+
+export function walkMinutesOrNull(
+  from: { lat: number; lng: number },
+  to: { lat: number; lng: number },
+): number | null {
+  const mins = walkMinutes(from, to);
+  return mins > MAX_REASONABLE_WALK_MIN ? null : mins;
+}
