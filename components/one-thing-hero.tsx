@@ -287,6 +287,16 @@ export function OneThingHero({
   );
 }
 
+function formatCountdown(mins: number): string {
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h < 24) return m === 0 ? `${h}h` : `${h}h ${m}m`;
+  const d = Math.floor(h / 24);
+  const rh = h % 24;
+  return rh === 0 ? `${d}d` : `${d}d ${rh}h`;
+}
+
 function LeaveByPanel({
   leaveBy,
   phase,
@@ -319,7 +329,7 @@ function LeaveByPanel({
           {leaveBy.displayText}
         </div>
         <div className="mt-1 text-sm" style={{ color: 'var(--goldy-maroon-700)' }}>
-          {isUrgent ? 'now-ish' : `in ${minutesToStart} min`}
+          {isUrgent ? 'now-ish' : `in ${formatCountdown(minutesToStart)}`}
         </div>
       </div>
       <div className="text-right text-xs" style={{ color: 'var(--goldy-maroon-700)' }}>
@@ -340,7 +350,7 @@ function NoLocationPanel({ minutesToStart }: { minutesToStart: number }) {
       }}
     >
       No location on this one — I can&rsquo;t do leave-by math. Starts in{' '}
-      <strong>{minutesToStart} min</strong>.
+      <strong>{formatCountdown(minutesToStart)}</strong>.
     </div>
   );
 }

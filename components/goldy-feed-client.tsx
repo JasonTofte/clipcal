@@ -185,6 +185,7 @@ export function GoldyFeedClient() {
   }, [rows, demoMode, interests, allEvents, nowOverride]);
 
   const recentClips = rows
+    .filter((r) => showHidden || !hiddenIds.has(`${r.batchId}-${r.eventIndex}`))
     .slice()
     .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
     .slice(0, 6);
