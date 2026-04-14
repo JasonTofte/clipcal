@@ -2,14 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { GoldyAvatar } from '@/components/goldy-avatar';
 import { WeekStrip } from '@/components/week-strip';
 import { DayRail } from '@/components/day-rail';
-import { CalmModeToggle } from '@/components/calm-mode-toggle';
 import { GoldyEventRow } from '@/components/goldy-event-row';
 import { OneThingHero } from '@/components/one-thing-hero';
-import { LeaveByNotifyToggle } from '@/components/leave-by-notify-toggle';
-import { EinkSyncButton } from '@/components/eink-sync-button';
+import { FeedOverflowMenu } from '@/components/feed-overflow-menu';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
 import {
   EVENT_STORE_KEY,
@@ -22,7 +19,7 @@ import { triggerIcsDownload } from '@/lib/ics';
 import { loadProfileFromStorage, type Profile } from '@/lib/profile';
 import { buildContext, pickGoldyLine } from '@/lib/goldy-commentary';
 import { parseNowOverride } from '@/lib/day-of-reminder';
-import { formatShortDate, formatWeekday } from '@/lib/format';
+import { formatShortDate } from '@/lib/format';
 // Inlined: prior demo seed module (lib/demo-feed-seed.ts) was removed
 // when we dropped auto-seeded fake flyers. The legacy id prefix is
 // preserved here so this cleanup pass keeps stripping stale data
@@ -35,7 +32,7 @@ import {
   clearHiddenEvents,
 } from '@/lib/hidden-events';
 import { detectDuplicates, siblingDatesLabel } from '@/lib/dedupe-events';
-import { flyerClass, FOOD_RX, GAMEDAY_RX } from '@/lib/flyer-class';
+import { flyerClass } from '@/lib/flyer-class';
 import type { Event } from '@/lib/schema';
 
 const DEMO_MODE_STORAGE_KEY = 'clipcal_demo_mode';
@@ -45,8 +42,6 @@ const UNDO_WINDOW_MS = 5000;
 type UndoAction =
   | { kind: 'add'; batchId: string; title: string }
   | { kind: 'hide'; rowKey: string; title: string };
-
-type ChipFilter = 'all' | 'gameday' | 'free-food';
 
 type FeedRow = {
   batchId: string;
@@ -107,7 +102,6 @@ export function GoldyFeedClient() {
   const [batches, setBatches] = useState<StoredEventBatch[]>([]);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [demoMode, setDemoMode] = useState(true);
-  const [chipFilter, setChipFilter] = useState<ChipFilter>('all');
   const [selectedDayIdx, setSelectedDayIdx] = useState<number | null>(null);
   // Undo is a discriminated action — same snackbar handles Add-to-Cal
   // reversal and hide reversal.
@@ -116,7 +110,6 @@ export function GoldyFeedClient() {
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [showHidden, setShowHidden] = useState(false);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
-  const picksSectionRef = useRef<HTMLElement | null>(null);
   const undoTimerRef = useRef<number | null>(null);
   const flashTimerRef = useRef<number | null>(null);
 
@@ -196,81 +189,8 @@ export function GoldyFeedClient() {
     .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
     .slice(0, 6);
 
-  // Greeting blurb picks the most interesting signal out of the ranked
-  // results and addresses it directly. Falls back through: urgent →
-  // packed-today → gameday-this-week → free-food-coming → open-weekend →
-  // light-week → default. Each branch is a distinct sentence so reloading
-  // the feed in different states reads as deliberate observation, not
-  // a generic greeting.
-  const greetingBlurb = useMemo(() => {
-    if (rows.length === 0) return null;
-    const weekday = formatWeekday(new Date());
-    const todayISO = new Date().toISOString().slice(0, 10);
-
-    const urgent = ranked.find(({ ctx }) => ctx.bucket === 'urgent');
-    if (urgent) {
-      const m = urgent.ctx.slots.minutesToLeaveBy ?? 0;
-      return `Heads up — ${urgent.row.event.title} needs you moving in about ${m} min. Everything else can wait.`;
-    }
-
-    const todayEvents = allEvents.filter((e) => e.start.startsWith(todayISO));
-    if (todayEvents.length >= 3) {
-      return `${weekday}'s stacked — ${todayEvents.length} things on deck today. Want me to zoom in on today?`;
-    }
-
-    const gameday = ranked.find(({ ctx }) => ctx.bucket === 'top-pick-gameday');
-    if (gameday) {
-      return `Gameday on the calendar this week — ${gameday.row.event.title}. Want me to surface everything that fits around it?`;
-    }
-
-    const freeFood = ranked.find(({ ctx }) => ctx.bucket === 'free-food');
-    if (freeFood) {
-      return `Free food incoming: ${freeFood.row.event.title}. Worth a detour?`;
-    }
-
-    const weekendBooked = allEvents.some((e) => {
-      const d = new Date(e.start).getDay();
-      return d === 0 || d === 6;
-    });
-    if (!weekendBooked) {
-      return `Peeked at your week — your weekend's wide open. Want me to surface what fits?`;
-    }
-
-    if (rows.length <= 2) {
-      return `Quiet week — just ${rows.length} event${rows.length === 1 ? '' : 's'} on deck. Want a look at what's new on campus?`;
-    }
-
-    return `You've got ${rows.length} events on deck. ${weekday}'s looking like your day.`;
-  }, [rows, ranked, allEvents]);
-
   const visibleRanked = useMemo(() => {
     let out = ranked;
-    if (chipFilter !== 'all') {
-      out = out.filter(({ ctx, row }) => {
-        const hay = `${row.event.title} ${row.event.description ?? ''} ${row.event.category}`.toLowerCase();
-        if (chipFilter === 'gameday') {
-          // Bucket alone misses when a higher-priority bucket (urgent,
-          // conflict) preempts gameday for the same event. Fall back to
-          // the shared keyword signals so the chip matches human
-          // expectation.
-          return (
-            ctx.bucket === 'top-pick-gameday' ||
-            row.event.category === 'sports' ||
-            GAMEDAY_RX.test(hay)
-          );
-        }
-        if (chipFilter === 'free-food') {
-          // Extractor may not have set hasFreeFood reliably on
-          // user-uploaded events. Keyword scan catches pizza/bagel/etc.
-          return (
-            ctx.bucket === 'free-food' ||
-            row.event.hasFreeFood ||
-            FOOD_RX.test(hay)
-          );
-        }
-        return true;
-      });
-    }
     if (selectedDayIdx !== null) {
       out = out.filter(({ row }) => eventDayIdx(row.event.start, weekStart) === selectedDayIdx);
     }
@@ -280,7 +200,7 @@ export function GoldyFeedClient() {
       out = out.filter(({ row }) => !hiddenIds.has(`${row.batchId}-${row.eventIndex}`));
     }
     return out;
-  }, [ranked, chipFilter, selectedDayIdx, weekStart, hiddenIds, showHidden]);
+  }, [ranked, selectedDayIdx, weekStart, hiddenIds, showHidden]);
 
   // Build duplicate index over all rows (even hidden ones, since a
   // hidden event can still be a sibling of a visible one).
@@ -295,12 +215,9 @@ export function GoldyFeedClient() {
   const hiddenCount = hiddenIds.size;
 
   const activeFilterSummary = useMemo(() => {
-    const parts: string[] = [];
-    if (chipFilter === 'gameday') parts.push('gameday');
-    if (chipFilter === 'free-food') parts.push('free food');
-    if (selectedDayIdx !== null) parts.push(DAY_FULL[selectedDayIdx]);
-    return parts.join(' · ');
-  }, [chipFilter, selectedDayIdx]);
+    if (selectedDayIdx === null) return '';
+    return DAY_FULL[selectedDayIdx];
+  }, [selectedDayIdx]);
 
   // Single helper: set undo action + start/reset the 5s dismissal timer.
   const armUndo = (action: UndoAction) => {
@@ -371,38 +288,37 @@ export function GoldyFeedClient() {
 
   if (rows.length === 0) {
     return (
-      <div className="mt-4">
-        <GoldyGreeting
-          blurb="Snap a flyer. I'll pull it out of your camera roll so it doesn't live there forever."
-        />
-        <div
-          className="mt-8 flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed bg-white/60 p-10 text-center"
-          style={{ borderColor: 'var(--goldy-maroon-200)' }}
-        >
-          <div className="text-4xl" aria-hidden>
-            📸
-          </div>
-          <p className="text-sm text-stone-600">
-            Your camera roll is full of flyers you meant to go to. Feed me one and I&rsquo;ll
-            turn it into a decision you can actually act on.
-          </p>
-          <Link
-            href="/"
-            className="inline-flex min-h-[44px] items-center rounded-full px-5 py-3 text-sm font-bold"
-            style={{
-              background: 'var(--goldy-maroon-500)',
-              color: 'var(--goldy-gold-400)',
-            }}
-          >
-            Upload a flyer
-          </Link>
+      <div
+        className="mt-6 flex flex-col items-center gap-3 rounded-3xl border-2 border-dashed bg-white/60 p-10 text-center"
+        style={{ borderColor: 'var(--goldy-maroon-200)' }}
+      >
+        <div className="text-4xl" aria-hidden>
+          📸
         </div>
+        <p className="text-sm text-stone-600">
+          Your camera roll is full of flyers you meant to go to. Feed me one and I&rsquo;ll
+          turn it into a decision you can actually act on.
+        </p>
+        <Link
+          href="/"
+          className="inline-flex min-h-[44px] items-center rounded-full px-5 py-3 text-sm font-bold"
+          style={{
+            background: 'var(--goldy-maroon-500)',
+            color: 'var(--goldy-gold-400)',
+          }}
+        >
+          Upload a flyer
+        </Link>
       </div>
     );
   }
 
   return (
     <>
+      <div className="mb-2 flex items-center justify-end">
+        <FeedOverflowMenu events={allEvents} />
+      </div>
+
       <OneThingHero
         events={allEvents}
         ranked={visibleRanked.map(({ row, ctx, line }) => ({
@@ -419,50 +335,6 @@ export function GoldyFeedClient() {
           if (hit) handleHide(hit.row);
         }}
       />
-
-      <LeaveByNotifyToggle events={allEvents} />
-
-      {/* Hidden when NEXT_PUBLIC_EINK_PI_URL is unset, or when the user
-          has nothing upcoming. Component handles both gates internally. */}
-      <div className="mb-3 flex items-center justify-between">
-        <CalmModeToggle compact />
-        <EinkSyncButton events={allEvents} />
-      </div>
-
-      {greetingBlurb && (
-        <GoldyGreeting
-          blurb={greetingBlurb}
-          chipFilter={chipFilter}
-          onChipFilter={(next) => {
-            setChipFilter(next);
-            // Always clear any day filter so chip intent reads clearly.
-            setSelectedDayIdx(null);
-            // Scroll the picks into view so tapping a chip produces a
-            // visible response even when the filter was already applied.
-            window.requestAnimationFrame(() => {
-              picksSectionRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-              });
-            });
-          }}
-          onScrollToToday={() => {
-            // Filter picks to today.
-            const todayIdx = new Date().getDay();
-            // Convert JS getDay (0=Sun..6=Sat) to our Mon=0 system.
-            const monIdx = todayIdx === 0 ? 6 : todayIdx - 1;
-            setSelectedDayIdx(monIdx);
-            setChipFilter('all');
-            window.requestAnimationFrame(() => {
-              picksSectionRef.current?.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-              });
-            });
-          }}
-        />
-      )}
-
 
       <WeekStrip
         mode={{ source: 'events', events: allEvents }}
@@ -550,7 +422,6 @@ export function GoldyFeedClient() {
       )}
 
       <section
-        ref={picksSectionRef}
         className="mb-6 scroll-mt-20"
         aria-labelledby="goldy-picks-heading"
       >
@@ -573,13 +444,10 @@ export function GoldyFeedClient() {
             style={{ borderColor: 'var(--goldy-maroon-200)' }}
           >
             <p>Nothing matches your current filter.</p>
-            {(selectedDayIdx !== null || chipFilter !== 'all') && (
+            {selectedDayIdx !== null && (
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedDayIdx(null);
-                  setChipFilter('all');
-                }}
+                onClick={() => setSelectedDayIdx(null)}
                 className="mt-2 text-xs font-semibold underline"
                 style={{ color: 'var(--goldy-maroon-600)' }}
               >
@@ -699,100 +567,3 @@ export function GoldyFeedClient() {
   );
 }
 
-function GoldyGreeting({
-  blurb,
-  chipFilter,
-  onChipFilter,
-  onScrollToToday,
-}: {
-  blurb: string;
-  chipFilter?: ChipFilter;
-  onChipFilter?: (next: ChipFilter) => void;
-  onScrollToToday?: () => void;
-}) {
-  const showChips = chipFilter !== undefined && onChipFilter !== undefined;
-  return (
-    <section className="mb-6 flex items-start gap-3">
-      <div className="shrink-0">
-        <GoldyAvatar size={64} showStatus />
-      </div>
-      <div
-        className="goldy-bubble max-w-md rounded-2xl rounded-tl-sm px-4 py-3 shadow-md"
-        role="note"
-        aria-label="Goldy's greeting"
-      >
-        <div
-          className="mb-0.5 text-[10px] font-bold uppercase tracking-wider"
-          style={{ color: 'var(--goldy-maroon-600)' }}
-        >
-          Goldy Gopher · just now
-        </div>
-        <p className="text-sm leading-snug text-stone-900">{blurb}</p>
-        {showChips && (
-          <div
-            role="group"
-            aria-label="Jump into Goldy's picks"
-            className="mt-2 flex flex-wrap gap-1.5"
-          >
-            <GreetingChip
-              label="Show me the picks ↓"
-              active={chipFilter === 'all'}
-              onClick={() => onChipFilter('all')}
-            />
-            {onScrollToToday && (
-              <GreetingChip
-                label="Just today"
-                active={false}
-                onClick={onScrollToToday}
-              />
-            )}
-            <GreetingChip
-              label="Just gameday"
-              active={chipFilter === 'gameday'}
-              onClick={() => onChipFilter('gameday')}
-            />
-            <GreetingChip
-              label="Free food only"
-              active={chipFilter === 'free-food'}
-              onClick={() => onChipFilter('free-food')}
-            />
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function GreetingChip({
-  label,
-  active,
-  onClick,
-}: {
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className="inline-flex min-h-[32px] items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors"
-      style={
-        active
-          ? {
-              background: 'var(--goldy-maroon-500)',
-              color: 'var(--goldy-gold-400)',
-              borderColor: 'var(--goldy-maroon-500)',
-            }
-          : {
-              background: 'white',
-              color: 'var(--goldy-maroon-600)',
-              borderColor: 'var(--goldy-maroon-500)',
-            }
-      }
-    >
-      {label}
-    </button>
-  );
-}

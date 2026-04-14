@@ -25,11 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `components/goldy-feed-client.tsx` mounts `DayRail` when `selectedDayIdx !== null`, renders `CalmModeToggle` (compact variant) in the feed header, and consumes `WeekStrip`.
 - `app/page.tsx` swaps `WeekDensity` for `WeekStrip`.
 - `app/globals.css` gains sensory-low type baseline at `:root`, Calm Mode token overrides at `[data-calm="true"]`, and expanded `@media (prefers-reduced-motion: reduce)` guards covering all surfaces.
+- **`/feed` header consolidation** — grounded in a `/deep-r` audit of AI-assistant + discovery-feed UX patterns (Arc Search, Perplexity, NYT Cooking, Google Discover, NN/G). Greeting bubble removed; the existing compact editorial hero (`OneThingHero`) becomes the sole above-the-fold surface. Redundant filter chips ("Just today" duplicated the WeekStrip; "Just gameday" had low signal) removed along with the `chipFilter` state machine. Stacked page-level toggles (`CalmModeToggle`, `EinkSyncButton`, `LeaveByNotifyToggle` banner) relocated into a single `⋯` overflow menu (`components/feed-overflow-menu.tsx`) + an inline leave-by notify chip on the hero (`components/leave-by-notify-chip.tsx`). Net ~300 lines removed, ~120 added; pre-content chrome shrinks from ~240pt → ~140pt.
 
 ### Removed
 
 - `components/week-density.tsx` — consolidated into `components/week-strip.tsx`. (AC-8)
 - `components/goldy-week-glance.tsx` — consolidated into `components/week-strip.tsx`. (AC-8)
+- `components/leave-by-notify-toggle.tsx` — replaced by the inline `LeaveByNotifyChip` on the hero.
+- `components/goldy-fab.tsx` — "Hey Goldy, I snapped a flyer" FAB removed; upload access retained via the bottom nav (simpler, one voice).
 
 ### Deferred (out of scope this cycle)
 
@@ -69,10 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Goldy Sidekick feed** — `/feed` redesigned as a mascot-forward UI with UMN maroon + gold branding, Graduate + Fredoka fonts, a Goldy greeting bubble, week-at-a-glance day bar, camera-roll of recent clips, and ranked event cards each carrying a contextual Goldy speech bubble + match percentage. Replaces the previous shadcn-styled feed.
+- **Goldy Sidekick feed** — `/feed` redesigned as a mascot-forward UI with UMN maroon + gold branding, Graduate + Fredoka fonts, a week-at-a-glance day bar, camera-roll of recent clips, and ranked event cards each carrying a contextual Goldy speech bubble + match percentage. Replaces the previous shadcn-styled feed. (Note: the original greeting bubble and persistent snap-a-flyer FAB that shipped in this version were later removed — see Unreleased § Changed/Removed for the header consolidation.)
 - **Deterministic Goldy commentary** (`lib/goldy-commentary.ts` + `lib/goldy-templates.json`): 120 hand-authored lines across 8 context buckets (conflict · top-pick-gameday · interest-match · free-food · back-to-back · late-night · weekend-open · default). djb2 hash picks a deterministic variant per event; slot substitution with fallthrough for missing slots. No runtime LLM, fully offline. Timezone-aware late-night/weekend detection (Intl.DateTimeFormat on `event.timezone`).
 - **Bottom tab bar** (`components/bottom-nav.tsx`) — sticky `Upload · Browse · Feed · Profile` nav with safe-area padding, `aria-current="page"` on the active tab. Mounted globally in `app/layout.tsx`.
-- **Persistent snap-a-flyer FAB** (`components/goldy-fab.tsx`) — restores the mockup's primary CTA above the bottom nav so the upload loop stays thumb-reachable from the feed.
 - **Goldy UI primitives**: `components/goldy-avatar.tsx` (inline SVG block-M, self-hosted, `decorative` prop for inline uses), `components/goldy-event-card.tsx`, `components/goldy-week-glance.tsx`, `components/goldy-feed-client.tsx`.
 - **Mobile-first app shell**: `viewport-fit=cover`, `100dvh`, `env(safe-area-inset-*)` padding, `@media (hover: hover)` gating for hover affordances, Graduate + Fredoka via `next/font/google` (self-hosted, CSP-friendly, `display: swap`). Theme color now UMN maroon `#7A0019`.
 - 33 new tests for the commentary lib (all 8 buckets covered in `buildContext`, slot substitution asserted across buckets, timezone regression test for the late-night bucket, word-boundary interest matching regression). 166 tests total, all green.
