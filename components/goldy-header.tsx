@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { GoldyAvatar } from '@/components/goldy-avatar';
-import { resetDemoData } from '@/lib/demo-reset';
+// import { resetDemoData } from '@/lib/demo-reset'; // temporarily unused while Reset demo button is hidden
 
 // Small, muted contextual subtitle per page. Keeps the mascot
 // contextual without shouting.
@@ -61,6 +61,7 @@ export function GoldyHeader() {
             </span>
           </span>
         </Link>
+        {/* Reset demo button temporarily hidden
         <button
           type="button"
           onClick={() => {
@@ -73,6 +74,7 @@ export function GoldyHeader() {
         >
           Reset demo
         </button>
+        */}
       </div>
     </header>
   );
