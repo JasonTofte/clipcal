@@ -8,6 +8,7 @@ import { WeekSection } from '@/components/week-section';
 import { CampusFeed } from '@/components/campus-feed';
 import { OneThingHero } from '@/components/one-thing-hero';
 import { FeedOverflowMenu } from '@/components/feed-overflow-menu';
+import { SavedDetailModal } from '@/components/saved-detail-modal';
 import { DEMO_CALENDAR, computeDemoFeedEvents } from '@/lib/demo-calendar';
 import {
   BATCHES_UPDATED_EVENT,
@@ -110,6 +111,7 @@ export function GoldyFeedClient() {
   const [undo, setUndo] = useState<UndoAction | null>(null);
   const [flashKey, setFlashKey] = useState<string | null>(null);
   const [savedOpen, setSavedOpen] = useState(false);
+  const [selectedSavedKey, setSelectedSavedKey] = useState<string | null>(null);
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
   const [showHidden, setShowHidden] = useState(false);
   const cardRefs = useRef<Map<string, HTMLElement>>(new Map());
@@ -339,15 +341,7 @@ export function GoldyFeedClient() {
   };
 
   const handleCameraTap = (key: string) => {
-    const el = cardRefs.current.get(key);
-    // The top-ranked event lives inside OneThingHero (not the ranked list,
-    // which is .slice(1)), so its ref is never registered. Fall back to a
-    // top-of-page scroll so tapping its thumbnail always shows SOMETHING.
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setSelectedSavedKey(key);
     if (flashTimerRef.current) window.clearTimeout(flashTimerRef.current);
     setFlashKey(key);
     flashTimerRef.current = window.setTimeout(() => {
@@ -448,7 +442,7 @@ export function GoldyFeedClient() {
                     key={key}
                     type="button"
                     onClick={() => handleCameraTap(key)}
-                    aria-label={`Jump to ${event.title}`}
+                    aria-label={`View details for ${event.title}`}
                     className="goldy-snap-item w-40 shrink-0 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
                     style={{ borderRadius: '1rem' }}
                   >
@@ -492,6 +486,22 @@ export function GoldyFeedClient() {
 
 
       <CampusFeed />
+
+      {selectedSavedKey && (() => {
+        // Look up the fresh row on every render so the modal re-renders
+        // with the latest event (e.g. starred state) after mutations.
+        const row = activeRows.find(
+          (r) => `${r.batchId}-${r.eventIndex}` === selectedSavedKey,
+        );
+        if (!row) return null;
+        return (
+          <SavedDetailModal
+            event={row.event}
+            onClose={() => setSelectedSavedKey(null)}
+            onToggleStar={() => handleToggleStar(row)}
+          />
+        );
+      })()}
 
       {undo && (
         <div
