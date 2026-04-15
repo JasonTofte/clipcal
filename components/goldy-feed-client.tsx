@@ -215,10 +215,15 @@ export function GoldyFeedClient() {
       .sort((a, b) => b.rank - a.rank);
   }, [activeRows, demoMode, interests, allEvents, nowOverride]);
 
-  const recentClips = activeRows
-    .slice()
-    .sort((a, b) => b.addedAt.localeCompare(a.addedAt))
-    .slice(0, 6);
+  const recentClips = useMemo(() => {
+    const nowMs = (nowOverride ?? new Date()).getTime();
+    return activeRows
+      .filter((row) => {
+        const endStr = row.event.end ?? row.event.start;
+        return new Date(endStr).getTime() >= nowMs;
+      })
+      .sort((a, b) => a.event.start.localeCompare(b.event.start));
+  }, [activeRows, nowOverride]);
 
   // Greeting blurb picks the most interesting signal out of the ranked
   // results and addresses it directly. Falls back through: urgent →
