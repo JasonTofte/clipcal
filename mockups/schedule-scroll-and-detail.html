@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ShowUp — Schedule scroll + Saved detail modal</title>
+<style>
+  :root {
+    --cream: #FBF4E8;
+    --paper: #FEFCF6;
+    --maroon-50: #F9EAEC;
+    --maroon-100: #F2D4D9;
+    --maroon-400: #961A2F;
+    --maroon-500: #7A0019;
+    --maroon-600: #660015;
+    --maroon-700: #40000D;
+    --gold-300: #F5D77A;
+    --gold-400: #FFCC33;
+    --gold-500: #E6B422;
+    --amber: rgb(251, 191, 36);
+    --text: #1A1210;
+    --muted: rgba(26, 18, 16, 0.55);
+    --border: rgba(26, 18, 16, 0.12);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #222;
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .wrap {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+  @media (max-width: 900px) {
+    .wrap { grid-template-columns: 1fr; }
+  }
+  .col-label {
+    color: #f0e4c8;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .col-label strong { display: block; color: white; font-size: 15px; text-transform: none; letter-spacing: 0; margin-top: 2px; font-weight: 600; }
+
+  /* Mobile phone frame so the comparison feels honest */
+  .phone {
+    background: var(--cream);
+    border-radius: 26px;
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+    overflow: hidden;
+    position: relative;
+    height: 760px;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone .chrome {
+    background: var(--cream);
+    padding: 14px 20px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,0.04);
+  }
+  .brand {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .brand .logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--gold-400);
+    border: 2px solid var(--maroon-500);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: var(--maroon-500);
+  }
+  .brand .name { font-weight: 700; font-size: 15px; }
+  .brand .sub { font-size: 10px; color: var(--muted); }
+  .chrome-btn {
+    font-size: 11px; font-weight: 600;
+    padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: white; color: var(--muted);
+  }
+
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 16px 80px;
+    scroll-behavior: smooth;
+  }
+
+  .dots {
+    text-align: right;
+    color: var(--muted);
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+
+  /* ─── Hero card (OneThingHero) ─── */
+  .hero {
+    position: relative;
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(26,18,16,0.04), 0 10px 30px -12px rgba(122,0,25,0.12);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .hero .ribbon {
+    position: absolute;
+    top: 18px; right: -44px;
+    transform: rotate(38deg);
+    background: var(--gold-500);
+    color: var(--maroon-700);
+    padding: 4px 48px;
+    font-size: 10px; font-weight: 800; letter-spacing: 0.14em;
+    box-shadow: 0 2px 6px -1px rgba(230, 180, 34, 0.45);
+  }
+  .eyebrow {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--maroon-600);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--maroon-500); }
+  .hero h2 { margin: 6px 0 0; font-size: 18px; font-weight: 700; line-height: 1.2; }
+  .hero .when { margin: 4px 0 0; font-size: 14px; font-weight: 600; color: var(--maroon-600); }
+  .hero .loc { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+  .leaveby {
+    margin: 12px 0 0;
+    padding: 12px 14px;
+    background: var(--maroon-50);
+    border: 1px solid var(--maroon-100);
+    border-radius: 14px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .leaveby .label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--maroon-600); }
+  .leaveby .time { font-size: 30px; font-weight: 700; line-height: 1; color: var(--maroon-600); margin-top: 3px; }
+  .leaveby .sub { font-size: 12px; color: var(--maroon-700); margin-top: 3px; }
+  .leaveby .walk { font-size: 10px; color: var(--maroon-700); font-weight: 600; }
+  .hero .cta {
+    margin-top: 14px; width: 100%;
+    padding: 11px; background: var(--maroon-500); color: white;
+    border: none; border-radius: 12px; font-size: 14px; font-weight: 700;
+  }
+  .hero .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 10px; border-radius: 999px;
+    background: var(--gold-300); color: var(--maroon-700);
+    font-size: 11px; font-weight: 700;
+    margin-top: 10px;
+  }
+
+  /* ─── Saved strip ─── */
+  .saved-toggle {
+    display: inline-flex; gap: 6px; align-items: center;
+    padding: 7px 12px; border-radius: 999px;
+    background: rgba(0,0,0,0.04); font-size: 12px; font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .saved-strip {
+    display: flex; gap: 10px;
+    overflow-x: auto;
+    padding: 8px 0 16px;
+  }
+  .saved-card {
+    width: 110px; flex-shrink: 0;
+    aspect-ratio: 3/4;
+    border-radius: 12px; padding: 10px;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .saved-card:active { transform: scale(0.97); }
+  .saved-card .cat { font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-300); }
+  .saved-card .title { font-size: 13px; font-weight: 700; line-height: 1.2; margin-top: 4px; }
+  .saved-card .date { font-size: 9px; }
+  .saved-card.pizza { background: var(--gold-400); color: var(--maroon-700); }
+  .saved-card.pizza .cat { color: var(--maroon-700); }
+  .saved-card.pizza .date { color: var(--maroon-700); }
+  .saved-card.hack { background: var(--maroon-500); }
+  .saved-card.fest { background: var(--maroon-400); }
+  .saved-card.other { background: #3a2a2a; }
+
+  /* ─── Scrollable main cards list (NEW) ─── */
+  .list-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 14px 0 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .list-label .count {
+    background: var(--maroon-500); color: white;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 10px; letter-spacing: 0.05em;
+  }
+  .goldy-card {
+    position: relative;
+    border-radius: 18px;
+    padding: 14px;
+    margin-bottom: 12px;
+    color: white;
+    box-shadow: 0 8px 20px -10px rgba(122,0,25,0.3);
+  }
+  .goldy-card.pizza { background: var(--gold-400); color: var(--maroon-700); }
+  .goldy-card.hack { background: var(--maroon-500); }
+  .goldy-card.fest { background: var(--maroon-400); }
+  .goldy-card .cat-row {
+    display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+  .goldy-card h3 { margin: 4px 0 0; font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .goldy-card .meta { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+  .goldy-card .bubble {
+    display: flex; gap: 8px; align-items: flex-start;
+    background: rgba(255,255,255,0.92);
+    color: var(--text);
+    border-radius: 14px;
+    padding: 8px 12px;
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  .goldy-card.pizza .bubble { background: rgba(255,255,255,0.85); }
+  .goldy-card .bubble .avatar {
+    width: 22px; height: 22px; flex-shrink: 0;
+    background: var(--gold-400); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .goldy-card .actions {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+  .goldy-card .btn-add {
+    flex: 1; padding: 10px; border: none; border-radius: 12px;
+    background: rgba(0,0,0,0.2); color: white;
+    font-weight: 700; font-size: 13px; cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .goldy-card.pizza .btn-add { background: var(--maroon-500); color: white; }
+  .goldy-card .btn-hide {
+    padding: 10px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 12px;
+    background: transparent; color: white;
+    font-weight: 600; font-size: 12px;
+  }
+  .goldy-card.pizza .btn-hide { border-color: rgba(122,0,25,0.3); color: var(--maroon-700); }
+
+  /* Scroll hint banner */
+  .scroll-hint {
+    font-size: 10px; color: var(--muted);
+    text-align: center;
+    padding: 14px 0 8px;
+    border-top: 1px dashed rgba(0,0,0,0.1);
+    margin-top: 16px;
+    font-style: italic;
+  }
+
+  /* ─── Bottom nav mock ─── */
+  .bottomnav {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-around; padding: 10px 0 18px;
+    background: white; border-top: 1px solid rgba(0,0,0,0.06);
+    font-size: 10px; color: var(--muted);
+  }
+  .bottomnav .item { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0 12px; }
+  .bottomnav .item.active { color: var(--maroon-500); font-weight: 700; }
+  .bottomnav .ico { font-size: 15px; }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* PHONE 2 — Saved detail modal                             */
+  /* ═══════════════════════════════════════════════════════ */
+  .phone2 { position: relative; }
+  .phone2 .scroll-area { filter: brightness(0.5); }
+  .backdrop {
+    position: absolute; inset: 0;
+    background: rgba(26, 18, 16, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+  .modal {
+    position: absolute;
+    left: 12px; right: 12px; bottom: 0;
+    z-index: 20;
+    background: var(--paper);
+    border-radius: 24px 24px 0 0;
+    padding: 20px 22px 22px;
+    max-height: 82%;
+    overflow-y: auto;
+    box-shadow: 0 -8px 40px -12px rgba(26, 18, 16, 0.5);
+  }
+  .modal .close {
+    position: absolute; top: 14px; left: 14px;
+    width: 34px; height: 34px; border-radius: 50%;
+    border: none; background: rgba(0,0,0,0.06);
+    font-size: 15px; color: var(--muted); cursor: pointer;
+  }
+  .modal .ribbon-mini {
+    position: absolute;
+    top: 14px; right: -40px;
+    transform: rotate(38deg);
+    background: var(--gold-500);
+    color: var(--maroon-700);
+    padding: 3px 44px;
+    font-size: 9px; font-weight: 800; letter-spacing: 0.14em;
+    box-shadow: 0 2px 6px -1px rgba(230, 180, 34, 0.45);
+  }
+  .modal .cat-tag {
+    margin-top: 38px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .modal h2 { margin: 6px 0 0; font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .modal .when { margin: 10px 0 0; font-size: 16px; font-weight: 600; color: var(--maroon-600); }
+  .modal .loc { margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+  .modal .desc { margin: 14px 0 0; font-size: 13px; line-height: 1.6; }
+  .modal .tags { margin: 12px 0 0; display: flex; gap: 6px; flex-wrap: wrap; }
+  .modal .tags .tag {
+    background: rgba(251, 191, 36, 0.1); color: #B45309;
+    padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .modal .actions { margin-top: 18px; display: flex; flex-direction: column; gap: 8px; }
+  .modal .btn-fav {
+    padding: 11px; border-radius: 14px;
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid var(--gold-500);
+    font-weight: 700; font-size: 13px; color: var(--maroon-700);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .modal .btn-fav .s { color: var(--gold-500); }
+  .modal .btn-primary {
+    padding: 11px; border: none; border-radius: 14px;
+    background: var(--maroon-500); color: white;
+    font-weight: 700; font-size: 14px;
+  }
+  .modal .row { display: flex; gap: 8px; }
+  .modal .btn-outline {
+    flex: 1; padding: 10px; border: 1px solid var(--border);
+    border-radius: 14px; background: white; color: var(--muted);
+    font-weight: 600; font-size: 13px;
+  }
+
+  .callout {
+    background: rgba(255,255,255,0.08); color: #f0e4c8;
+    border-left: 3px solid var(--gold-400);
+    padding: 10px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- COLUMN 1 — Schedule page with scrollable main cards      -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div>
+    <div class="col-label">CHANGE 1 · Schedule page<strong>Vertical list of main cards below hero (scrollable)</strong></div>
+    <div class="callout">
+      Currently only the hero card appears above the week strip. This adds
+      a scrollable vertical list of remaining events (every ranked event
+      except the one in the hero), using the existing <code>GoldyEventCard</code>
+      component. Users scroll the normal page — no horizontal carousel.
+    </div>
+
+    <div class="phone">
+      <div class="chrome">
+        <div class="brand">
+          <div class="logo">M</div>
+          <div>
+            <div class="name">ShowUp</div>
+            <div class="sub">your campus sidekick</div>
+          </div>
+        </div>
+        <button class="chrome-btn">Reset demo</button>
+      </div>
+
+      <div class="scroll-area">
+        <div class="dots">⋯</div>
+
+        <!-- HERO -->
+        <div class="hero">
+          <div class="ribbon">★ FAVORITE</div>
+          <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+          <h2>SERU Pizza Party — Rapson</h2>
+          <div class="when">Wed, Apr 15 · 11:00 AM</div>
+          <div class="loc">Rapson, HGA Gallery</div>
+          <div class="leaveby">
+            <div>
+              <div class="label">LEAVE BY</div>
+              <div class="time">10:48 AM</div>
+              <div class="sub">in 16h 56m</div>
+            </div>
+            <div class="walk">12-min walk</div>
+          </div>
+          <button class="cta">Add to calendar</button>
+        </div>
+
+        <!-- SAVED STRIP -->
+        <div class="saved-toggle">📷 Saved · 6 ›</div>
+        <div class="saved-strip">
+          <div class="saved-card other">
+            <div class="cat">OTHER</div>
+            <div><div class="title">Between Worlds</div><div class="date">Apr 16</div></div>
+          </div>
+          <div class="saved-card pizza">
+            <div class="cat">SOCIAL</div>
+            <div><div class="title">SERU Pizza — Rapson</div><div class="date">Apr 15</div></div>
+          </div>
+          <div class="saved-card fest">
+            <div class="cat">SOCIAL</div>
+            <div><div class="title">SERU Pizza — McNeal</div><div class="date">Apr 15</div></div>
+          </div>
+          <div class="saved-card hack">
+            <div class="cat">HACKATHON</div>
+            <div><div class="title">0→1 Ultra Hackathon</div><div class="date">Today</div></div>
+          </div>
+        </div>
+
+        <!-- NEW: Main event list -->
+        <div class="list-label">Upcoming <span class="count">4</span></div>
+
+        <div class="goldy-card hack">
+          <div class="cat-row"><span>HACKATHON</span><span>TODAY</span></div>
+          <h3>0→1 Ultra Hackathon Kickoff</h3>
+          <div class="meta">Tue, Apr 14 · 6:00 PM · Holmes Center</div>
+          <div class="bubble">
+            <div class="avatar">🐿️</div>
+            <div>Leave by 5:48 pm — you've got a 12-min walk and it's starting soon.</div>
+          </div>
+          <div class="actions">
+            <button class="btn-add">Add to calendar</button>
+            <button class="btn-hide">Not for me</button>
+          </div>
+        </div>
+
+        <div class="goldy-card fest">
+          <div class="cat-row"><span>SOCIAL</span><span>Tomorrow</span></div>
+          <h3>SERU Pizza Party — McNeal</h3>
+          <div class="meta">Wed, Apr 15 · 11:00 AM · McNeal Hall</div>
+          <div class="bubble">
+            <div class="avatar">🐿️</div>
+            <div>Free pizza? Say less. This one fits right between your classes.</div>
+          </div>
+          <div class="actions">
+            <button class="btn-add">Add to calendar</button>
+            <button class="btn-hide">Not for me</button>
+          </div>
+        </div>
+
+        <div class="goldy-card pizza">
+          <div class="cat-row"><span>OTHER</span><span>Thu</span></div>
+          <h3>Between Worlds — Second Floor</h3>
+          <div class="meta">Thu, Apr 16 · 7:00 PM · Weisman Art</div>
+          <div class="bubble">
+            <div class="avatar">🐿️</div>
+            <div>Arts opening in a quieter venue. Could be a chill mid-week reset.</div>
+          </div>
+          <div class="actions">
+            <button class="btn-add">Add to calendar</button>
+            <button class="btn-hide">Not for me</button>
+          </div>
+        </div>
+
+        <div class="scroll-hint">↓ week view + campus feed below ↓</div>
+      </div>
+
+      <div class="bottomnav">
+        <div class="item"><div class="ico">👤</div><div>Profile</div></div>
+        <div class="item active"><div class="ico">▤</div><div>Schedule</div></div>
+        <div class="item"><div class="ico">📷</div><div>Upload</div></div>
+        <div class="item"><div class="ico">🔍</div><div>Browse</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- COLUMN 2 — Saved detail modal                             -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <div>
+    <div class="col-label">CHANGE 2 · Saved card tap<strong>Opens a detail sheet from the bottom</strong></div>
+    <div class="callout">
+      Currently tapping a thumbnail just scrolls to top (ranked list was removed
+      earlier, nothing to scroll to). New behavior: tap opens a modal with full
+      event info — title, when, location, description, tags, and all the
+      calendar-export actions. Tap the backdrop, the X, or press Esc to close.
+    </div>
+
+    <div class="phone phone2">
+      <div class="chrome">
+        <div class="brand">
+          <div class="logo">M</div>
+          <div>
+            <div class="name">ShowUp</div>
+            <div class="sub">your campus sidekick</div>
+          </div>
+        </div>
+        <button class="chrome-btn">Reset demo</button>
+      </div>
+
+      <div class="scroll-area">
+        <div class="hero" style="opacity: 0.6">
+          <div class="eyebrow"><span class="dot"></span>NEXT UP</div>
+          <h2>SERU Pizza Party — Rapson</h2>
+          <div class="when">Wed, Apr 15 · 11:00 AM</div>
+        </div>
+      </div>
+
+      <div class="backdrop"></div>
+
+      <div class="modal">
+        <button class="close">✕</button>
+        <div class="ribbon-mini">★ FAVORITE</div>
+
+        <div class="cat-tag">SOCIAL</div>
+        <h2>SERU Pizza Party — Rapson</h2>
+        <div class="when">Wed, Apr 15 · 11:00 AM</div>
+        <div class="loc">Rapson, HGA Gallery · 89 Church St SE</div>
+        <div class="desc">
+          Join the SERU community for pizza, conversation, and a chance to
+          connect with grad students across architecture, landscape, and
+          planning. All are welcome — students, faculty, and staff.
+        </div>
+        <div class="tags">
+          <span class="tag">🍕 free food</span>
+        </div>
+
+        <div class="actions">
+          <button class="btn-fav"><span class="s">★</span> Favorited</button>
+          <button class="btn-primary">📅 Add to calendar</button>
+          <div class="row">
+            <button class="btn-outline">Google</button>
+            <button class="btn-outline">Outlook</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottomnav">
+        <div class="item"><div class="ico">👤</div><div>Profile</div></div>
+        <div class="item active"><div class="ico">▤</div><div>Schedule</div></div>
+        <div class="item"><div class="ico">📷</div><div>Upload</div></div>
+        <div class="item"><div class="ico">🔍</div><div>Browse</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
