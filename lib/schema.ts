@@ -36,12 +36,17 @@ export const EventSchema = z.object({
   // a malicious flyer inject XSS via <a href={signupUrl}>.
   signupUrl: z
     .string()
+    .max(2048, { message: 'signupUrl exceeds maximum length' })
     .url()
     .refine((u) => /^https?:\/\//i.test(u), {
       message: 'signupUrl must use http(s)',
     })
     .nullable()
     .optional(),
+  // Flyer carries a visible QR code. Used to render a non-link "scan
+  // original flyer" hint chip when on-device QR decode and visible-URL
+  // extraction both come back empty — see lib/resolve-signup-chip.
+  hasQR: z.boolean().optional(),
   starred: z.boolean().optional(),
 });
 

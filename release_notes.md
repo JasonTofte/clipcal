@@ -2,6 +2,24 @@
 
 ## Unreleased
 
+### QR fallback: visible URL + "scan the flyer" hint chip
+
+**The bug this fixes.** Before this release, if you uploaded a flyer with a QR code that the on-device decoder couldn't read (small QR, blurry photo, bad angle), the app would silently succeed and the event card would show no signup affordance at all. The model clearly *saw* the QR — it often mentioned one in the notes — but the user got nothing actionable.
+
+**What users see now.** Two layered fallbacks in front of the existing on-device QR decoder:
+
+1. **Visible-URL extraction.** If the flyer prints a URL below or near the QR (common for tabling flyers — `z.umn.edu/cse-welcome`), Claude Haiku now pulls that URL text into the event during extraction. The existing "Sign up via flyer QR" chip turns into a working link even when the QR itself couldn't decode. The URL goes through the same `z.url() + refine(^https?://)` validator that was already protecting against `javascript:`/`data:` XSS payloads, so a malicious flyer can't inject a weird protocol.
+
+2. **"QR on flyer" hint chip.** If both the on-device decoder and the visible-URL extraction come back empty, but Haiku tells us there *is* a QR on the flyer, the card renders a muted dashed-border chip reading "QR on flyer — scan original" (or "QR — scan flyer" on the compact row variant). It's deliberately not a link — border is dashed, `cursor: default`, `select-none`, transparent background — so sighted users recognize it as a notice rather than a tap target. Screen readers get the full instruction via `aria-label` and `role="note"`. The `currentColor` border trick keeps the chip readable in dark mode without hard-coding a second color.
+
+**Precedence.** On-device QR decode > LLM-extracted URL > fallback hint chip > nothing. Decoder reads the authoritative payload; LLM URL is an OCR guess used only as a backup.
+
+**Engineering shape.** The chip-state logic is a 3-branch discriminated union (`link | fallback | none`) returned by a pure `resolveSignupChip` helper that both card and row render paths consume — no prop drilling, no conditional JSX soup, and the gate is unit-testable without any React render harness. The precedence merge is a 6-line `mergeSignupUrl(qrUrl, llmUrl)` pure function. 17 new unit tests (7 P0) lock every AC: schema field acceptance for `hasQR: true | false | undefined`, rejection of non-boolean values, URL protocol filtering, the precedence rule, and all three chip branches.
+
+**Security posture.** New optional `.max(2048)` cap on `signupUrl` (defense-in-depth against a malformed flyer producing a multi-KB URL that would waste tokens and blow up `<a href>` render). `rel="noopener noreferrer" + target="_blank"` retained on the link chip. Zod schema is backward-compatible (`hasQR` is `.optional()`), so old localStorage batches parse cleanly.
+
+---
+
 ### Star button + Pi Zero e-ink sidecar (PR #74 surgical split)
 
 A physical companion display for the feed, plus a way to tell it which event you actually care about.
