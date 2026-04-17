@@ -24,6 +24,7 @@ Update this file when a feature graduates from the plan to production.
 | **Unified Goldy design tokens** | App-wide | Shipped | v1.0.3 | UMN maroon/gold/cream at `:root`; all shadcn primitives inherit |
 | **Shared primitive library** | App-wide | Shipped | v1.0.3 | `LeaveByClock`, `NoticingChip`, `ConflictBadge`, `PrimaryCTA`, `GoldyBubble` in `components/shared/` |
 | **QR code decode** | Upload | Shipped | v1.0.3+ | `BarcodeDetector` (Chrome/Edge/Android) + `qr-scanner` fallback (iOS/Firefox); signup URL extracted from flyer image |
+| **QR fallback: visible URL + hint chip** | Upload, Feed | Shipped | Unreleased | Three-tier signup chip: (1) on-device decode → "Sign up via flyer QR" link; (2) LLM-extracted printed URL → same link; (3) Haiku reports `hasQR:true` but no URL → muted dashed "QR on flyer — scan original" non-link chip. Unified through pure `resolveSignupChip` helper; shared by card + row variants. |
 | **E-ink / Pi sync** | Feed | Shipped | v1.0.3+ | WiFi (HTTPS POST) + BLE (Web Bluetooth, 20-byte ATT-MTU chunked) to Pi Zero e-ink display |
 | **Pi Zero e-ink sidecar** | Hardware | Shipped | Unreleased | `pi/*.py` — BLE GATT peripheral + captive-portal HTTP fallback + Waveshare 2.13" V4 renderer; systemd-managed; WiFi AP mode for iOS pairing |
 | **Starred events** | Feed, E-ink | Shipped | Unreleased | Star-toggle on event cards; starred events get amber ring in app, `* ` prefix on Pi display (`s: true` payload flag) |

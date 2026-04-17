@@ -7,7 +7,8 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { buildGoldyWhy, bucketLabel } from '@/lib/goldy-why';
 import { flyerClass } from '@/lib/flyer-class';
 import { formatEventWhen } from '@/lib/format';
-import { CalendarPlus, ExternalLink, Trophy } from 'lucide-react';
+import { resolveSignupChip } from '@/lib/resolve-signup-chip';
+import { CalendarPlus, ExternalLink, QrCode, Trophy } from 'lucide-react';
 
 type Props = {
   event: Event;
@@ -50,6 +51,7 @@ export function GoldyEventCard({
   const [whyOpen, setWhyOpen] = useState(false);
   const whyText = goldyCtx ? buildGoldyWhy(event, goldyCtx) : null;
   const bucketLbl = goldyCtx ? bucketLabel(goldyCtx.bucket as GoldyBucket) : null;
+  const signupChip = resolveSignupChip(event);
 
   const handleAddPress = () => {
     if (!hasConflict) {
@@ -238,9 +240,9 @@ export function GoldyEventCard({
                 </button>
               )}
             </div>
-            {event.signupUrl && (
+            {signupChip.kind === 'link' && (
               <a
-                href={event.signupUrl}
+                href={signupChip.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Open signup link in new tab"
@@ -255,6 +257,22 @@ export function GoldyEventCard({
                 <ExternalLink aria-hidden size={12} />
                 Sign up via flyer QR
               </a>
+            )}
+            {signupChip.kind === 'fallback' && (
+              <span
+                role="note"
+                aria-label="This flyer has a QR code. Open the original flyer on your phone and scan the QR code with your camera app."
+                className="mt-1 inline-flex cursor-default select-none items-center gap-1 self-start whitespace-nowrap rounded-full border border-dashed px-3 py-1 text-xs font-medium"
+                style={{
+                  background: 'transparent',
+                  borderColor: 'currentColor',
+                  color: 'var(--muted-foreground)',
+                  minHeight: 32,
+                }}
+              >
+                <QrCode aria-hidden size={12} />
+                QR on flyer — scan original
+              </span>
             )}
           </div>
         </div>

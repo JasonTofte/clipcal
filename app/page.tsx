@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { HomeIdleView } from '@/components/home-idle-view';
 import { HomeSuccessView } from '@/components/home-success-view';
 import { decodeQRFromFile } from '@/lib/qr-decode';
+import { mergeSignupUrl } from '@/lib/merge-signup-url';
 import { downscaleIfNeeded } from '@/lib/image-downscale';
 import { checkConflict } from '@/lib/conflict';
 import { DEMO_CALENDAR } from '@/lib/demo-calendar';
@@ -101,12 +102,13 @@ export default function Home() {
       }
 
       const extraction = json as Extraction;
-      if (qrUrl) {
-        extraction.events = extraction.events.map((e) => ({
-          ...e,
-          signupUrl: qrUrl,
-        }));
-      }
+      // Precedence: on-device QR decode > LLM-extracted visible URL. The
+      // decoder reads the authoritative QR payload; the LLM URL is an
+      // OCR guess used only as a fallback when decode fails.
+      extraction.events = extraction.events.map((e) => ({
+        ...e,
+        signupUrl: mergeSignupUrl(qrUrl, e.signupUrl),
+      }));
       const saved = appendBatch(extraction.events, extraction.sourceNotes);
       setState({
         status: 'success',
