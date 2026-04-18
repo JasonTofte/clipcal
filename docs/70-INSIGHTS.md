@@ -15,6 +15,39 @@ Non-obvious decisions, hard-won lessons, and design rationale that would otherwi
 
 ---
 
+## [2026-04-17] Three-tier QR fallback: decode → LLM URL → hint chip
+
+**Context:**
+
+The on-device QR decoder (`BarcodeDetector` native, `qr-scanner` fallback) silently returns `null` on any decode failure — small QR, blurry photo, bad angle, partial occlusion, non-http(s) payload filtered out. Before this change, a `null` decode meant the flyer produced no signup affordance at all, even though the vision model (Claude Haiku) could clearly see the QR was there and often mentioned it in the extraction's `sourceNotes`. Users reported "the app knows there's a QR but doesn't do anything about it" — a silent-failure UX gap.
+
+The naive fix is to surface the raw decode failure ("QR detected but unreadable"). But that punishes the user for a photo-quality problem they've already made, and offers nothing actionable.
+
+**Decision:**
+
+Layer two additional fallbacks in front of the existing decode, without removing it:
+
+1. **Tier 1 (authoritative):** On-device decode of the QR payload. Wins whenever it succeeds — the decoder reads the actual QR, not a pixel guess.
+2. **Tier 2 (vision guess):** Haiku now pulls any *printed* URL from the flyer text (commonly shown below the QR for accessibility) into `signupUrl`. This catches the case where the QR itself is too small/blurry to decode but the URL text is legible. Goes through the same `z.url() + refine(^https?://)` validator that blocks `javascript:`/`data:`/`file:` XSS payloads.
+3. **Tier 3 (hint-only):** Haiku also reports `hasQR: true | false`. When neither decode nor visible-URL extraction produced a URL but `hasQR` is true, the event card shows a muted, deliberately-non-tappable "QR on flyer — scan original" chip. Dashed border + `cursor: default` + `select-none` + transparent background signals "this is a note, not a button."
+
+Precedence is strict: Tier 1 > Tier 2 > Tier 3 > nothing. Pure `mergeSignupUrl(qrUrl, llmUrl)` helper and discriminated-union `resolveSignupChip` keep the logic trivially testable without a React render harness.
+
+**Why it matters:**
+
+- **Graceful degradation beats silent failure.** Each tier increases the chance the user gets an actionable path (working link > scannable flyer prompt > nothing) without promising more than we can deliver.
+- **The non-link chip is a design decision, not laziness.** Making the Tier 3 chip look like a link would trick mobile users into tapping something that does nothing — trust-eroding. The dashed border + `cursor-default` treatment borrows the visual language of disabled/notice states across design systems.
+- **`currentColor` for the chip border** means dark-mode contrast is automatic — the border follows the `--muted-foreground` text color through any theme cascade, so we don't need a dark-mode-specific token.
+- **Prompt injection surface is narrow.** The `signupUrl` field passes through Zod before it ever touches `<a href>`, and we added a `.max(2048)` cap as defense-in-depth against a malformed flyer producing a multi-KB URL string.
+- **Cognitive-isolated spec-to-test pipeline paid off.** Because the chip gate was extracted into a pure function, the RED phase wrote 17 tests against a discriminated union before any React code existed. No JSDOM, no Testing Library, no test-harness scope creep. The shipped tests ARE the record of coverage.
+
+**Follow-up:**
+
+- Watch `/api/extract` 500-rate post-deploy: the `.max(2048)` cap could theoretically trigger a schema validation failure if Haiku hallucinates a very long URL. The prompt says "prefer shortest visible form" to mitigate, but if we see 500s we'll add a `z.preprocess` step that coerces over-long URLs to `null` instead of throwing.
+- Consider deriving Tier 3 *without* the LLM — look for a QR pattern in the `BarcodeDetector` output (the API returns position data even when the payload is undecodable). That would let us drop the `hasQR` prompt bullet entirely.
+
+---
+
 ## [2026-04-13] Calm Mode: user-controllable toggle, not a fixed sensory preset
 
 **Context:**

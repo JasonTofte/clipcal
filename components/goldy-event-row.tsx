@@ -3,7 +3,8 @@
 import type { Event } from '@/lib/schema';
 import type { GoldyContext } from '@/lib/goldy-commentary';
 import { useSwipeReveal } from '@/lib/use-swipe-reveal';
-import { CalendarPlus, ExternalLink } from 'lucide-react';
+import { resolveSignupChip } from '@/lib/resolve-signup-chip';
+import { CalendarPlus, ExternalLink, QrCode } from 'lucide-react';
 
 // Compact horizontal list-item. Replaces the stacked thick-card look
 // on /feed's "rest of the week" list. Left column is day + time,
@@ -54,6 +55,7 @@ export function GoldyEventRow({
   const isConflict = ctx.bucket === 'conflict';
   const isUrgent = ctx.bucket === 'urgent';
   const isTopPick = ctx.bucket === 'top-pick-gameday';
+  const signupChip = resolveSignupChip(event);
 
   const { ref: swipeRef, dx, isDragging } = useSwipeReveal<HTMLElement>({
     onSwipeRight: onClick,
@@ -180,9 +182,9 @@ export function GoldyEventRow({
           </div>
         </button>
 
-        {event.signupUrl && (
+        {signupChip.kind === 'link' && (
           <a
-            href={event.signupUrl}
+            href={signupChip.href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Open signup link in new tab"
@@ -198,6 +200,22 @@ export function GoldyEventRow({
             <ExternalLink aria-hidden size={10} />
             Sign up
           </a>
+        )}
+        {signupChip.kind === 'fallback' && (
+          <span
+            role="note"
+            aria-label="This flyer has a QR code. Open the original flyer on your phone and scan the QR code with your camera app."
+            className="shrink-0 inline-flex cursor-default select-none items-center gap-1 rounded-full border border-dashed px-2 py-1 text-[10px] font-medium"
+            style={{
+              background: 'transparent',
+              borderColor: 'currentColor',
+              color: 'var(--muted-foreground)',
+              minHeight: 32,
+            }}
+          >
+            <QrCode aria-hidden size={10} />
+            QR — scan flyer
+          </span>
         )}
 
         {onHide && (

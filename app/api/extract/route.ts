@@ -64,6 +64,8 @@ For every event shown on the flyer, extract:
 - crowdSize: "small" (< 30), "medium" (30-100), "large" (100+), or null — infer from venue, event type, or any capacity hints
 - dressCode: short phrase from the flyer if stated (e.g. "business casual", "cocktail attire", "costume encouraged"), or null. Do NOT infer — only include if printed.
 - room: specific room or floor hint beyond the venue building (e.g. "Room 3-180, 2nd floor", "Basement ballroom"), or null. Only include if the flyer states it.
+- signupUrl: if the flyer prints a URL (usually near or below a QR code), extract it here. Must start with http:// or https:// — if the flyer shows a short form like "z.umn.edu/cs2026", prepend "https://" so the value is "https://z.umn.edu/cs2026". Prefer the shortest visible form over long tracking URLs. Must be clearly readable — do NOT guess or invent a URL. null if no URL is printed or not readable.
+- hasQR: true if a QR code is visible anywhere on the flyer, false otherwise. Set the same value for every event from a given flyer.
 
 If multiple events appear on the flyer, return ALL of them. Never skip an event.
 Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
