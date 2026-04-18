@@ -3,7 +3,11 @@
 import type { Event } from '@/lib/schema';
 import type { GoldyContext } from '@/lib/goldy-commentary';
 import { useSwipeReveal } from '@/lib/use-swipe-reveal';
-import { resolveSignupChip } from '@/lib/resolve-signup-chip';
+import {
+  resolveSignupChip,
+  SIGNUP_CHIP_LINK_ARIA,
+  SIGNUP_CHIP_FALLBACK_ARIA,
+} from '@/lib/resolve-signup-chip';
 import { CalendarPlus, ExternalLink, QrCode } from 'lucide-react';
 
 // Compact horizontal list-item. Replaces the stacked thick-card look
@@ -187,7 +191,7 @@ export function GoldyEventRow({
             href={signupChip.href}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open signup link in new tab"
+            aria-label={SIGNUP_CHIP_LINK_ARIA}
             onClick={(e) => e.stopPropagation()}
             className="shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold"
             style={{
@@ -204,7 +208,7 @@ export function GoldyEventRow({
         {signupChip.kind === 'fallback' && (
           <span
             role="note"
-            aria-label="This flyer has a QR code. Open the original flyer on your phone and scan the QR code with your camera app."
+            aria-label={SIGNUP_CHIP_FALLBACK_ARIA}
             className="shrink-0 inline-flex cursor-default select-none items-center gap-1 rounded-full border border-dashed px-2 py-1 text-[10px] font-medium"
             style={{
               background: 'transparent',

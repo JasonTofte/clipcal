@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { CalendarPlus, GraduationCap, Building2, Utensils, MapPin, Users, Shirt, DoorOpen, ExternalLink } from 'lucide-react';
+import { CalendarPlus, GraduationCap, Building2, Utensils, MapPin, Users, Shirt, DoorOpen, ExternalLink, QrCode } from 'lucide-react';
 import type { Event } from '@/lib/schema';
 import type { ConflictResult } from '@/lib/conflict';
 import type { LeaveByInfo } from '@/lib/leave-by';
@@ -16,6 +16,13 @@ import { TemporalBar } from '@/components/temporal-bar';
 import { formatTimeRange, toDatetimeLocal, fromDatetimeLocal } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { ConflictBadge, LeaveByClock, NoticingChip } from '@/components/shared';
+import {
+  resolveSignupChip,
+  SIGNUP_CHIP_LINK_LABEL,
+  SIGNUP_CHIP_LINK_ARIA,
+  SIGNUP_CHIP_FALLBACK_LABEL,
+  SIGNUP_CHIP_FALLBACK_ARIA,
+} from '@/lib/resolve-signup-chip';
 import { cn } from '@/lib/utils';
 
 type EventCardProps = {
@@ -272,6 +279,8 @@ export function EventCard({
 
       {campusMatch && <CampusMatchBadge match={campusMatch} />}
 
+      <SignupChip event={event} />
+
       <div className="-mx-1 flex flex-col gap-2 pt-3">
         <Button size="default" variant="default" onClick={onDownloadIcs} className="w-full">
           <CalendarPlus aria-hidden size={15} /> Add to Calendar
@@ -450,6 +459,39 @@ function WhenField({
       )}
     </div>
   );
+}
+
+function SignupChip({ event }: { event: Event }) {
+  const state = resolveSignupChip(event);
+  if (state.kind === 'link') {
+    return (
+      <a
+        href={state.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={SIGNUP_CHIP_LINK_ARIA}
+        className="inline-flex items-center gap-1.5 self-start rounded-full bg-amber-500/10 px-3 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-500/30 transition-colors hover:bg-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400 dark:ring-amber-500/40"
+        style={{ minHeight: 32 }}
+      >
+        <ExternalLink aria-hidden size={12} />
+        {SIGNUP_CHIP_LINK_LABEL}
+      </a>
+    );
+  }
+  if (state.kind === 'fallback') {
+    return (
+      <span
+        role="note"
+        aria-label={SIGNUP_CHIP_FALLBACK_ARIA}
+        className="inline-flex cursor-default select-none items-center gap-1.5 self-start whitespace-nowrap rounded-full border border-dashed border-muted-foreground/40 px-3 py-1.5 text-xs font-medium text-muted-foreground"
+        style={{ minHeight: 32 }}
+      >
+        <QrCode aria-hidden size={12} />
+        {SIGNUP_CHIP_FALLBACK_LABEL}
+      </span>
+    );
+  }
+  return null;
 }
 
 function LabeledField({ label, children }: { label: string; children: ReactNode }) {

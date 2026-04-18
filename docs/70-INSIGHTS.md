@@ -15,6 +15,46 @@ Non-obvious decisions, hard-won lessons, and design rationale that would otherwi
 
 ---
 
+## [2026-04-17] Two-card-variant drift: why the QR chip skipped the upload flow
+
+**Context:**
+
+The three-tier signup chip shipped in PR #82 worked perfectly in `/feed` and was completely invisible in `/` (upload success). A user validated on live flyer uploads — the Rapson Grit flyer's QR decoded to `https://z.umn.edu/beltsander`, but no chip rendered. The flyer's `sourceNotes` also mentioned the URL as plain text that couldn't be tapped.
+
+Root cause: the codebase has two parallel card components. `components/goldy-event-card.tsx` + `components/goldy-event-row.tsx` render in `/feed`. `components/event-card.tsx` renders in `/` (upload success). PR #82 added the chip rendering to the goldy-* pair and missed the plain `EventCard`. Unit tests on `resolveSignupChip` passed (pure function), integration tests on the goldy components passed, but no test covered the upload-surface `EventCard` chip rendering. The drift was invisible until a user tried it.
+
+**Decision:**
+
+Two-part fix:
+1. **Port the chip to `EventCard` directly**, adding a local `SignupChip` sub-component (same `resolveSignupChip` gate, same three branches). Did *not* extract a shared `<SignupChip>` component — the three render paths have genuinely different visual treatments (goldy-gold tokens vs. amber accent vs. compact row), and premature unification would either pin all three to one aesthetic or add a variant prop that pollutes the component API.
+2. **Unify chip copy via exported constants** in `lib/resolve-signup-chip.ts` — `SIGNUP_CHIP_LINK_LABEL`, `SIGNUP_CHIP_LINK_ARIA`, `SIGNUP_CHIP_FALLBACK_LABEL`, `SIGNUP_CHIP_FALLBACK_ARIA`. All three render paths import these. A label edit now flows to every surface in one commit — no drift possible.
+
+Rejected alternatives:
+- **Extract a shared `<SignupChip>` component.** Tempting but premature; two cards have different gold/amber palettes and the row uses compact copy ("Sign up" vs "Sign up via flyer QR"). Would need a variant prop with three enum values, exposing styling complexity through the component API instead of encapsulating it at the call site.
+- **Delete `EventCard` and route everything through `GoldyEventCard`.** Too broad for a bug-fix PR. Upload and Feed have different interaction needs (inline editing on Upload, Goldy commentary on Feed) — consolidation belongs in a dedicated maintainability refactor.
+
+Also added URL linkification for `sourceNotes` (free-text Haiku output commonly mentions URLs) via a new `lib/linkify.ts` → `components/linkified.tsx` pair. Pure function returns a discriminated-union segment array; the render shim maps segments to React nodes. XSS-safe by construction — JSX auto-escapes text segments, the http(s)-only regex + `new URL()` parse + 2048-char cap guards the href. No `dangerouslySetInnerHTML` anywhere.
+
+**Why it matters:**
+
+- **Two-card drift is a recurring hazard in this repo.** The goldy-* components were added to give Feed a mascot-forward aesthetic without rebuilding `EventCard`'s inline-editing machinery. The drift cost (two render paths for a feature that should be one) is now visible — future "shipped feature" reviews should explicitly check both surfaces, not assume feature parity from a shared helper.
+- **Shared constants are a minimum-viable dedup.** Full component extraction isn't always the right answer — sometimes the visual treatments genuinely differ. Extracting just the *strings* that must stay identical across variants gives 80% of the value (no drift on aria-labels, no drift on visible labels) at 5% of the refactor cost.
+- **WCAG 2.5.3 tripwire.** The original aria-label was "Open signup link in new tab" — a concise screen-reader announcement, but it *replaced* the visible label "Sign up via flyer QR". Voice control users saying "Sign up via flyer QR" would find no match. Fixed to "Sign up via flyer QR, opens in new tab" so the accessible name *contains* the visible label. This is a class of accessibility bug that only surfaces when you check both sighted and voice-control pathways.
+- **Segment-array linkifier beats HTML-string linkifier.** The HTML-string approach (regex-replace URLs with `<a>` tags, dangerouslySetInnerHTML) is two error-prone passes (escape HTML first, then insert anchors). A forgotten escape becomes live XSS. The segment array makes unsafe output structurally impossible — React escapes `{value}` in JSX text nodes, and the type system enforces that only validated hrefs can ever reach an anchor's `href` attribute.
+
+**Sources / citations:**
+
+- WCAG 2.1 Success Criterion 2.5.3 — Label in Name: https://www.w3.org/WAI/WCAG21/Understanding/label-in-name.html
+- Prior insight "[2026-04-17] Three-tier QR fallback" — the original PR that shipped the two-card-variant drift
+
+**Follow-up:**
+
+- If a fourth card variant appears (e.g., an e-ink preview card), revisit the shared-component question — three call sites × two features (chip + label) is the drift tipping point.
+- Consider adding an integration-level check to the final review gate: "when a new feature lands in goldy-event-card, verify event-card has been audited for the same feature." Could be a lightweight checklist, not an agent.
+- The `Linkified` pattern is reusable — any other place in the app that renders Haiku free text (e.g., `description` fields, commentary) could pick it up. Out of scope for this PR but worth watching.
+
+---
+
 ## [2026-04-17] Three-tier QR fallback: decode → LLM URL → hint chip
 
 **Context:**

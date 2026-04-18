@@ -2,6 +2,35 @@
 
 ## Unreleased
 
+### Fix: QR signup chip now renders on the upload flow (+ clickable URLs in Claude's notes)
+
+**The bug this fixes.** PR #82 shipped the three-tier signup chip (decoded QR link / extracted printed URL link / "scan original" hint) but only wired it into the Feed variants. The upload success page — the *first* place a user sees extracted events, right after Claude reads the flyer — was never touched. A user flagged it on live Rapson Grit and AND US:ON uploads: the phone's native camera could read the QR to `https://z.umn.edu/beltsander`, but the app's upload card showed nothing. Meanwhile the "note from Claude" paragraph mentioned `z.umn.edu/beltsander` as plain text you couldn't tap.
+
+**What users see now.**
+
+1. **Signup chip on the upload card.** The same three-branch chip that's been on `/feed` now renders above the "Add to Calendar" button on the upload success view. Decoded QR URL → "Sign up via flyer QR" amber link. LLM-extracted URL → same link. `hasQR:true` with no URL → dashed-border "QR on flyer — scan original" note chip.
+
+2. **URLs in flyer notes are now clickable.** When Claude's note mentions a URL (e.g. "Flyer mentions https://z.umn.edu/beltsander for more info"), the URL renders as an anchor that opens in a new tab. Bare domains without `https://` stay as plain text — we don't guess protocols on untrusted text.
+
+**How we made it XSS-safe.** Linkification is the kind of feature that grows teeth if you get it wrong. Common anti-pattern: regex-replace URLs with `<a>` tags and dump into `dangerouslySetInnerHTML`. One forgotten HTML escape becomes live XSS. We took a different shape:
+
+- `lib/linkify.ts` returns a **segment array** — a discriminated union of `{type:'text', value}` and `{type:'link', href, value}`. The type system enforces that only validated hrefs can carry anchor attributes.
+- `components/linkified.tsx` is a ~20-line render shim. Text segments go through JSX `{value}` interpolation (React auto-escapes). No `dangerouslySetInnerHTML` anywhere.
+- Three defense layers gate the href: (1) strict `/^https?:\/\//i` regex pre-filter rejects `javascript:`/`data:`/`file:`/`ftp:` at parse time; (2) `new URL()` parse catches malformed authority (e.g. `https://` with no host); (3) 2048-char cap matches the existing `signupUrl` schema limit so an abusive flyer can't produce a multi-KB anchor.
+- Trailing sentence punctuation (`.,;:!?)]}`) is peeled off the href so "see https://x.com." doesn't linkify the period.
+
+**Engineering shape.**
+
+- **Two-card-variant drift is now contained.** The underlying cause of PR #82's silent failure: this repo has two parallel card components (`EventCard` for upload, `GoldyEventCard`+`GoldyEventRow` for feed). PR #82 added chip rendering to the goldy pair and missed `EventCard`. The fix adds `SignupChip` directly to `EventCard` and — crucially — extracts chip labels/aria strings into exported constants (`SIGNUP_CHIP_LINK_LABEL`, `SIGNUP_CHIP_LINK_ARIA`, `SIGNUP_CHIP_FALLBACK_LABEL`, `SIGNUP_CHIP_FALLBACK_ARIA` in `lib/resolve-signup-chip.ts`). All three render paths now consume the same constants. Future label edits flow to every surface atomically — the structural drift that caused this bug is eliminated.
+- **WCAG 2.5.3 (Label in Name) fix.** The original aria-label "Open signup link in new tab" replaced the visible "Sign up via flyer QR" text for screen reader and voice-control users — so a Dragon/Voice Access user saying "Sign up via flyer QR" got no match. Fixed to "Sign up via flyer QR, opens in new tab" so the accessible name contains the visible label.
+- **Prompt nudge.** One-line addition to the Haiku extraction system prompt asking it to prepend `https://` to any URL mentioned in `sourceNotes`. Low-risk raise in linkify recall (the strict regex won't match bare domains; this encourages Haiku to emit scheme-prefixed URLs that *will* match).
+
+**Test coverage.** 20 new tests, all P0 tier. 16 pure-function tests on `linkifySafe` covering tail-punctuation strip for each character, XSS rejection for `javascript:`/`data:`/`file:`/malformed-https, bare-domain text preservation, and a regression test for the `https://a@javascript:x` userinfo edge case. 3 integration tests on `EventCard` lock the three chip branches (React Testing Library with explicit `afterEach(cleanup)` — Vitest 4 `globals: false` means RTL auto-cleanup doesn't register on its own). 1 integration test on `HomeSuccessView` verifies the linkified anchor renders with the correct `href`/`target`/`rel`. Test matrix + sherlock plan deleted post-extraction; the shipped tests are the record of coverage.
+
+**Security review.** 0 Critical, 0 High. 1 Medium (length cap on linkify input) addressed. No new dependencies. `rel="noopener noreferrer"` verified on every new anchor.
+
+---
+
 ### QR fallback: visible URL + "scan the flyer" hint chip
 
 **The bug this fixes.** Before this release, if you uploaded a flyer with a QR code that the on-device decoder couldn't read (small QR, blurry photo, bad angle), the app would silently succeed and the event card would show no signup affordance at all. The model clearly *saw* the QR — it often mentioned one in the notes — but the user got nothing actionable.

@@ -68,7 +68,7 @@ For every event shown on the flyer, extract:
 - hasQR: true if a QR code is visible anywhere on the flyer, false otherwise. Set the same value for every event from a given flyer.
 
 If multiple events appear on the flyer, return ALL of them. Never skip an event.
-Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null.`;
+Set sourceNotes to anything noteworthy about the flyer itself (hard to read, unusual format, multiple dates listed) or null. When sourceNotes mentions any URL, prepend "https://" (e.g. write "https://z.umn.edu/beltsander" rather than "z.umn.edu/beltsander") so the client can render it as a clickable link.`;
 }
 
 export async function POST(req: Request): Promise<Response> {
