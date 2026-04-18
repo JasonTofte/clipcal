@@ -1,6 +1,7 @@
 'use client';
 
 import { EventCard } from '@/components/event-card';
+import { Linkified } from '@/components/linkified';
 import { Button } from '@/components/ui/button';
 import { googleCalendarUrl, outlookCalendarUrl } from '@/lib/calendar-links';
 import type { Event } from '@/lib/schema';
@@ -88,7 +89,7 @@ export function HomeSuccessView({
       ))}
       {sourceNotes && (
         <p className="text-xs italic text-muted-foreground">
-          note from Claude: {sourceNotes}
+          note from Claude: <Linkified text={sourceNotes} />
         </p>
       )}
       <div className="flex flex-wrap gap-2">

@@ -7,7 +7,13 @@ import { GoldyAvatar } from '@/components/goldy-avatar';
 import { buildGoldyWhy, bucketLabel } from '@/lib/goldy-why';
 import { flyerClass } from '@/lib/flyer-class';
 import { formatEventWhen } from '@/lib/format';
-import { resolveSignupChip } from '@/lib/resolve-signup-chip';
+import {
+  resolveSignupChip,
+  SIGNUP_CHIP_LINK_LABEL,
+  SIGNUP_CHIP_LINK_ARIA,
+  SIGNUP_CHIP_FALLBACK_LABEL,
+  SIGNUP_CHIP_FALLBACK_ARIA,
+} from '@/lib/resolve-signup-chip';
 import { CalendarPlus, ExternalLink, QrCode, Trophy } from 'lucide-react';
 
 type Props = {
@@ -245,7 +251,7 @@ export function GoldyEventCard({
                 href={signupChip.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="Open signup link in new tab"
+                aria-label={SIGNUP_CHIP_LINK_ARIA}
                 className="mt-1 inline-flex items-center gap-1 self-start rounded-full border px-3 py-1 text-xs font-semibold"
                 style={{
                   background: 'var(--goldy-gold-50)',
@@ -255,13 +261,13 @@ export function GoldyEventCard({
                 }}
               >
                 <ExternalLink aria-hidden size={12} />
-                Sign up via flyer QR
+                {SIGNUP_CHIP_LINK_LABEL}
               </a>
             )}
             {signupChip.kind === 'fallback' && (
               <span
                 role="note"
-                aria-label="This flyer has a QR code. Open the original flyer on your phone and scan the QR code with your camera app."
+                aria-label={SIGNUP_CHIP_FALLBACK_ARIA}
                 className="mt-1 inline-flex cursor-default select-none items-center gap-1 self-start whitespace-nowrap rounded-full border border-dashed px-3 py-1 text-xs font-medium"
                 style={{
                   background: 'transparent',
@@ -271,7 +277,7 @@ export function GoldyEventCard({
                 }}
               >
                 <QrCode aria-hidden size={12} />
-                QR on flyer — scan original
+                {SIGNUP_CHIP_FALLBACK_LABEL}
               </span>
             )}
           </div>
